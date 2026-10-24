@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { INVENTORY_ITEM } from '../config';
 import { INITIAL_HERO_STATS, useHeroStore } from './heroStore';
 
 describe('useHeroStore', () => {
@@ -8,9 +9,12 @@ describe('useHeroStore', () => {
   });
 
   it('starts with full health, base attack and magic and no gold', () => {
-    const { health, maxHealth, attack, magic, gold } = useHeroStore.getState();
+    const { health, maxHealth, attack, magic, gold, inventorySize, inventory } =
+      useHeroStore.getState();
 
-    expect({ health, maxHealth, attack, magic, gold }).toEqual(INITIAL_HERO_STATS);
+    expect({ health, maxHealth, attack, magic, gold, inventorySize, inventory }).toEqual(
+      INITIAL_HERO_STATS,
+    );
     expect(health).toBe(maxHealth);
     expect(gold).toBe(0);
   });
@@ -78,13 +82,34 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
+  it('removes an item and shifts the next ones down', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.potion, INVENTORY_ITEM.spear] });
+
+    useHeroStore.getState().removeItem(0);
+
+    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.spear]);
+  });
+
+  it('ignores removing from an empty slot', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.potion] });
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().removeItem(1);
+    useHeroStore.getState().removeItem(-1);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
+
   it('brings back the starting stats on reset', () => {
     useHeroStore.getState().takeDamage(3);
     useHeroStore.getState().addGold(5);
 
     useHeroStore.getState().reset();
-    const { health, maxHealth, attack, magic, gold } = useHeroStore.getState();
+    const { health, maxHealth, attack, magic, gold, inventorySize, inventory } =
+      useHeroStore.getState();
 
-    expect({ health, maxHealth, attack, magic, gold }).toEqual(INITIAL_HERO_STATS);
+    expect({ health, maxHealth, attack, magic, gold, inventorySize, inventory }).toEqual(
+      INITIAL_HERO_STATS,
+    );
   });
 });

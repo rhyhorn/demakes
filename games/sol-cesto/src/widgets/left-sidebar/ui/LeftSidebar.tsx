@@ -1,4 +1,5 @@
 import styles from './LeftSidebar.module.css';
+import { InventoryPanel } from './InventoryPanel';
 import { PortraitPanel } from './PortraitPanel';
 
 export function LeftSidebar() {
@@ -8,7 +9,9 @@ export function LeftSidebar() {
         <PortraitPanel />
       </section>
       <section className={styles.slot}>Зуби</section>
-      <section className={styles.slot}>Інвентар</section>
+      <section className={styles.slot}>
+        <InventoryPanel />
+      </section>
       <section className={styles.slot}>Модифікатори</section>
     </aside>
   );
