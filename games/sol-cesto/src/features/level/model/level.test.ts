@@ -10,6 +10,7 @@ import {
 import { useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { INITIAL_HERO_STATS, useHeroStore } from '@/entities/hero';
+import { INITIAL_MODIFIERS, MODIFIER, useModifierStore } from '@/entities/modifier';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 
 import { enterNextRoom, exitLevel, getRoomScreen, restartGame, startLevel } from './level';
@@ -21,6 +22,7 @@ describe('level', () => {
     useHeroStore.setState(useHeroStore.getInitialState());
     usePickupStore.setState(usePickupStore.getInitialState());
     useGameStore.setState(useGameStore.getInitialState());
+    useModifierStore.setState(useModifierStore.getInitialState());
   });
 
   it('starts a level with one enemy per row at least', () => {
@@ -130,12 +132,14 @@ describe('level', () => {
 
   it('restarts the game from scratch after game over', () => {
     useHeroStore.setState({ health: 0 });
+    useModifierStore.getState().setModifier(MODIFIER.magicChance, 80);
     useBoardStore.setState({ moves: 2, visited: [0, 4], playerIndex: 4, level: 3 });
     useGameStore.setState({ screen: GAME_SCREEN.gameOver });
 
     restartGame(() => 0);
 
     expect(useHeroStore.getState().health).toBe(INITIAL_HERO_STATS.health);
+    expect(useModifierStore.getState().modifiers).toEqual(INITIAL_MODIFIERS);
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
     expect(Object.keys(useEnemyStore.getState().enemies)).toEqual(['0', '4', '8', '12']);

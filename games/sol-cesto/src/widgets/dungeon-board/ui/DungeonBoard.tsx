@@ -10,8 +10,9 @@ import {
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { HeroFigure, useHeroStore } from '@/entities/hero';
+import { useModifierStore } from '@/entities/modifier';
 import { PickupBadge, PickupFigure, usePickupStore } from '@/entities/pickup';
-import { CellOutcomeBadge, enterRow, getCellOutcome } from '@/features/enter-row';
+import { CellOutcomeBadge, enterRow, getCellOutcome, getCellWeights } from '@/features/enter-row';
 import { Badge } from '@/shared/ui';
 
 import styles from './DungeonBoard.module.css';
@@ -38,6 +39,8 @@ export function DungeonBoard() {
   const health = useHeroStore((state) => state.health);
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
+  const modifiers = useModifierStore((state) => state.modifiers);
+  const weightOf = getCellWeights(enemies, modifiers);
 
   return (
     <main className={styles.area}>
@@ -52,7 +55,7 @@ export function DungeonBoard() {
             onClick={() => enterRow(row)}
           >
             {cellIndices.map((index) => {
-              const chance = getCellChance(index, visited);
+              const chance = getCellChance(index, visited, weightOf);
               const enemy = enemies[index];
               const pickup = pickups[index];
               const canEnter = chance > 0;

@@ -7,4 +7,11 @@ export {
   REQUIRED_MOVES,
   useBoardStore,
 } from './model/boardStore';
-export { getAvailableCells, getCellChance, getRowCells } from './model/rows';
+export {
+  type CellWeight,
+  EQUAL_WEIGHT,
+  getAvailableCells,
+  getCellChance,
+  getRowCells,
+  getWeightedCells,
+} from './model/rows';

@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 
+import { pickWeighted } from '@/shared/lib';
+
 import { BOARD_SIZE } from '../config';
-import { getAvailableCells, pickRandom } from './rows';
+import { type CellWeight, EQUAL_WEIGHT, getWeightedCells } from './rows';
 
 export const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 
@@ -33,8 +35,11 @@ interface BoardState {
   /** Number of the current level: grows by one every time the player leaves through the exit. */
   level: number;
   setCell: (index: number, value: number) => void;
-  /** Moves the player to a random not yet visited cell of the row. Does nothing if there is none. */
-  enterRow: (row: number, random?: () => number) => void;
+  /**
+   * Moves the player to a random not yet visited cell of the row, picked by `weightOf` (all cells
+   * equally likely without it). Does nothing if there is none.
+   */
+  enterRow: (row: number, random?: () => number, weightOf?: CellWeight) => void;
   /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */
   exitLevel: () => void;
   /** Moves on to the next level whatever the state of the door, e.g. out of a room without moves. */
@@ -65,9 +70,9 @@ export const useBoardStore = create<BoardState>()((set) => ({
     set((state) => ({
       cells: state.cells.map((cell, cellIndex) => (cellIndex === index ? value : cell)),
     })),
-  enterRow: (row, random = Math.random) =>
+  enterRow: (row, random = Math.random, weightOf = EQUAL_WEIGHT) =>
     set((state) => {
-      const index = pickRandom(getAvailableCells(row, state.visited), random);
+      const index = pickWeighted(getWeightedCells(row, state.visited, weightOf), random)?.index;
       if (index === undefined) return state;
       return {
         playerIndex: index,

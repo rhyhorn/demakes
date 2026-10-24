@@ -10,16 +10,34 @@ export function getAvailableCells(row: number, visited: readonly number[]): numb
   return getRowCells(row).filter((index) => !visited.includes(index));
 }
 
-/** `random` returns a number in [0, 1), like Math.random. */
-export function pickRandom<T>(items: readonly T[], random: () => number): T | undefined {
-  return items[Math.floor(random() * items.length)];
+/**
+ * How likely the player is to land on a cell compared to the other free cells of its row. A cell
+ * of weight 1.5 is half as likely again as a cell of weight 1. Without one all cells weigh 1.
+ */
+export type CellWeight = (index: number) => number;
+
+export const EQUAL_WEIGHT: CellWeight = () => 1;
+
+/** Free cells of the row with their weights, ready for `pickWeighted`. */
+export function getWeightedCells(
+  row: number,
+  visited: readonly number[],
+  weightOf: CellWeight = EQUAL_WEIGHT,
+): { index: number; weight: number }[] {
+  return getAvailableCells(row, visited).map((index) => ({ index, weight: weightOf(index) }));
 }
 
 /**
- * Chance (0..1) that choosing this cell's row puts the player on it: the row's free cells are
- * equally likely, visited cells can't be entered.
+ * Chance (0..1) that choosing this cell's row puts the player on it: the cell's weight out of the
+ * weights of the row's free cells. Visited cells can't be entered.
  */
-export function getCellChance(index: number, visited: readonly number[]): number {
+export function getCellChance(
+  index: number,
+  visited: readonly number[],
+  weightOf: CellWeight = EQUAL_WEIGHT,
+): number {
   if (visited.includes(index)) return 0;
-  return 1 / getAvailableCells(Math.floor(index / BOARD_SIZE), visited).length;
+  const cells = getWeightedCells(Math.floor(index / BOARD_SIZE), visited, weightOf);
+  const total = cells.reduce((sum, cell) => sum + cell.weight, 0);
+  return weightOf(index) / total;
 }

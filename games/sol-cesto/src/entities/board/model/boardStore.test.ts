@@ -55,6 +55,15 @@ describe('useBoardStore', () => {
       expect(useBoardStore.getState().visited).toEqual([11]);
     });
 
+    it('picks cells by weight when given one', () => {
+      // Cell 7 weighs as much as the other three together, so the upper half of the roll lands there.
+      const weightOf = (index: number) => (index === 7 ? 3 : 1);
+
+      useBoardStore.getState().enterRow(1, () => 0.5, weightOf);
+
+      expect(useBoardStore.getState().playerIndex).toBe(7);
+    });
+
     it('never enters a visited cell again', () => {
       const { enterRow } = useBoardStore.getState();
 

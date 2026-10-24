@@ -2,8 +2,11 @@ import { useBoardStore } from '@/entities/board';
 import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
+import { useModifierStore } from '@/entities/modifier';
 import { PICKUP_EFFECT, type PickupEffect, PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { pickCount } from '@/shared/lib';
+
+import { getCellWeights } from './cellWeight';
 
 /**
  * Damage the hero takes from the enemy: by how much the enemy's active attack is stronger than
@@ -22,14 +25,19 @@ function applyPickupEffect(effect: PickupEffect, random: () => number) {
 }
 
 /**
- * Moves the player into the row. If the move happened, an enemy on the player's new cell hits the
+ * Moves the player into the row: cells with enemies are more or less likely to be picked as the
+ * chance modifiers say. If the move happened, an enemy on the player's new cell hits the
  * hero and disappears, and a pickup there gives her what it holds (health or gold) and disappears
  * too. Then the rest of the enemies take their turn. When the hit takes the hero's health to 0, the
  * game is over.
  */
 export function enterRow(row: number, random: () => number = Math.random) {
   const { visited } = useBoardStore.getState();
-  useBoardStore.getState().enterRow(row, random);
+  const weightOf = getCellWeights(
+    useEnemyStore.getState().enemies,
+    useModifierStore.getState().modifiers,
+  );
+  useBoardStore.getState().enterRow(row, random, weightOf);
   const { visited: visitedNow, playerIndex } = useBoardStore.getState();
   if (visitedNow === visited || playerIndex === null) return;
 

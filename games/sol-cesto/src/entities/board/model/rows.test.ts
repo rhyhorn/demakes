@@ -25,3 +25,27 @@ describe('getCellChance', () => {
     expect(getCellChance(3, [0, 1, 2])).toBe(1);
   });
 });
+
+describe('getCellChance with weights', () => {
+  /** Cell 0 is half as likely again as the rest. */
+  const weightOf = (index: number) => (index === 0 ? 1.5 : 1);
+
+  it('shares the chance by weight across the free cells of the row', () => {
+    expect(getCellChance(0, [], weightOf)).toBeCloseTo(1.5 / 4.5);
+    expect(getCellChance(1, [], weightOf)).toBeCloseTo(1 / 4.5);
+  });
+
+  it('adds up to a certain chance over the row', () => {
+    const visited = [2];
+    const total = [0, 1, 3].reduce(
+      (sum, index) => sum + getCellChance(index, visited, weightOf),
+      0,
+    );
+
+    expect(total).toBeCloseTo(1);
+  });
+
+  it('gives visited cells no chance whatever their weight', () => {
+    expect(getCellChance(0, [0], weightOf)).toBe(0);
+  });
+});

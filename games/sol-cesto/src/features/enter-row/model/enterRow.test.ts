@@ -4,6 +4,7 @@ import { getRowCells, useBoardStore } from '@/entities/board';
 import { createEnemy, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
+import { MODIFIER, useModifierStore } from '@/entities/modifier';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 
 import { enterRow, getEnemyDamage } from './enterRow';
@@ -37,6 +38,7 @@ describe('enterRow', () => {
     useGameStore.setState({ screen: GAME_SCREEN.dungeon });
     useEnemyStore.setState({ enemies: { 0: createEnemy('shifter', () => 0) } });
     usePickupStore.setState(usePickupStore.getInitialState());
+    useModifierStore.setState(useModifierStore.getInitialState());
   });
 
   it('moves the player and gives enemies a turn', () => {
@@ -136,5 +138,36 @@ describe('enterRow', () => {
     enterRow(1);
 
     expect(useEnemyStore.getState().enemies).toBe(enemies);
+  });
+
+  describe('chance modifiers', () => {
+    // Row 0: a physical beast on cell 0, a magic shifter on cell 1, cells 2 and 3 are empty.
+    beforeEach(() => {
+      useEnemyStore.setState({
+        enemies: { 0: createEnemy('beast'), 1: createEnemy('shifter', () => 0.999) },
+      });
+    });
+
+    it('makes a physical enemy more likely to be landed on', () => {
+      useModifierStore.setState({
+        modifiers: { [MODIFIER.attackChance]: 100, [MODIFIER.magicChance]: 0 },
+      });
+
+      // Weights 2, 1, 1, 1: the first 40% of the roll goes to the beast.
+      enterRow(0, () => 0.39);
+
+      expect(useBoardStore.getState().playerIndex).toBe(0);
+    });
+
+    it('makes a magic enemy more likely to be landed on', () => {
+      useModifierStore.setState({
+        modifiers: { [MODIFIER.attackChance]: 0, [MODIFIER.magicChance]: 100 },
+      });
+
+      // Weights 1, 2, 1, 1: the shifter takes the roll from 20% to 60%.
+      enterRow(0, () => 0.59);
+
+      expect(useBoardStore.getState().playerIndex).toBe(1);
+    });
   });
 });
