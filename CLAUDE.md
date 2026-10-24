@@ -24,6 +24,8 @@ npm run dev          # dev-сервер Vite
 npm run build        # перевірка типів (tsc --noEmit) + продакшн-збірка в dist/
 npm run preview      # перегляд зібраного dist/
 npm run typecheck    # лише перевірка типів
+npm run lint         # ESLint (Airbnb), lint:fix — з автовиправленням
+npm run format       # Prettier --write, format:check — лише перевірка
 npm test             # усі тести Vitest (одноразово)
 npm run test:watch   # Vitest у watch-режимі
 npx vitest run path/to/file.test.ts      # один файл тестів
@@ -34,6 +36,8 @@ npx vitest run -t "назва тесту"          # тести за назво�
 
 ## Технічні нотатки
 
-- Версії: TypeScript 7, Vite 8, Vitest 5, Node 24.
+- Версії: TypeScript 6.0, Vite 8, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
+- Лінтинг: `eslint.config.mjs` (flat config) підключає `eslint-config-airbnb-extended` (`configs.base.all`, тобто Airbnb для JS і TS). Оригінальний `eslint-config-airbnb-base` з ESLint 9 не працює. Останнім у конфігу має стояти `eslint-config-prettier`: він вимикає стильові правила, а форматування повністю на Prettier (`.prettierrc.json`: одинарні лапки, крапки з комою, ширина 100).
+- Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` у `tsconfig.json` (зараз це лише `src`). Інакше з'явиться помилка «was not found by the project service». Якщо додаватимеш `vite.config.ts` тощо, розшир `include`.
 - `tsconfig.json` увімкнено в режимі `strict` разом із `noUnusedLocals`, `noUnusedParameters` та `verbatimModuleSyntax`. Тому імпорти лише типів пиши як `import type`.
 - `tsc` нічого не генерує (`noEmit`): збирає Vite, а `tsc` тільки перевіряє типи.
