@@ -12,9 +12,3 @@
   grid-template-rows: repeat(var(--board-size), calc(225 * var(--px)));
   gap: calc(30 * var(--px)) calc(4 * var(--px));
 }
-
-.cell {
-  border: calc(2 * var(--px)) solid #3a3a36;
-  border-radius: calc(4 * var(--px));
-  background: #2b2b28;
-}

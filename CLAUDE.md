@@ -37,9 +37,12 @@ Roguelike, зроблений за референсним скріншотом `
 - `pages/<slice>/` — сторінки. Зараз є одна, `home` (`HomePage`): вона збирає головну сцену з трьох колонок (375 / 1170 / 375 дизайн-пікселів).
 - `widgets/` — `left-sidebar`, `dungeon-board` (поле `BOARD_SIZE`×`BOARD_SIZE`), `right-sidebar`.
 - `shared/` — код без бізнес-логіки: `shared/config` (зокрема `SCENE_WIDTH`/`SCENE_HEIGHT` = 1920×1080) і `shared/ui` (`ScaledStage`).
-- Шари `features/` та `entities/` поки не створено. Додавай їх, коли з'явиться відповідний код.
+- `entities/` — `board`: `BOARD_SIZE`, `CELL_COUNT` і Zustand-стор `useBoardStore` з 16 клітинками (`cells`, порядок по рядках). Поки кожна клітинка — просто число, поле їх показує.
+- Шар `features/` поки не створено. Додавай його, коли з'явиться відповідний код.
 
-Масштабування: `ScaledStage` вписує сцену в екран зі збереженням пропорцій 16:9 і центрує її. Усередині розміри задавай у дизайн-пікселях референсу через `calc(N * var(--px))`, тоді вся сцена масштабується разом. Стилі — CSS Modules (`ui/<Name>.module.css` поруч із компонентом), глобальні стилі — `app/styles/index.css`.
+Стан гри зберігай у Zustand-сторах (`create<State>()(...)`) у `model/` відповідного зрізу. Компоненти читають стан через селектори: `useBoardStore((state) => state.cells)`.
+
+Масштабування: `ScaledStage` вписує сцену в екран зі збереженням пропорцій 16:9 і центрує її. Усередині розміри задавай у дизайн-пікселях референсу через `calc(N * var(--px))`, тоді вся сцена масштабується разом. Стилі: Tailwind CSS 4 (підключено через `@tailwindcss/vite`, імпорт `@import 'tailwindcss' source('../..')` у `app/styles/index.css` сканує лише `src` гри) і CSS Modules (`ui/<Name>.module.css` поруч із компонентом) для складнішого. Розміри в Tailwind задавай довільними значеннями, наприклад `text-[length:calc(72*var(--px))]`. Префікс `length:` потрібен для `text-`/`border-` з `calc`, інакше Tailwind може прийняти значення за колір.
 
 Правила FSD: шар може імпортувати лише з шарів, нижчих за нього (`app → pages → widgets → features → entities → shared`). Зрізи одного шару не імпортують один одного. Ззовні до зрізу звертаються лише через його `index.ts` (публічний API з іменованими експортами), а не напряму до `ui/...`. Лінтер ці правила поки не перевіряє, тож дотримуйся їх сам. Імпорти між шарами й зрізами пиши через аліас `@/` (`@/` = `games/sol-cesto/src`), наприклад `import { ScaledStage } from '@/shared/ui'`. Усередині одного зрізу (і в межах `app/`) імпорти відносні: `./HomePage.module.css`, `../config`.
 
@@ -63,13 +66,13 @@ npx vitest run path/to/file.test.ts      # один файл тестів
 npx vitest run -t "назва тесту"          # тести за назвою
 ```
 
-Тести Vitest шукає за шаблоном `**/*.{test,spec}.{ts,tsx}`. Тестів поки немає, тому `npm test` без них завершиться помилкою; щоб цього уникнути, додай `--passWithNoTests`.
+Тести Vitest шукає за шаблоном `**/*.{test,spec}.{ts,tsx}`. Тести кладуть поруч із кодом (`model/boardStore.test.ts`). Перед кожним тестом скидай стан Zustand-стора через `setState`.
 
 ## Технічні нотатки
 
 - `vite.config.mjs` має два режими. Без змінної `GAME` коренем є корінь репозиторію, і збираються всі сторінки. З `GAME=<id>` (її виставляє `scripts/game.mjs` через Vite API) коренем стає `games/<id>`, тож гра працює як самостійний додаток за адресою `/`.
 - `@vitejs/plugin-react` підключено в обох режимах, тож Fast Refresh працює і в `npm run dev`, і в `npm run game`.
-- Версії: TypeScript 6.0, React 19, Vite 8, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
+- Версії: TypeScript 6.0, React 19, Vite 8, Tailwind CSS 4, Zustand 5, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
 - Лінтинг: `eslint.config.mjs` (flat config) підключає `eslint-config-airbnb-extended` (`configs.base.all` + `configs.react.all`, тобто Airbnb для JS, TS і React, включно з hooks та a11y). Для `games/**` вимкнено `import-x/prefer-default-export` (FSD використовує іменовані експорти), а також `react/react-in-jsx-scope` і `react/jsx-uses-react`, бо `"jsx": "react-jsx"` не вимагає імпортувати React. Оригінальний `eslint-config-airbnb-base` з ESLint 9 не працює. Останнім у конфігу має стояти `eslint-config-prettier`: він вимикає стильові правила, а форматування повністю на Prettier (`.prettierrc.json`: одинарні лапки, крапки з комою, ширина 100).
 - TypeScript: кореневий `tsconfig.json` охоплює лише хаб (`src`). Кожна гра має власний `games/<id>/tsconfig.json`, який розширює кореневий, задає свій `include` і аліас `@/`. Vite (`resolve.tsconfigPaths`) і ESLint (резолвер імпортів і project service) беруть найближчий до файлу tsconfig, тому `@/` у кожній грі вказує на її власну `src`. `npm run typecheck` (`scripts/typecheck.mjs`) запускає `tsc --noEmit` для хаба й для кожної гри.
 - Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` найближчого `tsconfig.json`. Інакше з'явиться помилка «was not found by the project service».

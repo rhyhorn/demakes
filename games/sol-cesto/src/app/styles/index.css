@@ -1,8 +1,5 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Scan only this game's sources for Tailwind classes. */
+@import 'tailwindcss' source('../..');
 
 html,
 body,
