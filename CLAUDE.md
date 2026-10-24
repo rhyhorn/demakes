@@ -4,11 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Спілкуйся з користувачем українською.
 
-## Проєкт
+## Структура
 
-Браузерна roguelike-гра у вигляді SPA на TypeScript + Vite (без UI-фреймворку). Зараз це лише каркас: `index.html` з контейнером `#app` і точка входу `src/main.ts`. Верстку та ігрову логіку ще не почали, тож не додавай їх, поки користувач не попросить.
+Це набір незалежних браузерних ігор на TypeScript + Vite, без UI-фреймворку. Технічно це один Vite-проєкт із кількома сторінками:
 
-### Концепція гри (за референсним скріншотом)
+- `index.html` + `src/` — головна сторінка (хаб) зі списком посилань на ігри. Список ігор задано в `src/main.ts`.
+- `games/<id>/index.html` + `games/<id>/src/` — кожна гра є окремим SPA, доступним за адресою `/games/<id>/`.
+- `scripts/games.mjs` — `listGames()`, автоматичне виявлення ігор: кожна папка `games/<id>/` з власним `index.html`. Цю функцію використовують `vite.config.mjs` (точки входу збірки), `eslint.config.mjs` (зони ізоляції) і `scripts/game.mjs` (запуск однієї гри).
+
+Ігри та хаб не мають спільних файлів. Імпорти між `games/a` і `games/b`, а також між `src/` і `games/` заборонені правилом `import-x/no-restricted-paths`, тож лінтер на них упаде. Спільного коду поки немає. Якщо він знадобиться, це окреме рішення, яке треба узгодити з користувачем.
+
+Щоб додати гру, створи `games/<id>/index.html` (скрипт підключай відносним шляхом `./src/main.ts`) і `games/<id>/src/main.ts`, а потім додай посилання в `src/main.ts`. Збірка й лінтер підхоплять гру автоматично. За бажанням додай у `package.json` скрипт `dev:<id>`.
+
+Для роутингу всередині гри використовуй хеш (`#/...`). Інакше dev-сервер і статичний хостинг не знайдуть сторінку за глибоким посиланням.
+
+## Ігри
+
+### soulcasto
+
+Roguelike, зроблений за референсним скріншотом. Верстку та ігрову логіку ще не почали, тож не додавай їх, поки користувач не попросить.
 
 - У центрі поле 4×4 з карток-кімнат підземелля. На кожній картці є вміст і бейдж з іконкою та числом:
   - **ворог**: значення атаки або магії (наприклад, меч 3 чи спіраль 1);
@@ -20,14 +34,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Команди
 
 ```bash
-npm run dev          # dev-сервер Vite
-npm run build        # перевірка типів (tsc --noEmit) + продакшн-збірка в dist/
-npm run preview      # перегляд зібраного dist/
-npm run typecheck    # лише перевірка типів
-npm run lint         # ESLint (Airbnb), lint:fix — з автовиправленням
-npm run format       # Prettier --write, format:check — лише перевірка
-npm test             # усі тести Vitest (одноразово)
-npm run test:watch   # Vitest у watch-режимі
+npm run dev              # хаб + усі ігри (гра відкривається за /games/<id>/)
+npm run game -- <id>     # dev-сервер лише однієї гри (корінь = games/<id>)
+npm run dev:soulcasto    # те саме для soulcasto
+npm run build            # перевірка типів + збірка хаба й усіх ігор у dist/
+npm run preview          # перегляд зібраного dist/
+npm run typecheck        # лише перевірка типів
+npm run lint             # ESLint (Airbnb), lint:fix — з автовиправленням
+npm run format           # Prettier --write, format:check — лише перевірка
+npm test                 # усі тести Vitest (одноразово)
+npm run test:watch       # Vitest у watch-режимі
+npx vitest run games/soulcasto           # тести однієї гри
 npx vitest run path/to/file.test.ts      # один файл тестів
 npx vitest run -t "назва тесту"          # тести за назвою
 ```
@@ -36,8 +53,9 @@ npx vitest run -t "назва тесту"          # тести за назво�
 
 ## Технічні нотатки
 
+- `vite.config.mjs` має два режими. Без змінної `GAME` коренем є корінь репозиторію, і збираються всі сторінки. З `GAME=<id>` (її виставляє `scripts/game.mjs` через Vite API) коренем стає `games/<id>`, тож гра працює як самостійний додаток за адресою `/`.
 - Версії: TypeScript 6.0, Vite 8, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
 - Лінтинг: `eslint.config.mjs` (flat config) підключає `eslint-config-airbnb-extended` (`configs.base.all`, тобто Airbnb для JS і TS). Оригінальний `eslint-config-airbnb-base` з ESLint 9 не працює. Останнім у конфігу має стояти `eslint-config-prettier`: він вимикає стильові правила, а форматування повністю на Prettier (`.prettierrc.json`: одинарні лапки, крапки з комою, ширина 100).
-- Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` у `tsconfig.json` (зараз це лише `src`). Інакше з'явиться помилка «was not found by the project service». Якщо додаватимеш `vite.config.ts` тощо, розшир `include`.
-- `tsconfig.json` увімкнено в режимі `strict` разом із `noUnusedLocals`, `noUnusedParameters` та `verbatimModuleSyntax`. Тому імпорти лише типів пиши як `import type`.
-- `tsc` нічого не генерує (`noEmit`): збирає Vite, а `tsc` тільки перевіряє типи.
+- Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` у `tsconfig.json` (зараз це `src` і `games`). Інакше з'явиться помилка «was not found by the project service».
+- Інструменти збірки (`vite.config.mjs`, `scripts/*.mjs`) написано на JS (ESM), щоб не тягнути `@types/node` і окремий tsconfig. Для них у лінтері ввімкнено Node-глобали, а розширення `.mjs` в імпортах обов'язкові.
+- Кінці рядків завжди LF: це задано в `.gitattributes` і `.prettierrc.json`.

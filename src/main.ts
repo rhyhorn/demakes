@@ -1,5 +1,19 @@
+const games = [{ id: 'soulcasto', title: 'Soulcasto' }];
+
 const app = document.querySelector<HTMLDivElement>('#app');
 
 if (app) {
-  app.textContent = 'Roguelike';
+  const list = document.createElement('ul');
+
+  games.forEach(({ id, title }) => {
+    const link = document.createElement('a');
+    link.href = `/games/${id}/`;
+    link.textContent = title;
+
+    const item = document.createElement('li');
+    item.append(link);
+    list.append(item);
+  });
+
+  app.append(list);
 }

@@ -4,6 +4,8 @@ import prettierConfig from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 
+import { listGames } from './scripts/games.mjs';
+
 export default defineConfig([
   globalIgnores(['dist/**', 'node_modules/**']),
   js.configs.recommended,
@@ -14,6 +16,38 @@ export default defineConfig([
   {
     languageOptions: {
       globals: globals.browser,
+    },
+  },
+  {
+    // Build tooling runs in Node.
+    files: ['*.mjs', 'scripts/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      // Node ESM requires explicit extensions in relative imports.
+      'import-x/extensions': ['error', 'ignorePackages'],
+      'import-x/no-extraneous-dependencies': ['error', { devDependencies: true }],
+      'no-console': 'off',
+    },
+  },
+  {
+    // The hub and every game are independent apps: no imports across their folders.
+    rules: {
+      'import-x/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            { target: './src', from: './games' },
+            { target: './games', from: './src' },
+            ...listGames().map((id) => ({
+              target: `./games/${id}`,
+              from: './games',
+              except: [`./${id}`],
+            })),
+          ],
+        },
+      ],
     },
   },
   // Must stay last: turns off formatting rules that conflict with Prettier.
