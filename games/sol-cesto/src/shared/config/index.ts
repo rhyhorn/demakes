@@ -1,4 +1,4 @@
-export const GAME_TITLE = 'Soulcasto';
+export const GAME_TITLE = 'Sol Cesto';
 
 export const PLACEHOLDER_LINES = [
   'Підземелля ще копають.',

@@ -1,4 +1,4 @@
-const games = [{ id: 'soulcasto', title: 'Soulcasto' }];
+const games = [{ id: 'sol-cesto', title: 'Sol Cesto' }];
 
 const app = document.querySelector<HTMLDivElement>('#app');
 

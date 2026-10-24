@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Ігри
 
-### soulcasto
+### Sol Cesto (`sol-cesto`)
 
 Roguelike, зроблений за референсним скріншотом. Верстку та ігрову логіку ще не почали, тож не додавай їх, поки користувач не попросить.
 
@@ -31,7 +31,7 @@ Roguelike, зроблений за референсним скріншотом. 
 - Ліва панель: портрет або повідомлення, ряд зубів (ймовірно, лічильник ресурсу), інвентар предметів (зілля, зброя) і книга модифікаторів у відсотках (атака, магія, HP, скрині, шипи тощо).
 - Права панель: героїня зі здоров'ям (серце `5/5`), лічильник `0/4`, кольорові ключі або руни, власні атака й магія, двері під замком `0/5` та жаба-скарбничка з монетами.
 
-Код у `games/soulcasto/src/` організовано за Feature-Sliced Design:
+Код у `games/sol-cesto/src/` організовано за Feature-Sliced Design:
 
 - `app/` — `index.tsx` (на нього посилається `index.html`) монтує `<App />` у `#app` через `createRoot` у `StrictMode`. `App.tsx` — кореневий компонент.
 - `pages/<slice>/` — сторінки. Зараз є одна, `home` (`HomePage`), з випадковою заглушкою.
@@ -47,7 +47,7 @@ React-компоненти — це функції з іменованим ек�
 ```bash
 npm run dev              # хаб + усі ігри (гра відкривається за /games/<id>/)
 npm run game -- <id>     # dev-сервер лише однієї гри (корінь = games/<id>)
-npm run dev:soulcasto    # те саме для soulcasto
+npm run dev:sol-cesto    # те саме для sol-cesto
 npm run build            # перевірка типів + збірка хаба й усіх ігор у dist/
 npm run preview          # перегляд зібраного dist/
 npm run typecheck        # лише перевірка типів
@@ -55,7 +55,7 @@ npm run lint             # ESLint (Airbnb), lint:fix — з автовиправ
 npm run format           # Prettier --write, format:check — лише перевірка
 npm test                 # усі тести Vitest (одноразово)
 npm run test:watch       # Vitest у watch-режимі
-npx vitest run games/soulcasto           # тести однієї гри
+npx vitest run games/sol-cesto           # тести однієї гри
 npx vitest run path/to/file.test.ts      # один файл тестів
 npx vitest run -t "назва тесту"          # тести за назвою
 ```
