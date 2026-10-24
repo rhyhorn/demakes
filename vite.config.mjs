@@ -9,6 +9,8 @@ const game = process.env.GAME;
 
 export default defineConfig({
   plugins: [react()],
+  // Each game maps its own aliases (e.g. `@/`) in games/<id>/tsconfig.json.
+  resolve: { tsconfigPaths: true },
   ...(game
     ? { root: resolve(gamesDir, game) }
     : {

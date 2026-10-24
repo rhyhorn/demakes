@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ігри та хаб не мають спільних файлів. Імпорти між `games/a` і `games/b`, а також між `src/` і `games/` заборонені правилом `import-x/no-restricted-paths`, тож лінтер на них упаде. Спільного коду поки немає. Якщо він знадобиться, це окреме рішення, яке треба узгодити з користувачем.
 
-Щоб додати гру, створи `games/<id>/index.html` (точку входу підключай відносним шляхом, наприклад `./src/app/index.tsx`) і саму точку входу, а потім додай посилання в `src/main.ts`. Збірка й лінтер підхоплять гру автоматично. За бажанням додай у `package.json` скрипт `dev:<id>`.
+Щоб додати гру, створи `games/<id>/index.html` (точку входу підключай відносним шляхом, наприклад `./src/app/index.tsx`) саму точку входу і `games/<id>/tsconfig.json` (скопіюй із `sol-cesto`: він розширює кореневий і задає аліас `@/` → `./src/*`), а потім додай посилання в `src/main.ts`. Збірка й лінтер підхоплять гру автоматично. За бажанням додай у `package.json` скрипт `dev:<id>`.
 
 Для роутингу всередині гри використовуй хеш (`#/...`). Інакше dev-сервер і статичний хостинг не знайдуть сторінку за глибоким посиланням.
 
@@ -41,7 +41,7 @@ Roguelike, зроблений за референсним скріншотом `
 
 Масштабування: `ScaledStage` вписує сцену в екран зі збереженням пропорцій 16:9 і центрує її. Усередині розміри задавай у дизайн-пікселях референсу через `calc(N * var(--px))`, тоді вся сцена масштабується разом. Стилі — CSS Modules (`ui/<Name>.module.css` поруч із компонентом), глобальні стилі — `app/styles/index.css`.
 
-Правила FSD: шар може імпортувати лише з шарів, нижчих за нього (`app → pages → widgets → features → entities → shared`). Зрізи одного шару не імпортують один одного. Ззовні до зрізу звертаються лише через його `index.ts` (публічний API з іменованими експортами), а не напряму до `ui/...`. Лінтер ці правила поки не перевіряє, тож дотримуйся їх сам. Імпорти поки відносні, без аліасів на кшталт `@/`.
+Правила FSD: шар може імпортувати лише з шарів, нижчих за нього (`app → pages → widgets → features → entities → shared`). Зрізи одного шару не імпортують один одного. Ззовні до зрізу звертаються лише через його `index.ts` (публічний API з іменованими експортами), а не напряму до `ui/...`. Лінтер ці правила поки не перевіряє, тож дотримуйся їх сам. Імпорти між шарами й зрізами пиши через аліас `@/` (`@/` = `games/sol-cesto/src`), наприклад `import { ScaledStage } from '@/shared/ui'`. Усередині одного зрізу (і в межах `app/`) імпорти відносні: `./HomePage.module.css`, `../config`.
 
 React-компоненти — це функції з іменованим експортом. Компонент лежить у `ui/<Name>.tsx` свого зрізу.
 
@@ -71,6 +71,7 @@ npx vitest run -t "назва тесту"          # тести за назво�
 - `@vitejs/plugin-react` підключено в обох режимах, тож Fast Refresh працює і в `npm run dev`, і в `npm run game`.
 - Версії: TypeScript 6.0, React 19, Vite 8, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
 - Лінтинг: `eslint.config.mjs` (flat config) підключає `eslint-config-airbnb-extended` (`configs.base.all` + `configs.react.all`, тобто Airbnb для JS, TS і React, включно з hooks та a11y). Для `games/**` вимкнено `import-x/prefer-default-export` (FSD використовує іменовані експорти), а також `react/react-in-jsx-scope` і `react/jsx-uses-react`, бо `"jsx": "react-jsx"` не вимагає імпортувати React. Оригінальний `eslint-config-airbnb-base` з ESLint 9 не працює. Останнім у конфігу має стояти `eslint-config-prettier`: він вимикає стильові правила, а форматування повністю на Prettier (`.prettierrc.json`: одинарні лапки, крапки з комою, ширина 100).
-- Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` у `tsconfig.json` (зараз це `src` і `games`). Інакше з'явиться помилка «was not found by the project service».
+- TypeScript: кореневий `tsconfig.json` охоплює лише хаб (`src`). Кожна гра має власний `games/<id>/tsconfig.json`, який розширює кореневий, задає свій `include` і аліас `@/`. Vite (`resolve.tsconfigPaths`) і ESLint (резолвер імпортів і project service) беруть найближчий до файлу tsconfig, тому `@/` у кожній грі вказує на її власну `src`. `npm run typecheck` (`scripts/typecheck.mjs`) запускає `tsc --noEmit` для хаба й для кожної гри.
+- Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` найближчого `tsconfig.json`. Інакше з'явиться помилка «was not found by the project service».
 - Інструменти збірки (`vite.config.mjs`, `scripts/*.mjs`) написано на JS (ESM), щоб не тягнути `@types/node` і окремий tsconfig. Для них у лінтері ввімкнено Node-глобали, а розширення `.mjs` в імпортах обов'язкові.
 - Кінці рядків завжди LF: це задано в `.gitattributes` і `.prettierrc.json`.
