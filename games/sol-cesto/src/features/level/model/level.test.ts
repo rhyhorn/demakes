@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { FIRST_LEVEL, REQUIRED_MOVES, useBoardStore } from '@/entities/board';
+import { CELL_COUNT, FIRST_LEVEL, REQUIRED_MOVES, useBoardStore } from '@/entities/board';
 import { useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { INITIAL_HERO_STATS, useHeroStore } from '@/entities/hero';
+import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 
 import { exitLevel, restartGame, startLevel } from './level';
 
@@ -12,6 +13,7 @@ describe('level', () => {
     useBoardStore.setState(useBoardStore.getInitialState());
     useEnemyStore.setState(useEnemyStore.getInitialState());
     useHeroStore.setState(useHeroStore.getInitialState());
+    usePickupStore.setState(usePickupStore.getInitialState());
     useGameStore.setState(useGameStore.getInitialState());
   });
 
@@ -19,6 +21,17 @@ describe('level', () => {
     startLevel(() => 0);
 
     expect(Object.keys(useEnemyStore.getState().enemies)).toEqual(['0', '4', '8', '12']);
+  });
+
+  it('fills every cell without an enemy with a pickup', () => {
+    startLevel(() => 0);
+    const { enemies } = useEnemyStore.getState();
+    const { pickups } = usePickupStore.getState();
+
+    Array.from({ length: CELL_COUNT }, (_, cell) => cell).forEach((cell) =>
+      expect(cell in enemies !== cell in pickups).toBe(true),
+    );
+    expect(pickups[1]).toBe(PICKUP_TYPE.strawberry);
   });
 
   it('keeps the enemies while the exit is locked', () => {

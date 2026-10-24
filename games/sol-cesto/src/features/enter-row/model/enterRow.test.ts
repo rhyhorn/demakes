@@ -4,6 +4,7 @@ import { getRowCells, useBoardStore } from '@/entities/board';
 import { createEnemy, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
+import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 
 import { enterRow, getEnemyDamage } from './enterRow';
 
@@ -35,6 +36,7 @@ describe('enterRow', () => {
     useHeroStore.setState(useHeroStore.getInitialState());
     useGameStore.setState(useGameStore.getInitialState());
     useEnemyStore.setState({ enemies: { 0: createEnemy('shifter') } });
+    usePickupStore.setState(usePickupStore.getInitialState());
   });
 
   it('moves the player and gives enemies a turn', () => {
@@ -96,6 +98,16 @@ describe('enterRow', () => {
     enterRow(1, () => 0);
 
     expect(useHeroStore.getState().health).toBe(5);
+  });
+
+  it('heals the hero with the strawberry on the entered cell and takes it', () => {
+    useHeroStore.setState({ health: 3 });
+    usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.strawberry, 5: PICKUP_TYPE.strawberry } });
+
+    enterRow(1, () => 0);
+
+    expect(useHeroStore.getState().health).toBe(4);
+    expect(usePickupStore.getState().pickups).toEqual({ 5: PICKUP_TYPE.strawberry });
   });
 
   it('gives enemies no turn when the row has no cells left', () => {

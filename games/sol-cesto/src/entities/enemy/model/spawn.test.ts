@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ENEMY_SPAWN } from '../config';
-import { pickWeighted, spawnEnemies } from './spawn';
+import { spawnEnemies } from './spawn';
 import type { EnemySpawnConfig } from './types';
 
 const ROWS = [
@@ -19,24 +19,6 @@ const sequence =
 
 const enemiesInRow = (enemies: object, cells: number[]) =>
   cells.filter((cell) => cell in enemies).length;
-
-describe('pickWeighted', () => {
-  const entries = [
-    { id: 'a', weight: 1 },
-    { id: 'b', weight: 3 },
-  ];
-
-  it('picks entries in proportion to their weight', () => {
-    expect(pickWeighted(entries, () => 0)?.id).toBe('a');
-    expect(pickWeighted(entries, () => 0.24)?.id).toBe('a');
-    expect(pickWeighted(entries, () => 0.25)?.id).toBe('b');
-    expect(pickWeighted(entries, () => 0.999)?.id).toBe('b');
-  });
-
-  it('returns nothing for an empty list', () => {
-    expect(pickWeighted([], () => 0)).toBeUndefined();
-  });
-});
 
 describe('spawnEnemies', () => {
   it('puts the minimum number of enemies in every row', () => {

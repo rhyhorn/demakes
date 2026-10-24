@@ -2,6 +2,7 @@ import { useBoardStore } from '@/entities/board';
 import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
+import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 
 /**
  * Damage the hero takes from the enemy: by how much the enemy's active attack is stronger than
@@ -14,7 +15,7 @@ export function getEnemyDamage(enemy: Enemy, hero: { attack: number; magic: numb
 
 /**
  * Moves the player into the row. If the move happened, an enemy on the player's new cell hits the
- * hero and disappears, then the rest of the enemies take their turn. When the hit takes the hero's
+ * hero and disappears, and a pickup there heals her and disappears too. Then the rest of the enemies take their turn. When the hit takes the hero's
  * health to 0, the game is over.
  */
 export function enterRow(row: number, random?: () => number) {
@@ -32,5 +33,11 @@ export function enterRow(row: number, random?: () => number) {
       useGameStore.getState().showScreen(GAME_SCREEN.gameOver);
   }
   removeEnemy(playerIndex);
+
+  const { pickups, removePickup } = usePickupStore.getState();
+  const pickup = pickups[playerIndex];
+  if (pickup) useHeroStore.getState().heal(PICKUP_TYPES[pickup].heal);
+  removePickup(playerIndex);
+
   advanceTurn();
 }

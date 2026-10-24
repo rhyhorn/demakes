@@ -35,6 +35,31 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
+  it('gets health back from healing', () => {
+    useHeroStore.setState({ health: 3 });
+
+    useHeroStore.getState().heal(1);
+
+    expect(useHeroStore.getState().health).toBe(4);
+  });
+
+  it('never heals above max health', () => {
+    useHeroStore.setState({ health: 4 });
+
+    useHeroStore.getState().heal(9);
+
+    expect(useHeroStore.getState().health).toBe(INITIAL_HERO_STATS.maxHealth);
+  });
+
+  it('ignores healing of 0 or less', () => {
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().heal(0);
+    useHeroStore.getState().heal(-1);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
+
   it('brings back the starting stats on reset', () => {
     useHeroStore.getState().takeDamage(3);
 
