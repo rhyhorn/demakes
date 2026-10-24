@@ -1,5 +1,6 @@
 import { isExitOpen, useBoardStore } from '@/entities/board';
 
+import { HeroPanel } from './HeroPanel';
 import styles from './RightSidebar.module.css';
 
 export function RightSidebar() {
@@ -10,7 +11,9 @@ export function RightSidebar() {
 
   return (
     <aside className={styles.sidebar} aria-label="Права панель">
-      <section className={styles.slot}>Героїня</section>
+      <section className={styles.slot} aria-label="Героїня">
+        <HeroPanel />
+      </section>
       <section className={`${styles.slot} flex-col gap-[calc(24*var(--px))]`} aria-label="Двері">
         <span
           className="text-[length:calc(64*var(--px))] font-bold text-[#e8e2d4]"
