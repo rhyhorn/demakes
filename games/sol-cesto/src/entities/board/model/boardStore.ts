@@ -8,6 +8,9 @@ export const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 /** Moves the player has to make on a level before the exit door unlocks. */
 export const REQUIRED_MOVES = 5;
 
+/** Number of the level a run starts on. */
+export const FIRST_LEVEL = 1;
+
 /** Placeholder content until rooms get real types: every cell is just a number. */
 export function createInitialCells(): number[] {
   return Array.from({ length: CELL_COUNT }, (_, index) => index + 1);
@@ -24,11 +27,15 @@ interface BoardState {
   moves: number;
   /** Moves needed to unlock the exit door on this level. */
   requiredMoves: number;
+  /** Number of the current level: grows by one every time the player leaves through the exit. */
+  level: number;
   setCell: (index: number, value: number) => void;
   /** Moves the player to a random not yet visited cell of the row. Does nothing if there is none. */
   enterRow: (row: number, random?: () => number) => void;
-  /** Leaves through the unlocked door and starts the level over. Does nothing while it's locked. */
+  /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */
   exitLevel: () => void;
+  /** Starts the run over from the first level, even while the exit is locked. */
+  reset: () => void;
 }
 
 /** The exit door opens once the player has made all the moves the level requires. */
@@ -48,6 +55,7 @@ const createLevelState = (): LevelState => ({
 
 export const useBoardStore = create<BoardState>()((set) => ({
   ...createLevelState(),
+  level: FIRST_LEVEL,
   setCell: (index, value) =>
     set((state) => ({
       cells: state.cells.map((cell, cellIndex) => (cellIndex === index ? value : cell)),
@@ -62,5 +70,7 @@ export const useBoardStore = create<BoardState>()((set) => ({
         moves: Math.min(state.moves + 1, state.requiredMoves),
       };
     }),
-  exitLevel: () => set((state) => (isExitOpen(state) ? createLevelState() : state)),
+  exitLevel: () =>
+    set((state) => (isExitOpen(state) ? { ...createLevelState(), level: state.level + 1 } : state)),
+  reset: () => set({ ...createLevelState(), level: FIRST_LEVEL }),
 }));

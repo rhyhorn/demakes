@@ -1,1 +1,1 @@
-export { exitLevel, startLevel } from './model/level';
+export { exitLevel, restartGame, startLevel } from './model/level';

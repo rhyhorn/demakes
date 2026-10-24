@@ -34,4 +34,13 @@ describe('useHeroStore', () => {
 
     expect(useHeroStore.getState()).toBe(before);
   });
+
+  it('brings back the starting stats on reset', () => {
+    useHeroStore.getState().takeDamage(3);
+
+    useHeroStore.getState().reset();
+    const { health, maxHealth, attack, magic } = useHeroStore.getState();
+
+    expect({ health, maxHealth, attack, magic }).toEqual(INITIAL_HERO_STATS);
+  });
 });

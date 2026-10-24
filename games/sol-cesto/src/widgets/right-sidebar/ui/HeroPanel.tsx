@@ -1,4 +1,5 @@
 import { useHeroStore } from '@/entities/hero';
+import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 
 export function HeroPanel() {
   const health = useHeroStore((state) => state.health);
@@ -7,7 +8,10 @@ export function HeroPanel() {
   const magic = useHeroStore((state) => state.magic);
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-between p-[calc(24*var(--px))]">
+    <div
+      className="flex h-full w-full flex-col items-center justify-between p-[calc(24*var(--px))]"
+      {...getHintHandlers({ kind: HINT_TARGET.hero })}
+    >
       <div
         className="relative flex size-[calc(200*var(--px))] items-center justify-center"
         aria-label={`Здоров'я: ${health} з ${maxHealth}`}

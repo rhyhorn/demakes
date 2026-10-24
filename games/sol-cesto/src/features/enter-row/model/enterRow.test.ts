@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { getRowCells, useBoardStore } from '@/entities/board';
 import { createEnemy, useEnemyStore } from '@/entities/enemy';
+import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 
 import { enterRow, getEnemyDamage } from './enterRow';
@@ -32,6 +33,7 @@ describe('enterRow', () => {
   beforeEach(() => {
     useBoardStore.setState(useBoardStore.getInitialState());
     useHeroStore.setState(useHeroStore.getInitialState());
+    useGameStore.setState(useGameStore.getInitialState());
     useEnemyStore.setState({ enemies: { 0: createEnemy('shifter') } });
   });
 
@@ -70,6 +72,24 @@ describe('enterRow', () => {
     enterRow(0, () => 0);
 
     expect(useHeroStore.getState().health).toBe(3);
+  });
+
+  it('ends the game when the hit takes health to 0', () => {
+    useHeroStore.setState({ health: 1 });
+    useEnemyStore.setState({ enemies: { 0: createEnemy('beast') } });
+
+    enterRow(0, () => 0);
+
+    expect(useHeroStore.getState().health).toBe(0);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.gameOver);
+  });
+
+  it('keeps the game going while the hero survives the hit', () => {
+    useEnemyStore.setState({ enemies: { 0: createEnemy('beast') } });
+
+    enterRow(0, () => 0);
+
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
   });
 
   it('leaves the hero unhurt on a cell without an enemy', () => {

@@ -8,6 +8,7 @@ import {
   useBoardStore,
 } from '@/entities/board';
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
+import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { useHeroStore } from '@/entities/hero';
 import { CellOutcomeBadge, enterRow, getCellOutcome } from '@/features/enter-row';
 import { Badge } from '@/shared/ui';
@@ -59,6 +60,7 @@ export function DungeonBoard() {
                   className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[length:calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36] ${
                     visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''
                   }`}
+                  {...getHintHandlers({ kind: HINT_TARGET.cell, index })}
                 >
                   <span className={canEnter ? HIDE_ON_HOVER : ''}>
                     {enemy && <EnemyAttackBadge enemy={enemy} />}

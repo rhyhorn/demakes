@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CELL_COUNT, isExitOpen, REQUIRED_MOVES, useBoardStore } from './boardStore';
+import { CELL_COUNT, FIRST_LEVEL, isExitOpen, REQUIRED_MOVES, useBoardStore } from './boardStore';
 import { getRowCells } from './rows';
 
 /** Always picks the first available cell. */
@@ -28,6 +28,10 @@ describe('useBoardStore', () => {
     expect(state.moves).toBe(0);
     expect(state.requiredMoves).toBe(REQUIRED_MOVES);
     expect(isExitOpen(state)).toBe(false);
+  });
+
+  it('starts the run on the first level', () => {
+    expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
   });
 
   it('sets the value of a single cell', () => {
@@ -116,12 +120,41 @@ describe('useBoardStore', () => {
       useBoardStore.getState().exitLevel();
 
       expect(useBoardStore.getState()).toBe(before);
+      expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
+    });
+
+    it('moves on to the next level after every exit', () => {
+      makeMoves(REQUIRED_MOVES);
+      useBoardStore.getState().exitLevel();
+      makeMoves(REQUIRED_MOVES);
+      useBoardStore.getState().exitLevel();
+
+      expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 2);
+    });
+
+    it('goes back to the first level on reset', () => {
+      useBoardStore.setState({ level: 7 });
+
+      useBoardStore.getState().reset();
+
+      expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
     });
 
     it('starts the level over after leaving through the open exit', () => {
       makeMoves(REQUIRED_MOVES);
 
       useBoardStore.getState().exitLevel();
+      const { moves, playerIndex, visited } = useBoardStore.getState();
+
+      expect(moves).toBe(0);
+      expect(playerIndex).toBeNull();
+      expect(visited).toEqual([]);
+    });
+
+    it('starts the level over on reset even while the exit is locked', () => {
+      makeMoves(1);
+
+      useBoardStore.getState().reset();
       const { moves, playerIndex, visited } = useBoardStore.getState();
 
       expect(moves).toBe(0);

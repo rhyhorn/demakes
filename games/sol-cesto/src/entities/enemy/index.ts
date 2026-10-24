@@ -1,5 +1,11 @@
-export { ENEMY_SPAWN, ENEMY_TYPES } from './config';
-export { advanceEnemy, createEnemy, ENEMY_BEHAVIORS, getActiveAttack } from './model/enemy';
+export { ENEMY_BEHAVIOR_DESCRIPTIONS, ENEMY_SPAWN, ENEMY_TYPES } from './config';
+export {
+  advanceEnemy,
+  createEnemy,
+  ENEMY_BEHAVIORS,
+  getActiveAttack,
+  getEnemyTraits,
+} from './model/enemy';
 export { useEnemyStore } from './model/enemyStore';
 export { type EnemyMap, spawnEnemies } from './model/spawn';
 export type {

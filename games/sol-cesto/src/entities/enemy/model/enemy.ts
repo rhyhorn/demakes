@@ -1,4 +1,4 @@
-import { ENEMY_TYPES } from '../config';
+import { ENEMY_BEHAVIOR_DESCRIPTIONS, ENEMY_TYPES } from '../config';
 import type { AttackKind, Enemy, EnemyBehaviorId, EnemyType } from './types';
 
 export function createEnemy(type: EnemyType): Enemy {
@@ -26,4 +26,9 @@ export function advanceEnemy(enemy: Enemy): Enemy {
     (current, behavior) => ENEMY_BEHAVIORS[behavior](current),
     enemy,
   );
+}
+
+/** Descriptions of the type's special behaviors, in config order. Empty for a static enemy. */
+export function getEnemyTraits(type: EnemyType): string[] {
+  return ENEMY_TYPES[type].behaviors.map((behavior) => ENEMY_BEHAVIOR_DESCRIPTIONS[behavior]);
 }

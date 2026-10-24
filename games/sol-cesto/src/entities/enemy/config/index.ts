@@ -1,4 +1,4 @@
-import type { EnemySpawnConfig, EnemyType, EnemyTypeConfig } from '../model/types';
+import type { EnemyBehaviorId, EnemySpawnConfig, EnemyType, EnemyTypeConfig } from '../model/types';
 
 export const ENEMY_TYPES: Record<EnemyType, EnemyTypeConfig> = {
   /** Static: always hits with its physical attack. */
@@ -13,6 +13,11 @@ export const ENEMY_TYPES: Record<EnemyType, EnemyTypeConfig> = {
     stats: { attack: 2, magic: 1, activeAttack: 'magic' },
     behaviors: ['switchAttackEachTurn'],
   },
+};
+
+/** What every behavior does, in the words shown to the player in the hint panel. */
+export const ENEMY_BEHAVIOR_DESCRIPTIONS: Record<EnemyBehaviorId, string> = {
+  switchAttackEachTurn: 'Щоходу змінює тип атаки: фізична ⇄ магічна.',
 };
 
 export const ENEMY_SPAWN: EnemySpawnConfig = {

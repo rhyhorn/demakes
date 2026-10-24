@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { ENEMY_TYPES } from '../config';
-import { advanceEnemy, createEnemy, getActiveAttack } from './enemy';
+import { ENEMY_BEHAVIOR_DESCRIPTIONS, ENEMY_TYPES } from '../config';
+import { advanceEnemy, createEnemy, getActiveAttack, getEnemyTraits } from './enemy';
 
 describe('createEnemy', () => {
   it('takes the stats of its type', () => {
@@ -34,5 +34,15 @@ describe('advanceEnemy', () => {
 
     expect(next.activeAttack).not.toBe(shifter.activeAttack);
     expect(advanceEnemy(next)).toEqual(shifter);
+  });
+});
+
+describe('getEnemyTraits', () => {
+  it('has nothing to tell about a static enemy', () => {
+    expect(getEnemyTraits('beast')).toEqual([]);
+  });
+
+  it('describes every behavior of the type', () => {
+    expect(getEnemyTraits('shifter')).toEqual([ENEMY_BEHAVIOR_DESCRIPTIONS.switchAttackEachTurn]);
   });
 });

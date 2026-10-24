@@ -1,5 +1,6 @@
 import { useBoardStore } from '@/entities/board';
 import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
+import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 
 /**
@@ -13,7 +14,8 @@ export function getEnemyDamage(enemy: Enemy, hero: { attack: number; magic: numb
 
 /**
  * Moves the player into the row. If the move happened, an enemy on the player's new cell hits the
- * hero and disappears, then the rest of the enemies take their turn.
+ * hero and disappears, then the rest of the enemies take their turn. When the hit takes the hero's
+ * health to 0, the game is over.
  */
 export function enterRow(row: number, random?: () => number) {
   const { visited } = useBoardStore.getState();
@@ -26,6 +28,8 @@ export function enterRow(row: number, random?: () => number) {
   if (enemy) {
     const hero = useHeroStore.getState();
     hero.takeDamage(getEnemyDamage(enemy, hero));
+    if (useHeroStore.getState().health === 0)
+      useGameStore.getState().showScreen(GAME_SCREEN.gameOver);
   }
   removeEnemy(playerIndex);
   advanceTurn();
