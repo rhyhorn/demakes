@@ -40,6 +40,8 @@ interface BoardState {
    * equally likely without it). Does nothing if there is none.
    */
   enterRow: (row: number, random?: () => number, weightOf?: CellWeight) => void;
+  /** Moves the player to the cell. Does nothing if she has already been there. */
+  enterCell: (index: number) => void;
   /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */
   exitLevel: () => void;
   /** Moves on to the next level whatever the state of the door, e.g. out of a room without moves. */
@@ -63,17 +65,30 @@ const createLevelState = (): LevelState => ({
   requiredMoves: REQUIRED_MOVES,
 });
 
-export const useBoardStore = create<BoardState>()((set) => ({
+/** Cell of the row `enterRow` would move the player to, or undefined if the row has no cells left. */
+export function pickRowCell(
+  row: number,
+  visited: readonly number[],
+  random: () => number = Math.random,
+  weightOf: CellWeight = EQUAL_WEIGHT,
+): number | undefined {
+  return pickWeighted(getWeightedCells(row, visited, weightOf), random)?.index;
+}
+
+export const useBoardStore = create<BoardState>()((set, get) => ({
   ...createLevelState(),
   level: FIRST_LEVEL,
   setCell: (index, value) =>
     set((state) => ({
       cells: state.cells.map((cell, cellIndex) => (cellIndex === index ? value : cell)),
     })),
-  enterRow: (row, random = Math.random, weightOf = EQUAL_WEIGHT) =>
+  enterRow: (row, random, weightOf) => {
+    const index = pickRowCell(row, get().visited, random, weightOf);
+    if (index !== undefined) get().enterCell(index);
+  },
+  enterCell: (index) =>
     set((state) => {
-      const index = pickWeighted(getWeightedCells(row, state.visited, weightOf), random)?.index;
-      if (index === undefined) return state;
+      if (state.visited.includes(index)) return state;
       return {
         playerIndex: index,
         visited: [...state.visited, index],

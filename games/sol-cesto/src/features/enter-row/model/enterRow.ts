@@ -1,4 +1,4 @@
-import { useBoardStore } from '@/entities/board';
+import { pickRowCell, useBoardStore } from '@/entities/board';
 import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
@@ -25,20 +25,28 @@ function applyPickupEffect(effect: PickupEffect, random: () => number) {
 }
 
 /**
- * Moves the player into the row: cells with enemies and pickups are more or less likely to be
- * picked as the chance modifiers say. If the move happened, an enemy on the player's new cell hits the
- * hero and disappears, and a pickup there gives her what it holds (health or gold) and disappears
- * too. Then the rest of the enemies take their turn. When the hit takes the hero's health to 0, the
- * game is over.
+ * Cell of the row the player is going to land on, or undefined if the row has no cells left. Cells
+ * with enemies and pickups are more or less likely to be picked as the chance modifiers say.
+ * Nothing changes yet: the board shows the hero walking there first and then calls `enterCell`.
  */
-export function enterRow(row: number, random: () => number = Math.random) {
-  const { visited } = useBoardStore.getState();
+export function pickEntryCell(row: number, random: () => number = Math.random): number | undefined {
   const weightOf = getCellWeights(
     useEnemyStore.getState().enemies,
     usePickupStore.getState().pickups,
     useModifierStore.getState().modifiers,
   );
-  useBoardStore.getState().enterRow(row, random, weightOf);
+  return pickRowCell(row, useBoardStore.getState().visited, random, weightOf);
+}
+
+/**
+ * Moves the player into the cell. If she hasn't been there yet, an enemy on it hits the hero and
+ * disappears, and a pickup there gives her what it holds (health or gold) and disappears too. Then
+ * the rest of the enemies take their turn. When the hit takes the hero's health to 0, the game is
+ * over.
+ */
+export function enterCell(index: number, random: () => number = Math.random) {
+  const { visited } = useBoardStore.getState();
+  useBoardStore.getState().enterCell(index);
   const { visited: visitedNow, playerIndex } = useBoardStore.getState();
   if (visitedNow === visited || playerIndex === null) return;
 
@@ -58,4 +66,10 @@ export function enterRow(row: number, random: () => number = Math.random) {
   removePickup(playerIndex);
 
   advanceTurn();
+}
+
+/** Moves the player into the row at once: `pickEntryCell`, then `enterCell`. */
+export function enterRow(row: number, random: () => number = Math.random) {
+  const index = pickEntryCell(row, random);
+  if (index !== undefined) enterCell(index, random);
 }

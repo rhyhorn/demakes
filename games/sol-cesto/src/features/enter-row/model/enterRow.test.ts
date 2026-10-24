@@ -7,7 +7,7 @@ import { useHeroStore } from '@/entities/hero';
 import { MODIFIER, useModifierStore } from '@/entities/modifier';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 
-import { enterRow, getEnemyDamage } from './enterRow';
+import { enterCell, enterRow, getEnemyDamage, pickEntryCell } from './enterRow';
 
 describe('getEnemyDamage', () => {
   const hero = { attack: 2, magic: 1 };
@@ -193,5 +193,48 @@ describe('enterRow', () => {
 
       expect(useBoardStore.getState().playerIndex).toBe(3);
     });
+  });
+});
+
+describe('pickEntryCell and enterCell', () => {
+  beforeEach(() => {
+    useBoardStore.setState(useBoardStore.getInitialState());
+    useHeroStore.setState(useHeroStore.getInitialState());
+    useGameStore.setState({ screen: GAME_SCREEN.dungeon });
+    useEnemyStore.setState({ enemies: { 1: createEnemy('beast') } });
+    usePickupStore.setState(usePickupStore.getInitialState());
+    useModifierStore.setState(useModifierStore.getInitialState());
+  });
+
+  it('picks the cell without changing anything yet', () => {
+    const before = useBoardStore.getState();
+
+    expect(pickEntryCell(0, () => 0.3)).toBe(1);
+    expect(useBoardStore.getState()).toBe(before);
+    expect(useEnemyStore.getState().enemies[1]).toBeDefined();
+  });
+
+  it('is undefined when the row has no cells left', () => {
+    useBoardStore.setState({ visited: getRowCells(0) });
+
+    expect(pickEntryCell(0)).toBeUndefined();
+  });
+
+  it('makes the move into the picked cell', () => {
+    enterCell(1);
+
+    expect(useBoardStore.getState().playerIndex).toBe(1);
+    expect(useHeroStore.getState().health).toBe(4);
+    expect(useEnemyStore.getState().enemies[1]).toBeUndefined();
+  });
+
+  it('does nothing in a visited cell', () => {
+    enterCell(1);
+    useEnemyStore.setState({ enemies: { 1: createEnemy('beast') } });
+
+    enterCell(1);
+
+    expect(useHeroStore.getState().health).toBe(4);
+    expect(useEnemyStore.getState().enemies[1]).toBeDefined();
   });
 });

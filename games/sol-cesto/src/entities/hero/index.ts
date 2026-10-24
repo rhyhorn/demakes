@@ -14,4 +14,5 @@ export {
   type InventorySlotState,
 } from './model/inventory';
 export { INITIAL_HERO_STATS, useHeroStore } from './model/heroStore';
+export { getHeroPortraitRect, heroPortraitRef } from './lib/heroPortrait';
 export { HeroFigure } from './ui/HeroFigure';

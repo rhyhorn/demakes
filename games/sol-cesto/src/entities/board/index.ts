@@ -4,6 +4,7 @@ export {
   FINAL_LEVEL,
   FIRST_LEVEL,
   isExitOpen,
+  pickRowCell,
   REQUIRED_MOVES,
   useBoardStore,
 } from './model/boardStore';

@@ -1,4 +1,4 @@
-import { HeroFigure, useHeroStore } from '@/entities/hero';
+import { HeroFigure, heroPortraitRef, useHeroStore } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 
 export function HeroPanel() {
@@ -30,7 +30,9 @@ export function HeroPanel() {
             {health}/{maxHealth}
           </span>
         </div>
-        <HeroFigure size={120} />
+        <span ref={heroPortraitRef} className="inline-flex">
+          <HeroFigure size={120} />
+        </span>
       </div>
       <div className="flex gap-[calc(40*var(--px))] text-[length:calc(48*var(--px))] font-bold">
         <span className="text-[#e05a5a]" aria-label={`Атака: ${attack}`}>

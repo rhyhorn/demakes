@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CELL_COUNT, FIRST_LEVEL, isExitOpen, REQUIRED_MOVES, useBoardStore } from './boardStore';
+import {
+  CELL_COUNT,
+  FIRST_LEVEL,
+  isExitOpen,
+  pickRowCell,
+  REQUIRED_MOVES,
+  useBoardStore,
+} from './boardStore';
 import { getRowCells } from './rows';
 
 /** Always picks the first available cell. */
@@ -91,6 +98,36 @@ describe('useBoardStore', () => {
       enterRow(0);
 
       expect(useBoardStore.getState()).toBe(before);
+    });
+  });
+
+  describe('enterCell', () => {
+    it('places the player on the cell', () => {
+      useBoardStore.getState().enterCell(9);
+
+      expect(useBoardStore.getState().playerIndex).toBe(9);
+      expect(useBoardStore.getState().visited).toEqual([9]);
+      expect(useBoardStore.getState().moves).toBe(1);
+    });
+
+    it('does nothing when the player has been to the cell', () => {
+      useBoardStore.getState().enterCell(9);
+      const before = useBoardStore.getState();
+
+      useBoardStore.getState().enterCell(9);
+
+      expect(useBoardStore.getState()).toBe(before);
+    });
+  });
+
+  describe('pickRowCell', () => {
+    it('picks a free cell of the row without moving the player', () => {
+      expect(pickRowCell(2, [8], pickFirst)).toBe(9);
+      expect(useBoardStore.getState().playerIndex).toBeNull();
+    });
+
+    it('is undefined when the row has no cells left', () => {
+      expect(pickRowCell(0, getRowCells(0))).toBeUndefined();
     });
   });
 

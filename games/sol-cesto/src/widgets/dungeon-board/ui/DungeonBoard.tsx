@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { type CSSProperties, useRef, useState } from 'react';
 
 import {
   BOARD_SIZE,
@@ -12,9 +12,16 @@ import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { HeroFigure, useHeroStore } from '@/entities/hero';
 import { useModifierStore } from '@/entities/modifier';
 import { PickupBadge, PickupFigure, usePickupStore } from '@/entities/pickup';
-import { CellOutcomeBadge, enterRow, getCellOutcome, getCellWeights } from '@/features/enter-row';
+import {
+  CellOutcomeBadge,
+  enterCell,
+  getCellOutcome,
+  getCellWeights,
+  pickEntryCell,
+} from '@/features/enter-row';
 import { Badge } from '@/shared/ui';
 
+import { useHeroMoveAnimation } from '../lib/useHeroMoveAnimation';
 import styles from './DungeonBoard.module.css';
 
 const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => ({
@@ -41,6 +48,16 @@ export function DungeonBoard() {
   const magic = useHeroStore((state) => state.magic);
   const modifiers = useModifierStore((state) => state.modifiers);
   const weightOf = getCellWeights(enemies, pickups, modifiers);
+  const heroRef = useRef<HTMLSpanElement>(null);
+  const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Cell the hero is walking to. The move itself happens once she gets there.
+  const [destination, setDestination] = useState<number | null>(null);
+  const heroIndex = destination ?? playerIndex;
+  useHeroMoveAnimation(heroIndex, heroRef, cellRefs, () => {
+    if (destination === null) return;
+    enterCell(destination);
+    setDestination(null);
+  });
 
   return (
     <main className={styles.area}>
@@ -50,9 +67,9 @@ export function DungeonBoard() {
             key={row}
             type="button"
             className="group col-span-full grid cursor-pointer grid-cols-subgrid disabled:cursor-default"
-            disabled={getAvailableCells(row, visited).length === 0}
+            disabled={destination !== null || getAvailableCells(row, visited).length === 0}
             aria-label={`Рядок ${row + 1}`}
-            onClick={() => enterRow(row)}
+            onClick={() => setDestination(pickEntryCell(row) ?? null)}
           >
             {cellIndices.map((index) => {
               const chance = getCellChance(index, visited, weightOf);
@@ -63,6 +80,9 @@ export function DungeonBoard() {
               return (
                 <div
                   key={index}
+                  ref={(element) => {
+                    cellRefs.current[index] = element;
+                  }}
                   className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36] ${
                     visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''
                   }`}
@@ -92,7 +112,16 @@ export function DungeonBoard() {
                       </Badge>
                     </span>
                   )}
-                  {index === playerIndex && <HeroFigure size={90} />}
+                  {index === heroIndex && (
+                    // Over whatever is in the cell she walks to, above the other cells she walks
+                    // over, and doesn't steal their hover.
+                    <span
+                      ref={heroRef}
+                      className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+                    >
+                      <HeroFigure size={90} />
+                    </span>
+                  )}
                 </div>
               );
             })}
