@@ -5,6 +5,9 @@ import { getAvailableCells, pickRandom } from './rows';
 
 export const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 
+/** Moves the player has to make on a level before the exit door unlocks. */
+export const REQUIRED_MOVES = 5;
+
 /** Placeholder content until rooms get real types: every cell is just a number. */
 export function createInitialCells(): number[] {
   return Array.from({ length: CELL_COUNT }, (_, index) => index + 1);
@@ -17,15 +20,34 @@ interface BoardState {
   playerIndex: number | null;
   /** Cells the player has been to, including the current one. They can't be entered again. */
   visited: number[];
+  /** Moves made on this level, up to `requiredMoves`. */
+  moves: number;
+  /** Moves needed to unlock the exit door on this level. */
+  requiredMoves: number;
   setCell: (index: number, value: number) => void;
   /** Moves the player to a random not yet visited cell of the row. Does nothing if there is none. */
   enterRow: (row: number, random?: () => number) => void;
+  /** Leaves through the unlocked door and starts the level over. Does nothing while it's locked. */
+  exitLevel: () => void;
 }
 
-export const useBoardStore = create<BoardState>()((set) => ({
+/** The exit door opens once the player has made all the moves the level requires. */
+export function isExitOpen({ moves, requiredMoves }: Pick<BoardState, 'moves' | 'requiredMoves'>) {
+  return moves >= requiredMoves;
+}
+
+type LevelState = Pick<BoardState, 'cells' | 'playerIndex' | 'visited' | 'moves' | 'requiredMoves'>;
+
+const createLevelState = (): LevelState => ({
   cells: createInitialCells(),
   playerIndex: null,
   visited: [],
+  moves: 0,
+  requiredMoves: REQUIRED_MOVES,
+});
+
+export const useBoardStore = create<BoardState>()((set) => ({
+  ...createLevelState(),
   setCell: (index, value) =>
     set((state) => ({
       cells: state.cells.map((cell, cellIndex) => (cellIndex === index ? value : cell)),
@@ -34,6 +56,11 @@ export const useBoardStore = create<BoardState>()((set) => ({
     set((state) => {
       const index = pickRandom(getAvailableCells(row, state.visited), random);
       if (index === undefined) return state;
-      return { playerIndex: index, visited: [...state.visited, index] };
+      return {
+        playerIndex: index,
+        visited: [...state.visited, index],
+        moves: Math.min(state.moves + 1, state.requiredMoves),
+      };
     }),
+  exitLevel: () => set((state) => (isExitOpen(state) ? createLevelState() : state)),
 }));
