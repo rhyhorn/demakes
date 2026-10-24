@@ -12,7 +12,11 @@ export default defineConfig([
   plugins.stylistic,
   plugins.importX,
   plugins.typescriptEslint,
+  plugins.react,
+  plugins.reactHooks,
+  plugins.reactA11y,
   ...configs.base.all,
+  ...configs.react.all,
   {
     languageOptions: {
       globals: globals.browser,
@@ -29,6 +33,16 @@ export default defineConfig([
       'import-x/extensions': ['error', 'ignorePackages'],
       'import-x/no-extraneous-dependencies': ['error', { devDependencies: true }],
       'no-console': 'off',
+    },
+  },
+  {
+    // Feature-Sliced Design: slices expose named exports through their index.ts public API.
+    files: ['games/**/*.{ts,tsx}'],
+    rules: {
+      'import-x/prefer-default-export': 'off',
+      // New JSX transform ("jsx": "react-jsx"): no need to import React.
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-react': 'off',
     },
   },
   {

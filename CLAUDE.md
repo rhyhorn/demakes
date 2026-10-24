@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Структура
 
-Це набір незалежних браузерних ігор на TypeScript + Vite, без UI-фреймворку. Технічно це один Vite-проєкт із кількома сторінками:
+Це набір незалежних браузерних ігор на TypeScript + Vite. Компоненти ігор пишуться на React 19 (`.tsx`). Хаб (`src/`) — звичайний TypeScript без React. Технічно це один Vite-проєкт із кількома сторінками:
 
 - `index.html` + `src/` — головна сторінка (хаб) зі списком посилань на ігри. Список ігор задано в `src/main.ts`.
 - `games/<id>/index.html` + `games/<id>/src/` — кожна гра є окремим SPA, доступним за адресою `/games/<id>/`.
@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ігри та хаб не мають спільних файлів. Імпорти між `games/a` і `games/b`, а також між `src/` і `games/` заборонені правилом `import-x/no-restricted-paths`, тож лінтер на них упаде. Спільного коду поки немає. Якщо він знадобиться, це окреме рішення, яке треба узгодити з користувачем.
 
-Щоб додати гру, створи `games/<id>/index.html` (скрипт підключай відносним шляхом `./src/main.ts`) і `games/<id>/src/main.ts`, а потім додай посилання в `src/main.ts`. Збірка й лінтер підхоплять гру автоматично. За бажанням додай у `package.json` скрипт `dev:<id>`.
+Щоб додати гру, створи `games/<id>/index.html` (точку входу підключай відносним шляхом, наприклад `./src/app/index.tsx`) і саму точку входу, а потім додай посилання в `src/main.ts`. Збірка й лінтер підхоплять гру автоматично. За бажанням додай у `package.json` скрипт `dev:<id>`.
 
 Для роутингу всередині гри використовуй хеш (`#/...`). Інакше dev-сервер і статичний хостинг не знайдуть сторінку за глибоким посиланням.
 
@@ -30,6 +30,17 @@ Roguelike, зроблений за референсним скріншотом. 
   - **полуниця**: лікування.
 - Ліва панель: портрет або повідомлення, ряд зубів (ймовірно, лічильник ресурсу), інвентар предметів (зілля, зброя) і книга модифікаторів у відсотках (атака, магія, HP, скрині, шипи тощо).
 - Права панель: героїня зі здоров'ям (серце `5/5`), лічильник `0/4`, кольорові ключі або руни, власні атака й магія, двері під замком `0/5` та жаба-скарбничка з монетами.
+
+Код у `games/soulcasto/src/` організовано за Feature-Sliced Design:
+
+- `app/` — `index.tsx` (на нього посилається `index.html`) монтує `<App />` у `#app` через `createRoot` у `StrictMode`. `App.tsx` — кореневий компонент.
+- `pages/<slice>/` — сторінки. Зараз є одна, `home` (`HomePage`), з випадковою заглушкою.
+- `shared/` — код без бізнес-логіки, наприклад `shared/config`.
+- Шари `widgets/`, `features/` та `entities/` поки не створено. Додавай їх, коли з'явиться відповідний код.
+
+Правила FSD: шар може імпортувати лише з шарів, нижчих за нього (`app → pages → widgets → features → entities → shared`). Зрізи одного шару не імпортують один одного. Ззовні до зрізу звертаються лише через його `index.ts` (публічний API з іменованими експортами), а не напряму до `ui/...`. Лінтер ці правила поки не перевіряє, тож дотримуйся їх сам. Імпорти поки відносні, без аліасів на кшталт `@/`.
+
+React-компоненти — це функції з іменованим експортом. Компонент лежить у `ui/<Name>.tsx` свого зрізу.
 
 ## Команди
 
@@ -49,13 +60,14 @@ npx vitest run path/to/file.test.ts      # один файл тестів
 npx vitest run -t "назва тесту"          # тести за назвою
 ```
 
-Тести Vitest шукає за шаблоном `**/*.{test,spec}.ts`. Тестів поки немає, тому `npm test` без них завершиться помилкою; щоб цього уникнути, додай `--passWithNoTests`.
+Тести Vitest шукає за шаблоном `**/*.{test,spec}.{ts,tsx}`. Тестів поки немає, тому `npm test` без них завершиться помилкою; щоб цього уникнути, додай `--passWithNoTests`.
 
 ## Технічні нотатки
 
 - `vite.config.mjs` має два режими. Без змінної `GAME` коренем є корінь репозиторію, і збираються всі сторінки. З `GAME=<id>` (її виставляє `scripts/game.mjs` через Vite API) коренем стає `games/<id>`, тож гра працює як самостійний додаток за адресою `/`.
-- Версії: TypeScript 6.0, Vite 8, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
-- Лінтинг: `eslint.config.mjs` (flat config) підключає `eslint-config-airbnb-extended` (`configs.base.all`, тобто Airbnb для JS і TS). Оригінальний `eslint-config-airbnb-base` з ESLint 9 не працює. Останнім у конфігу має стояти `eslint-config-prettier`: він вимикає стильові правила, а форматування повністю на Prettier (`.prettierrc.json`: одинарні лапки, крапки з комою, ширина 100).
+- `@vitejs/plugin-react` підключено в обох режимах, тож Fast Refresh працює і в `npm run dev`, і в `npm run game`.
+- Версії: TypeScript 6.0, React 19, Vite 8, Vitest 5, ESLint 9, Node 24. Не оновлюй TypeScript до 7 і ESLint до 10: `typescript-eslint` підтримує лише TS < 6.1, а `eslint-config-airbnb-extended` — лише ESLint 9.
+- Лінтинг: `eslint.config.mjs` (flat config) підключає `eslint-config-airbnb-extended` (`configs.base.all` + `configs.react.all`, тобто Airbnb для JS, TS і React, включно з hooks та a11y). Для `games/**` вимкнено `import-x/prefer-default-export` (FSD використовує іменовані експорти), а також `react/react-in-jsx-scope` і `react/jsx-uses-react`, бо `"jsx": "react-jsx"` не вимагає імпортувати React. Оригінальний `eslint-config-airbnb-base` з ESLint 9 не працює. Останнім у конфігу має стояти `eslint-config-prettier`: він вимикає стильові правила, а форматування повністю на Prettier (`.prettierrc.json`: одинарні лапки, крапки з комою, ширина 100).
 - Лінтер працює з type-aware правилами, тому кожен `.ts`-файл має входити до `include` у `tsconfig.json` (зараз це `src` і `games`). Інакше з'явиться помилка «was not found by the project service».
 - Інструменти збірки (`vite.config.mjs`, `scripts/*.mjs`) написано на JS (ESM), щоб не тягнути `@types/node` і окремий tsconfig. Для них у лінтері ввімкнено Node-глобали, а розширення `.mjs` в імпортах обов'язкові.
 - Кінці рядків завжди LF: це задано в `.gitattributes` і `.prettierrc.json`.
