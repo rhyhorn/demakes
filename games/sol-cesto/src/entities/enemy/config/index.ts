@@ -25,6 +25,12 @@ export const ENEMY_TYPES: Record<EnemyType, EnemyTypeConfig> = {
     stats: { attack: 4, magic: 0, activeAttack: 'attack' },
     behaviors: [],
   },
+  /** Static and deadly: its physical attack kills a fresh hero in one hit, appears rarely. */
+  shark: {
+    name: 'Акула',
+    stats: { attack: 7, magic: 0, activeAttack: 'attack' },
+    behaviors: [],
+  },
 };
 
 /** What every behavior does, in the words shown to the player in the hint panel. */
@@ -38,5 +44,6 @@ export const ENEMY_SPAWN: EnemySpawnConfig = {
     { type: 'beast', weight: 2 },
     { type: 'shifter', weight: 2 },
     { type: 'ogre', weight: 1 },
+    { type: 'shark', weight: 1 },
   ],
 };

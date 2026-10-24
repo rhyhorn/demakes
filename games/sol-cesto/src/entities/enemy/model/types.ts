@@ -8,7 +8,7 @@ export const RANDOM_ATTACK = 'random';
 export type StartAttack = AttackKind | typeof RANDOM_ATTACK;
 
 /** Every enemy type the game knows. Add a type here and describe it in `ENEMY_TYPES`. */
-export type EnemyType = 'beast' | 'shifter' | 'ogre';
+export type EnemyType = 'beast' | 'shifter' | 'ogre' | 'shark';
 
 /** Names of the turn behaviors from `ENEMY_BEHAVIORS`. */
 export type EnemyBehaviorId = 'switchAttackEachTurn';

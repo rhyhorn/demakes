@@ -9,6 +9,7 @@ const ENEMY_SPRITES: Record<EnemyType, { emoji: string; tintByAttack: boolean }>
   beast: { emoji: '🐺', tintByAttack: false },
   shifter: { emoji: '👻', tintByAttack: true },
   ogre: { emoji: '👹', tintByAttack: false },
+  shark: { emoji: '🦈', tintByAttack: false },
 };
 
 /** Recolors a white emoji: red for the physical attack, blue for the magic one. */

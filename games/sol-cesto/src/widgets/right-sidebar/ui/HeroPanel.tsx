@@ -14,11 +14,11 @@ export function HeroPanel() {
     >
       <div className="flex w-full items-center justify-between">
         <div
-          className="relative flex size-[calc(170*var(--px))] items-center justify-center"
+          className="relative flex size-[calc(150*var(--px))] items-center justify-center"
           aria-label={`Здоров'я: ${health} з ${maxHealth}`}
         >
           <span
-            className="absolute inset-0 flex items-center justify-center text-[length:calc(190*var(--px))] leading-none text-[#c8323c]"
+            className="absolute inset-0 flex items-center justify-center text-[length:calc(170*var(--px))] leading-none text-[#c8323c]"
             aria-hidden="true"
           >
             ♥
@@ -30,7 +30,7 @@ export function HeroPanel() {
             {health}/{maxHealth}
           </span>
         </div>
-        <HeroFigure size={130} />
+        <HeroFigure size={120} />
       </div>
       <div className="flex gap-[calc(40*var(--px))] text-[length:calc(48*var(--px))] font-bold">
         <span className="text-[#e05a5a]" aria-label={`Атака: ${attack}`}>

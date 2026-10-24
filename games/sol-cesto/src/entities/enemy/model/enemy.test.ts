@@ -18,6 +18,16 @@ describe('createEnemy', () => {
     expect(createEnemy('ogre').attack).toBeGreaterThan(createEnemy('beast').attack);
   });
 
+  it('makes a shark hit harder than an ogre', () => {
+    expect(createEnemy('shark')).toEqual({
+      type: 'shark',
+      attack: 7,
+      magic: 0,
+      activeAttack: 'attack',
+    });
+    expect(createEnemy('shark').attack).toBeGreaterThan(createEnemy('ogre').attack);
+  });
+
   it('starts a shifter with a random attack', () => {
     expect(createEnemy('shifter', () => 0).activeAttack).toBe('attack');
     expect(createEnemy('shifter', () => 0.999).activeAttack).toBe('magic');
@@ -74,6 +84,7 @@ describe('getEnemyTraits', () => {
   it('has nothing to tell about a static enemy', () => {
     expect(getEnemyTraits('beast')).toEqual([]);
     expect(getEnemyTraits('ogre')).toEqual([]);
+    expect(getEnemyTraits('shark')).toEqual([]);
   });
 
   it('describes every behavior of the type', () => {

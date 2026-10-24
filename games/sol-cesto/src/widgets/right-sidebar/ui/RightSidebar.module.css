@@ -1,6 +1,8 @@
 .sidebar {
   display: grid;
   grid-template-rows: 440fr 390fr 250fr;
+  /* Keeps wide content from stretching the column past the scene's edge. */
+  grid-template-columns: minmax(0, 1fr);
   gap: calc(6 * var(--px));
   height: 100%;
   padding: calc(6 * var(--px));
@@ -9,6 +11,8 @@
 
 .slot {
   display: flex;
+  min-width: 0;
+  overflow: hidden;
   align-items: center;
   justify-content: center;
   border: calc(3 * var(--px)) solid #23292f;
