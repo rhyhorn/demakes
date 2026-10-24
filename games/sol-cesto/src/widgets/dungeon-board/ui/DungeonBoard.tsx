@@ -7,6 +7,8 @@ import {
   getRowCells,
   useBoardStore,
 } from '@/entities/board';
+import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
+import { enterRow } from '@/features/enter-row';
 
 import styles from './DungeonBoard.module.css';
 
@@ -21,7 +23,7 @@ export function DungeonBoard() {
   const cells = useBoardStore((state) => state.cells);
   const playerIndex = useBoardStore((state) => state.playerIndex);
   const visited = useBoardStore((state) => state.visited);
-  const enterRow = useBoardStore((state) => state.enterRow);
+  const enemies = useEnemyStore((state) => state.enemies);
 
   return (
     <main className={styles.area}>
@@ -37,6 +39,7 @@ export function DungeonBoard() {
           >
             {cellIndices.map((index) => {
               const chance = getCellChance(index, visited);
+              const enemy = enemies[index];
 
               return (
                 <div
@@ -45,16 +48,23 @@ export function DungeonBoard() {
                     visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''
                   }`}
                 >
-                  <span className="absolute top-[calc(16*var(--px))] left-[calc(20*var(--px))] text-[length:calc(40*var(--px))] font-bold text-[#8a8f96]">
-                    {cells[index]}
-                  </span>
+                  {enemy ? (
+                    <>
+                      <EnemyAttackBadge enemy={enemy} />
+                      <EnemyFigure enemy={enemy} />
+                    </>
+                  ) : (
+                    <span className="absolute top-[calc(16*var(--px))] left-[calc(20*var(--px))] text-[length:calc(40*var(--px))] font-bold text-[#8a8f96]">
+                      {cells[index]}
+                    </span>
+                  )}
                   {chance > 0 && (
                     <span className="absolute top-[calc(16*var(--px))] right-[calc(20*var(--px))] rounded-full bg-[#1a1d21] px-[calc(14*var(--px))] text-[length:calc(32*var(--px))] font-bold text-[#e8e2d4]">
                       {Math.round(chance * 100)}%
                     </span>
                   )}
                   {index === playerIndex && (
-                    <span className="size-[calc(110*var(--px))] rounded-full border-[length:calc(6*var(--px))] border-[#f4e3c1] bg-[#c8323c]" />
+                    <span className="absolute size-[calc(110*var(--px))] rounded-full border-[length:calc(6*var(--px))] border-[#f4e3c1] bg-[#c8323c]" />
                   )}
                 </div>
               );
