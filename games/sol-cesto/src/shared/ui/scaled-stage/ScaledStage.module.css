@@ -1,0 +1,18 @@
+.viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  container-type: size;
+}
+
+/* Fits the largest box with the given aspect ratio into the viewport. */
+.stage {
+  position: relative;
+  width: min(100cqw, 100cqh * var(--stage-ratio));
+  aspect-ratio: var(--stage-ratio);
+  overflow: hidden;
+  container-type: size;
+}

@@ -1,0 +1,19 @@
+.sidebar {
+  display: grid;
+  grid-template-rows: 290fr 140fr 425fr 225fr;
+  gap: calc(6 * var(--px));
+  height: 100%;
+  padding: calc(6 * var(--px));
+  background: #3b4652;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: calc(3 * var(--px)) solid #23292f;
+  border-radius: calc(12 * var(--px));
+  background: #1a1d21;
+  color: #8a8f96;
+  font-size: calc(22 * var(--px));
+}

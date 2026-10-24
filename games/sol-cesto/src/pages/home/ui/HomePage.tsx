@@ -1,18 +1,18 @@
-import { useState } from 'react';
-
-import { GAME_TITLE, PLACEHOLDER_LINES } from '../../../shared/config';
-
-function pickPlaceholder() {
-  return PLACEHOLDER_LINES[Math.floor(Math.random() * PLACEHOLDER_LINES.length)] ?? '';
-}
+import { SCENE_HEIGHT, SCENE_WIDTH } from '../../../shared/config';
+import { ScaledStage } from '../../../shared/ui';
+import { DungeonBoard } from '../../../widgets/dungeon-board';
+import { LeftSidebar } from '../../../widgets/left-sidebar';
+import { RightSidebar } from '../../../widgets/right-sidebar';
+import styles from './HomePage.module.css';
 
 export function HomePage() {
-  const [placeholder] = useState(pickPlaceholder);
-
   return (
-    <main>
-      <h1>{GAME_TITLE}</h1>
-      <p>{placeholder}</p>
-    </main>
+    <ScaledStage width={SCENE_WIDTH} height={SCENE_HEIGHT}>
+      <div className={styles.scene}>
+        <LeftSidebar />
+        <DungeonBoard />
+        <RightSidebar />
+      </div>
+    </ScaledStage>
   );
 }
