@@ -1,3 +1,5 @@
+import { Badge } from '@/shared/ui';
+
 import { getActiveAttack } from '../model/enemy';
 import type { AttackKind, Enemy } from '../model/types';
 
@@ -12,14 +14,11 @@ export function EnemyAttackBadge({ enemy }: { enemy: Enemy }) {
   const { icon, label, color } = ATTACK_VIEW[kind];
 
   return (
-    <span
-      className="absolute top-[calc(16*var(--px))] left-[calc(20*var(--px))] flex items-center gap-[calc(8*var(--px))] rounded-full bg-[#5c5f63] px-[calc(16*var(--px))] text-[length:calc(40*var(--px))] font-bold text-[#e8e2d4]"
-      aria-label={`${label}: ${value}`}
-    >
+    <Badge corner="left" label={`${label}: ${value}`} className="bg-[#5c5f63] text-[#e8e2d4]">
       <span className={color} aria-hidden="true">
         {icon}
       </span>
       <span aria-hidden="true">{value}</span>
-    </span>
+    </Badge>
   );
 }

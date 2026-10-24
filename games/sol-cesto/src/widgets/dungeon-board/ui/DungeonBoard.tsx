@@ -8,7 +8,9 @@ import {
   useBoardStore,
 } from '@/entities/board';
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
-import { enterRow } from '@/features/enter-row';
+import { useHeroStore } from '@/entities/hero';
+import { CellOutcomeBadge, enterRow, getCellOutcome } from '@/features/enter-row';
+import { Badge } from '@/shared/ui';
 
 import styles from './DungeonBoard.module.css';
 
@@ -19,11 +21,20 @@ const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => ({
 
 const boardStyle = { '--board-size': BOARD_SIZE } as CSSProperties;
 
+/**
+ * While the player hovers (or focuses) a row, its cells swap the enemy attack or the cell number for
+ * the outcome of a move and show the chance, as on `design/reference2.png`.
+ */
+const SHOW_ON_HOVER = 'hidden group-enabled:group-hover:contents group-focus-visible:contents';
+const HIDE_ON_HOVER = 'group-enabled:group-hover:hidden group-focus-visible:hidden';
+
 export function DungeonBoard() {
-  const cells = useBoardStore((state) => state.cells);
   const playerIndex = useBoardStore((state) => state.playerIndex);
   const visited = useBoardStore((state) => state.visited);
   const enemies = useEnemyStore((state) => state.enemies);
+  const health = useHeroStore((state) => state.health);
+  const attack = useHeroStore((state) => state.attack);
+  const magic = useHeroStore((state) => state.magic);
 
   return (
     <main className={styles.area}>
@@ -40,27 +51,35 @@ export function DungeonBoard() {
             {cellIndices.map((index) => {
               const chance = getCellChance(index, visited);
               const enemy = enemies[index];
+              const canEnter = chance > 0;
 
               return (
                 <div
                   key={index}
-                  className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[length:calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] group-enabled:group-hover:border-[#77776c] ${
+                  className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[length:calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36] ${
                     visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''
                   }`}
                 >
-                  {enemy ? (
-                    <>
-                      <EnemyAttackBadge enemy={enemy} />
-                      <EnemyFigure enemy={enemy} />
-                    </>
-                  ) : (
-                    <span className="absolute top-[calc(16*var(--px))] left-[calc(20*var(--px))] text-[length:calc(40*var(--px))] font-bold text-[#8a8f96]">
-                      {cells[index]}
-                    </span>
-                  )}
-                  {chance > 0 && (
-                    <span className="absolute top-[calc(16*var(--px))] right-[calc(20*var(--px))] rounded-full bg-[#1a1d21] px-[calc(14*var(--px))] text-[length:calc(32*var(--px))] font-bold text-[#e8e2d4]">
-                      {Math.round(chance * 100)}%
+                  <span className={canEnter ? HIDE_ON_HOVER : ''}>
+                    {enemy && <EnemyAttackBadge enemy={enemy} />}
+                  </span>
+                  {enemy && <EnemyFigure enemy={enemy} />}
+                  {canEnter && (
+                    <span className={SHOW_ON_HOVER}>
+                      <CellOutcomeBadge
+                        outcome={getCellOutcome(enemy, {
+                          health,
+                          attack,
+                          magic,
+                        })}
+                      />
+                      <Badge
+                        corner="right"
+                        label={`Шанс: ${Math.round(chance * 100)}%`}
+                        className="bg-[#1a1d21] text-[#e8e2d4]"
+                      >
+                        <span aria-hidden="true">{Math.round(chance * 100)}%</span>
+                      </Badge>
                     </span>
                   )}
                   {index === playerIndex && (

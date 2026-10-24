@@ -16,6 +16,12 @@ interface HeroState {
   attack: number;
   /** Magic attack. */
   magic: number;
+  /** Lowers health by `amount`, but never below 0. Does nothing for 0 or less. */
+  takeDamage: (amount: number) => void;
 }
 
-export const useHeroStore = create<HeroState>()(() => ({ ...INITIAL_HERO_STATS }));
+export const useHeroStore = create<HeroState>()((set) => ({
+  ...INITIAL_HERO_STATS,
+  takeDamage: (amount) =>
+    set((state) => (amount > 0 ? { health: Math.max(0, state.health - amount) } : state)),
+}));

@@ -13,4 +13,25 @@ describe('useHeroStore', () => {
     expect({ health, maxHealth, attack, magic }).toEqual(INITIAL_HERO_STATS);
     expect(health).toBe(maxHealth);
   });
+
+  it('loses health from damage', () => {
+    useHeroStore.getState().takeDamage(2);
+
+    expect(useHeroStore.getState().health).toBe(3);
+  });
+
+  it('never drops health below 0', () => {
+    useHeroStore.getState().takeDamage(99);
+
+    expect(useHeroStore.getState().health).toBe(0);
+  });
+
+  it('ignores damage of 0 or less', () => {
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().takeDamage(0);
+    useHeroStore.getState().takeDamage(-1);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
 });
