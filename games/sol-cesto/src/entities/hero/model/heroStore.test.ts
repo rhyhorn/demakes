@@ -7,11 +7,12 @@ describe('useHeroStore', () => {
     useHeroStore.setState(useHeroStore.getInitialState());
   });
 
-  it('starts with full health and base attack and magic', () => {
-    const { health, maxHealth, attack, magic } = useHeroStore.getState();
+  it('starts with full health, base attack and magic and no gold', () => {
+    const { health, maxHealth, attack, magic, gold } = useHeroStore.getState();
 
-    expect({ health, maxHealth, attack, magic }).toEqual(INITIAL_HERO_STATS);
+    expect({ health, maxHealth, attack, magic, gold }).toEqual(INITIAL_HERO_STATS);
     expect(health).toBe(maxHealth);
+    expect(gold).toBe(0);
   });
 
   it('loses health from damage', () => {
@@ -64,8 +65,8 @@ describe('useHeroStore', () => {
     useHeroStore.getState().takeDamage(3);
 
     useHeroStore.getState().reset();
-    const { health, maxHealth, attack, magic } = useHeroStore.getState();
+    const { health, maxHealth, attack, magic, gold } = useHeroStore.getState();
 
-    expect({ health, maxHealth, attack, magic }).toEqual(INITIAL_HERO_STATS);
+    expect({ health, maxHealth, attack, magic, gold }).toEqual(INITIAL_HERO_STATS);
   });
 });

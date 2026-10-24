@@ -2,6 +2,7 @@ import { isExitOpen, useBoardStore } from '@/entities/board';
 import { exitLevel } from '@/features/level';
 
 import { HeroPanel } from './HeroPanel';
+import { PiggyBankPanel } from './PiggyBankPanel';
 import styles from './RightSidebar.module.css';
 
 export function RightSidebar() {
@@ -30,7 +31,9 @@ export function RightSidebar() {
           Вийти
         </button>
       </section>
-      <section className={styles.slot}>Скарбничка</section>
+      <section className={styles.slot} aria-label="Скарбничка">
+        <PiggyBankPanel />
+      </section>
     </aside>
   );
 }

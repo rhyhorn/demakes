@@ -6,6 +6,7 @@ export const INITIAL_HERO_STATS = {
   maxHealth: 5,
   attack: 2,
   magic: 1,
+  gold: 0,
 } as const;
 
 interface HeroState {
@@ -16,6 +17,8 @@ interface HeroState {
   attack: number;
   /** Magic attack. */
   magic: number;
+  /** Gold in the piggy bank. */
+  gold: number;
   /** Lowers health by `amount`, but never below 0. Does nothing for 0 or less. */
   takeDamage: (amount: number) => void;
   /** Raises health by `amount`, but never above `maxHealth`. Does nothing for 0 or less. */
