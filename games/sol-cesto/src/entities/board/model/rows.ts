@@ -18,13 +18,21 @@ export type CellWeight = (index: number) => number;
 
 export const EQUAL_WEIGHT: CellWeight = () => 1;
 
-/** Free cells of the row with their weights, ready for `pickWeighted`. */
+/**
+ * Free cells of the row with their weights, ready for `pickWeighted`. Negative weights count as 0,
+ * and if no free cell weighs anything, they are all equally likely so the row can still be entered.
+ */
 export function getWeightedCells(
   row: number,
   visited: readonly number[],
   weightOf: CellWeight = EQUAL_WEIGHT,
 ): { index: number; weight: number }[] {
-  return getAvailableCells(row, visited).map((index) => ({ index, weight: weightOf(index) }));
+  const cells = getAvailableCells(row, visited).map((index) => ({
+    index,
+    weight: Math.max(0, weightOf(index)),
+  }));
+  if (cells.some(({ weight }) => weight > 0)) return cells;
+  return cells.map(({ index }) => ({ index, weight: 1 }));
 }
 
 /**
@@ -36,8 +44,8 @@ export function getCellChance(
   visited: readonly number[],
   weightOf: CellWeight = EQUAL_WEIGHT,
 ): number {
-  if (visited.includes(index)) return 0;
   const cells = getWeightedCells(Math.floor(index / BOARD_SIZE), visited, weightOf);
-  const total = cells.reduce((sum, cell) => sum + cell.weight, 0);
-  return weightOf(index) / total;
+  const cell = cells.find((entry) => entry.index === index);
+  if (!cell) return 0;
+  return cell.weight / cells.reduce((sum, entry) => sum + entry.weight, 0);
 }

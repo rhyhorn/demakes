@@ -1,7 +1,13 @@
 import { MODIFIER, type Modifier, MODIFIERS, useModifierStore } from '@/entities/modifier';
 
 /** Modifiers on each page of the book, top to bottom, as on the reference. */
-const PAGES: readonly (readonly Modifier[])[] = [[MODIFIER.attackChance], [MODIFIER.magicChance]];
+const PAGES: readonly (readonly Modifier[])[] = [
+  [MODIFIER.attackChance, MODIFIER.strawberryChance],
+  [MODIFIER.magicChance, MODIFIER.chestChance],
+];
+
+/** A percentage with its sign, as in the book: +50%, -50%, +0%. */
+const formatModifier = (value: number) => `${value < 0 ? '' : '+'}${value}%`;
 
 function ModifierRow({ modifier }: { modifier: Modifier }) {
   const value = useModifierStore((state) => state.modifiers[modifier]);
@@ -10,7 +16,7 @@ function ModifierRow({ modifier }: { modifier: Modifier }) {
   return (
     <li
       className="flex items-center justify-between gap-[calc(8*var(--px))]"
-      aria-label={`${name}: +${value}%`}
+      aria-label={`${name}: ${formatModifier(value)}`}
     >
       <span className={`text-[length:calc(48*var(--px))] leading-none ${color}`} aria-hidden="true">
         {icon}
@@ -19,7 +25,7 @@ function ModifierRow({ modifier }: { modifier: Modifier }) {
         className="text-[length:calc(26*var(--px))] font-bold text-[#3b3226]"
         aria-hidden="true"
       >
-        +{value}%
+        {formatModifier(value)}
       </span>
     </li>
   );

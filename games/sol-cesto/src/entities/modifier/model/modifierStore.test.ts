@@ -8,10 +8,12 @@ describe('useModifierStore', () => {
     useModifierStore.setState(useModifierStore.getInitialState());
   });
 
-  it('starts with +50% to physical enemies and nothing to magic ones', () => {
+  it('starts with +50% to physical enemies, -50% to chests and nothing to the rest', () => {
     expect(useModifierStore.getState().modifiers).toEqual({
       [MODIFIER.attackChance]: 50,
       [MODIFIER.magicChance]: 0,
+      [MODIFIER.strawberryChance]: 0,
+      [MODIFIER.chestChance]: -50,
     });
   });
 
@@ -19,7 +21,7 @@ describe('useModifierStore', () => {
     useModifierStore.getState().setModifier(MODIFIER.magicChance, 30);
 
     expect(useModifierStore.getState().modifiers).toEqual({
-      [MODIFIER.attackChance]: 50,
+      ...INITIAL_MODIFIERS,
       [MODIFIER.magicChance]: 30,
     });
   });
@@ -28,9 +30,9 @@ describe('useModifierStore', () => {
     const { setModifier } = useModifierStore.getState();
 
     setModifier(MODIFIER.attackChance, 150);
-    setModifier(MODIFIER.magicChance, -20);
+    setModifier(MODIFIER.magicChance, -150);
 
-    expect(useModifierStore.getState().modifiers).toEqual({
+    expect(useModifierStore.getState().modifiers).toMatchObject({
       [MODIFIER.attackChance]: MAX_MODIFIER,
       [MODIFIER.magicChance]: MIN_MODIFIER,
     });

@@ -48,4 +48,15 @@ describe('getCellChance with weights', () => {
   it('gives visited cells no chance whatever their weight', () => {
     expect(getCellChance(0, [0], weightOf)).toBe(0);
   });
+
+  it('gives a cell of weight 0 no chance while the row has others', () => {
+    const noFirst = (index: number) => (index === 0 ? 0 : 1);
+
+    expect(getCellChance(0, [], noFirst)).toBe(0);
+    expect(getCellChance(1, [], noFirst)).toBeCloseTo(1 / 3);
+  });
+
+  it('makes free cells equally likely when none of them weighs anything', () => {
+    expect(getCellChance(3, [0, 1], () => 0)).toBe(0.5);
+  });
 });

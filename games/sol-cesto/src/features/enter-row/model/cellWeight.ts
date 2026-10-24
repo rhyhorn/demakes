@@ -1,23 +1,46 @@
 import type { CellWeight } from '@/entities/board';
 import { type AttackKind, type Enemy, type EnemyMap, getActiveAttack } from '@/entities/enemy';
 import { MODIFIER, type Modifier, type Modifiers } from '@/entities/modifier';
+import { PICKUP_TYPE, type PickupMap, type PickupType } from '@/entities/pickup';
 
-/** The modifier that makes enemies with this active attack easier to land on. */
-const CHANCE_MODIFIER: Record<AttackKind, Modifier> = {
+/** The modifier that makes enemies with this active attack easier or harder to land on. */
+const ENEMY_CHANCE_MODIFIER: Record<AttackKind, Modifier> = {
   attack: MODIFIER.attackChance,
   magic: MODIFIER.magicChance,
 };
 
-/**
- * Weight of a cell when picking where the player lands: 1, plus the chance modifier of the enemy's
- * active attack in percent (+50% gives 1.5). The attack shown on the badge counts.
- */
-export function getCellWeight(enemy: Enemy | undefined, modifiers: Modifiers): number {
-  if (!enemy) return 1;
-  return 1 + modifiers[CHANCE_MODIFIER[getActiveAttack(enemy).kind]] / 100;
+/** The modifier that makes pickups of this type easier or harder to land on. */
+const PICKUP_CHANCE_MODIFIER: Record<PickupType, Modifier> = {
+  [PICKUP_TYPE.strawberry]: MODIFIER.strawberryChance,
+  [PICKUP_TYPE.chest]: MODIFIER.chestChance,
+};
+
+/** What lies on a cell: an enemy, a pickup or nothing. */
+interface CellContent {
+  enemy?: Enemy;
+  pickup?: PickupType;
 }
 
-/** Weights of every board cell for these enemies and modifiers. */
-export function getCellWeights(enemies: EnemyMap, modifiers: Modifiers): CellWeight {
-  return (index) => getCellWeight(enemies[index], modifiers);
+function getChanceModifier({ enemy, pickup }: CellContent): Modifier | undefined {
+  if (enemy) return ENEMY_CHANCE_MODIFIER[getActiveAttack(enemy).kind];
+  return pickup && PICKUP_CHANCE_MODIFIER[pickup];
+}
+
+/**
+ * Weight of a cell when picking where the player lands: 1, plus the chance modifier of what lies
+ * there in percent (+50% gives 1.5, -50% gives 0.5). For an enemy the attack shown on the badge
+ * counts. An empty cell weighs 1.
+ */
+export function getCellWeight(content: CellContent, modifiers: Modifiers): number {
+  const modifier = getChanceModifier(content);
+  return modifier ? 1 + modifiers[modifier] / 100 : 1;
+}
+
+/** Weights of every board cell for these enemies, pickups and modifiers. */
+export function getCellWeights(
+  enemies: EnemyMap,
+  pickups: PickupMap,
+  modifiers: Modifiers,
+): CellWeight {
+  return (index) => getCellWeight({ enemy: enemies[index], pickup: pickups[index] }, modifiers);
 }

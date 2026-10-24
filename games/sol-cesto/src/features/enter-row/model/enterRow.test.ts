@@ -141,17 +141,23 @@ describe('enterRow', () => {
   });
 
   describe('chance modifiers', () => {
-    // Row 0: a physical beast on cell 0, a magic shifter on cell 1, cells 2 and 3 are empty.
+    const noModifiers = {
+      [MODIFIER.attackChance]: 0,
+      [MODIFIER.magicChance]: 0,
+      [MODIFIER.strawberryChance]: 0,
+      [MODIFIER.chestChance]: 0,
+    };
+
+    // Row 0: a physical beast on cell 0, a magic shifter on cell 1, a chest and a strawberry.
     beforeEach(() => {
       useEnemyStore.setState({
         enemies: { 0: createEnemy('beast'), 1: createEnemy('shifter', () => 0.999) },
       });
+      usePickupStore.setState({ pickups: { 2: PICKUP_TYPE.chest, 3: PICKUP_TYPE.strawberry } });
     });
 
     it('makes a physical enemy more likely to be landed on', () => {
-      useModifierStore.setState({
-        modifiers: { [MODIFIER.attackChance]: 100, [MODIFIER.magicChance]: 0 },
-      });
+      useModifierStore.setState({ modifiers: { ...noModifiers, [MODIFIER.attackChance]: 100 } });
 
       // Weights 2, 1, 1, 1: the first 40% of the roll goes to the beast.
       enterRow(0, () => 0.39);
@@ -160,14 +166,32 @@ describe('enterRow', () => {
     });
 
     it('makes a magic enemy more likely to be landed on', () => {
-      useModifierStore.setState({
-        modifiers: { [MODIFIER.attackChance]: 0, [MODIFIER.magicChance]: 100 },
-      });
+      useModifierStore.setState({ modifiers: { ...noModifiers, [MODIFIER.magicChance]: 100 } });
 
       // Weights 1, 2, 1, 1: the shifter takes the roll from 20% to 60%.
       enterRow(0, () => 0.59);
 
       expect(useBoardStore.getState().playerIndex).toBe(1);
+    });
+
+    it('makes a strawberry more likely to be landed on', () => {
+      useModifierStore.setState({
+        modifiers: { ...noModifiers, [MODIFIER.strawberryChance]: 100 },
+      });
+
+      // Weights 1, 1, 1, 2: the strawberry takes the roll from 60% on.
+      enterRow(0, () => 0.61);
+
+      expect(useBoardStore.getState().playerIndex).toBe(3);
+    });
+
+    it('makes a chest less likely to be landed on', () => {
+      useModifierStore.setState({ modifiers: { ...noModifiers, [MODIFIER.chestChance]: -50 } });
+
+      // Weights 1, 1, 0.5, 1: the chest only keeps the roll from 4/7 to 5/7.
+      enterRow(0, () => 0.72);
+
+      expect(useBoardStore.getState().playerIndex).toBe(3);
     });
   });
 });

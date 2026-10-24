@@ -40,7 +40,7 @@ export function DungeonBoard() {
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
   const modifiers = useModifierStore((state) => state.modifiers);
-  const weightOf = getCellWeights(enemies, modifiers);
+  const weightOf = getCellWeights(enemies, pickups, modifiers);
 
   return (
     <main className={styles.area}>

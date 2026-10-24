@@ -4,10 +4,15 @@ import { MAX_MODIFIER, MIN_MODIFIER, MODIFIER, type Modifier } from '../config';
 
 export type Modifiers = Record<Modifier, number>;
 
-/** Modifiers at the start of a run. +50% to physical enemies is a placeholder for testing. */
+/**
+ * Modifiers at the start of a run. +50% to physical enemies and -50% to chests are placeholders
+ * for testing.
+ */
 export const INITIAL_MODIFIERS: Modifiers = {
   [MODIFIER.attackChance]: 50,
   [MODIFIER.magicChance]: 0,
+  [MODIFIER.strawberryChance]: 0,
+  [MODIFIER.chestChance]: -50,
 };
 
 interface ModifierState {
