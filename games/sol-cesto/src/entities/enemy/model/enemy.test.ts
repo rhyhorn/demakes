@@ -7,6 +7,39 @@ describe('createEnemy', () => {
   it('takes the stats of its type', () => {
     expect(createEnemy('beast')).toEqual({ type: 'beast', ...ENEMY_TYPES.beast.stats });
   });
+
+  it('makes an ogre hit harder than a beast', () => {
+    expect(createEnemy('ogre')).toEqual({
+      type: 'ogre',
+      attack: 4,
+      magic: 0,
+      activeAttack: 'attack',
+    });
+    expect(createEnemy('ogre').attack).toBeGreaterThan(createEnemy('beast').attack);
+  });
+
+  it('starts a shifter with a random attack', () => {
+    expect(createEnemy('shifter', () => 0).activeAttack).toBe('attack');
+    expect(createEnemy('shifter', () => 0.999).activeAttack).toBe('magic');
+  });
+
+  it('keeps the stats of a shifter whatever attack it starts with', () => {
+    const { attack, magic } = ENEMY_TYPES.shifter.stats;
+
+    expect(createEnemy('shifter', () => 0)).toMatchObject({ attack, magic });
+    expect(createEnemy('shifter', () => 0.999)).toMatchObject({ attack, magic });
+  });
+
+  it('rolls no start attack for a type with a fixed one', () => {
+    let rolls = 0;
+
+    createEnemy('beast', () => {
+      rolls += 1;
+      return 0;
+    });
+
+    expect(rolls).toBe(0);
+  });
 });
 
 describe('getActiveAttack', () => {
@@ -29,7 +62,7 @@ describe('advanceEnemy', () => {
   });
 
   it('switches the active attack of a shifter every turn', () => {
-    const shifter = createEnemy('shifter');
+    const shifter = createEnemy('shifter', () => 0);
     const next = advanceEnemy(shifter);
 
     expect(next.activeAttack).not.toBe(shifter.activeAttack);
@@ -40,6 +73,7 @@ describe('advanceEnemy', () => {
 describe('getEnemyTraits', () => {
   it('has nothing to tell about a static enemy', () => {
     expect(getEnemyTraits('beast')).toEqual([]);
+    expect(getEnemyTraits('ogre')).toEqual([]);
   });
 
   it('describes every behavior of the type', () => {

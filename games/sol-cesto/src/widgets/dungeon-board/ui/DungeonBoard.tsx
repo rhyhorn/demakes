@@ -9,7 +9,7 @@ import {
 } from '@/entities/board';
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
-import { useHeroStore } from '@/entities/hero';
+import { HeroFigure, useHeroStore } from '@/entities/hero';
 import { PickupBadge, PickupFigure, usePickupStore } from '@/entities/pickup';
 import { CellOutcomeBadge, enterRow, getCellOutcome } from '@/features/enter-row';
 import { Badge } from '@/shared/ui';
@@ -89,9 +89,7 @@ export function DungeonBoard() {
                       </Badge>
                     </span>
                   )}
-                  {index === playerIndex && (
-                    <span className="absolute size-[calc(110*var(--px))] rounded-full border-[length:calc(6*var(--px))] border-[#f4e3c1] bg-[#c8323c]" />
-                  )}
+                  {index === playerIndex && <HeroFigure size={90} />}
                 </div>
               );
             })}

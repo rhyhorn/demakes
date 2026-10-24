@@ -2,7 +2,8 @@ import { useBoardStore } from '@/entities/board';
 import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
-import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
+import { PICKUP_EFFECT, type PickupEffect, PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
+import { pickCount } from '@/shared/lib';
 
 /**
  * Damage the hero takes from the enemy: by how much the enemy's active attack is stronger than
@@ -13,12 +14,20 @@ export function getEnemyDamage(enemy: Enemy, hero: { attack: number; magic: numb
   return Math.max(0, value - hero[kind]);
 }
 
+/** Gives the hero what the pickup holds: health back or a random amount of gold. */
+function applyPickupEffect(effect: PickupEffect, random: () => number) {
+  const hero = useHeroStore.getState();
+  if (effect.kind === PICKUP_EFFECT.heal) hero.heal(effect.amount);
+  else hero.addGold(pickCount(effect, random));
+}
+
 /**
  * Moves the player into the row. If the move happened, an enemy on the player's new cell hits the
- * hero and disappears, and a pickup there heals her and disappears too. Then the rest of the enemies take their turn. When the hit takes the hero's
- * health to 0, the game is over.
+ * hero and disappears, and a pickup there gives her what it holds (health or gold) and disappears
+ * too. Then the rest of the enemies take their turn. When the hit takes the hero's health to 0, the
+ * game is over.
  */
-export function enterRow(row: number, random?: () => number) {
+export function enterRow(row: number, random: () => number = Math.random) {
   const { visited } = useBoardStore.getState();
   useBoardStore.getState().enterRow(row, random);
   const { visited: visitedNow, playerIndex } = useBoardStore.getState();
@@ -36,7 +45,7 @@ export function enterRow(row: number, random?: () => number) {
 
   const { pickups, removePickup } = usePickupStore.getState();
   const pickup = pickups[playerIndex];
-  if (pickup) useHeroStore.getState().heal(PICKUP_TYPES[pickup].heal);
+  if (pickup) applyPickupEffect(PICKUP_TYPES[pickup].effect, random);
   removePickup(playerIndex);
 
   advanceTurn();

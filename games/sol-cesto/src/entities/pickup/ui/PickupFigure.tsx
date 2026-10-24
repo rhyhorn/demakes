@@ -4,6 +4,7 @@ import { PICKUP_TYPE, type PickupType } from '../model/types';
 /** Placeholder art until the game gets pickup sprites. */
 const PICKUP_SPRITES: Record<PickupType, string> = {
   [PICKUP_TYPE.strawberry]: '🍓',
+  [PICKUP_TYPE.chest]: '🪎',
 };
 
 export function PickupFigure({ type }: { type: PickupType }) {

@@ -12,7 +12,13 @@ describe('getCellOutcome', () => {
   });
 
   it('is safe when the enemy deals no damage', () => {
-    expect(getCellOutcome(createEnemy('shifter'), hero)).toEqual({ kind: 'safe' });
+    // A shifter in its magic form (🌀1) is no stronger than the hero's magic.
+    expect(
+      getCellOutcome(
+        createEnemy('shifter', () => 0.999),
+        hero,
+      ),
+    ).toEqual({ kind: 'safe' });
   });
 
   it('is damage when the hero survives the hit', () => {

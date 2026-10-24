@@ -23,6 +23,8 @@ interface HeroState {
   takeDamage: (amount: number) => void;
   /** Raises health by `amount`, but never above `maxHealth`. Does nothing for 0 or less. */
   heal: (amount: number) => void;
+  /** Puts `amount` gold into the piggy bank. Does nothing for 0 or less. */
+  addGold: (amount: number) => void;
   /** Brings back the stats the hero starts a run with. */
   reset: () => void;
 }
@@ -35,5 +37,6 @@ export const useHeroStore = create<HeroState>()((set) => ({
     set((state) =>
       amount > 0 ? { health: Math.min(state.maxHealth, state.health + amount) } : state,
     ),
+  addGold: (amount) => set((state) => (amount > 0 ? { gold: state.gold + amount } : state)),
   reset: () => set(INITIAL_HERO_STATS),
 }));

@@ -17,6 +17,10 @@ describe('spawnPickups', () => {
     });
   });
 
+  it('fills cells with chests too', () => {
+    expect(spawnPickups([1], () => 0.999)).toEqual({ 1: PICKUP_TYPE.chest });
+  });
+
   it('puts nothing when there are no free cells', () => {
     expect(spawnPickups([])).toEqual({});
   });

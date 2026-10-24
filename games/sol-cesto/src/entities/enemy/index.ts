@@ -15,6 +15,8 @@ export type {
   EnemySpawnConfig,
   EnemyType,
   EnemyTypeConfig,
+  StartAttack,
 } from './model/types';
+export { RANDOM_ATTACK } from './model/types';
 export { EnemyAttackBadge } from './ui/EnemyAttackBadge';
 export { EnemyFigure } from './ui/EnemyFigure';

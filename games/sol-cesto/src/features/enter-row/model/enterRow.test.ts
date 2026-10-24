@@ -35,7 +35,7 @@ describe('enterRow', () => {
     useBoardStore.setState(useBoardStore.getInitialState());
     useHeroStore.setState(useHeroStore.getInitialState());
     useGameStore.setState(useGameStore.getInitialState());
-    useEnemyStore.setState({ enemies: { 0: createEnemy('shifter') } });
+    useEnemyStore.setState({ enemies: { 0: createEnemy('shifter', () => 0) } });
     usePickupStore.setState(usePickupStore.getInitialState());
   });
 
@@ -44,7 +44,7 @@ describe('enterRow', () => {
 
     expect(useBoardStore.getState().playerIndex).toBe(4);
     expect(useEnemyStore.getState().enemies[0]?.activeAttack).not.toBe(
-      createEnemy('shifter').activeAttack,
+      createEnemy('shifter', () => 0).activeAttack,
     );
   });
 
@@ -108,6 +108,25 @@ describe('enterRow', () => {
 
     expect(useHeroStore.getState().health).toBe(4);
     expect(usePickupStore.getState().pickups).toEqual({ 5: PICKUP_TYPE.strawberry });
+  });
+
+  it('adds gold from the chest on the entered cell and takes it', () => {
+    usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest, 5: PICKUP_TYPE.strawberry } });
+
+    enterRow(1, () => 0);
+
+    expect(useHeroStore.getState().gold).toBe(3);
+    expect(usePickupStore.getState().pickups).toEqual({ 5: PICKUP_TYPE.strawberry });
+  });
+
+  it('gives from 3 to 6 gold for a chest', () => {
+    usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest } });
+
+    // The first roll picks the cell, the second one the amount of gold.
+    const rolls = [0, 0.999];
+    enterRow(1, () => rolls.shift() ?? 0);
+
+    expect(useHeroStore.getState().gold).toBe(6);
   });
 
   it('gives enemies no turn when the row has no cells left', () => {

@@ -61,8 +61,26 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
+  it('adds gold to the piggy bank', () => {
+    useHeroStore.setState({ gold: 2 });
+
+    useHeroStore.getState().addGold(4);
+
+    expect(useHeroStore.getState().gold).toBe(6);
+  });
+
+  it('ignores gold of 0 or less', () => {
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().addGold(0);
+    useHeroStore.getState().addGold(-1);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
+
   it('brings back the starting stats on reset', () => {
     useHeroStore.getState().takeDamage(3);
+    useHeroStore.getState().addGold(5);
 
     useHeroStore.getState().reset();
     const { health, maxHealth, attack, magic, gold } = useHeroStore.getState();

@@ -1,4 +1,10 @@
-import type { EnemyBehaviorId, EnemySpawnConfig, EnemyType, EnemyTypeConfig } from '../model/types';
+import {
+  type EnemyBehaviorId,
+  type EnemySpawnConfig,
+  type EnemyType,
+  type EnemyTypeConfig,
+  RANDOM_ATTACK,
+} from '../model/types';
 
 export const ENEMY_TYPES: Record<EnemyType, EnemyTypeConfig> = {
   /** Static: always hits with its physical attack. */
@@ -7,11 +13,17 @@ export const ENEMY_TYPES: Record<EnemyType, EnemyTypeConfig> = {
     stats: { attack: 3, magic: 0, activeAttack: 'attack' },
     behaviors: [],
   },
-  /** Dynamic: swaps physical and magic attack after every player move. */
+  /** Dynamic: starts with a random attack and swaps physical and magic after every player move. */
   shifter: {
     name: 'Перевертень',
-    stats: { attack: 2, magic: 1, activeAttack: 'magic' },
+    stats: { attack: 3, magic: 1, activeAttack: RANDOM_ATTACK },
     behaviors: ['switchAttackEachTurn'],
+  },
+  /** Static and strong: always hits with a heavy physical attack, but appears less often. */
+  ogre: {
+    name: 'Огр',
+    stats: { attack: 4, magic: 0, activeAttack: 'attack' },
+    behaviors: [],
   },
 };
 
@@ -21,9 +33,10 @@ export const ENEMY_BEHAVIOR_DESCRIPTIONS: Record<EnemyBehaviorId, string> = {
 };
 
 export const ENEMY_SPAWN: EnemySpawnConfig = {
-  perRow: { min: 1, max: 2 },
+  perRow: { min: 1, max: 3 },
   types: [
-    { type: 'beast', weight: 1 },
-    { type: 'shifter', weight: 1 },
+    { type: 'beast', weight: 2 },
+    { type: 'shifter', weight: 2 },
+    { type: 'ogre', weight: 1 },
   ],
 };

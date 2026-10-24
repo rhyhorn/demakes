@@ -1,8 +1,25 @@
 import { ENEMY_BEHAVIOR_DESCRIPTIONS, ENEMY_TYPES } from '../config';
-import type { AttackKind, Enemy, EnemyBehaviorId, EnemyType } from './types';
+import {
+  type AttackKind,
+  type Enemy,
+  type EnemyBehaviorId,
+  type EnemyType,
+  RANDOM_ATTACK,
+  type StartAttack,
+} from './types';
 
-export function createEnemy(type: EnemyType): Enemy {
-  return { type, ...ENEMY_TYPES[type].stats };
+function pickStartAttack(startAttack: StartAttack, random: () => number): AttackKind {
+  if (startAttack !== RANDOM_ATTACK) return startAttack;
+  return random() < 0.5 ? 'attack' : 'magic';
+}
+
+/**
+ * A fresh enemy with the stats of its type. `random` picks the starting attack for types that
+ * start with a random one, and is not called for the rest.
+ */
+export function createEnemy(type: EnemyType, random: () => number = Math.random): Enemy {
+  const { activeAttack, ...stats } = ENEMY_TYPES[type].stats;
+  return { type, ...stats, activeAttack: pickStartAttack(activeAttack, random) };
 }
 
 /** The attack the enemy uses right now and its power. */

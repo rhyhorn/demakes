@@ -53,12 +53,20 @@ describe('spawnEnemies', () => {
         { type: 'shifter', weight: 1 },
       ],
     };
-    // count, first cell, second cell, first type, second type
-    const enemies = spawnEnemies([ROWS[0] ?? []], sequence(0, 0.5, 0.9, 0, 0.9), config);
+    // count, first cell, second cell, first type, second type, shifter's start attack
+    const enemies = spawnEnemies([ROWS[0] ?? []], sequence(0, 0.5, 0.9, 0, 0.9, 0), config);
 
     expect(Object.keys(enemies)).toEqual(['2', '3']);
     expect(enemies[2]?.type).toBe('beast');
     expect(enemies[3]?.type).toBe('shifter');
+    expect(enemies[3]?.activeAttack).toBe('attack');
+  });
+
+  it('spawns an ogre less often than the other types', () => {
+    const weights = Object.fromEntries(ENEMY_SPAWN.types.map(({ type, weight }) => [type, weight]));
+
+    expect(weights.ogre).toBeLessThan(weights.beast ?? 0);
+    expect(weights.ogre).toBeLessThan(weights.shifter ?? 0);
   });
 
   it('never puts more enemies in a row than it has cells', () => {

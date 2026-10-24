@@ -1,4 +1,4 @@
-import { useHeroStore } from '@/entities/hero';
+import { HeroFigure, useHeroStore } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 
 export function HeroPanel() {
@@ -9,25 +9,28 @@ export function HeroPanel() {
 
   return (
     <div
-      className="flex h-full w-full flex-col items-center justify-between p-[calc(24*var(--px))]"
+      className="flex h-full w-full flex-col items-center justify-between p-[calc(16*var(--px))]"
       {...getHintHandlers({ kind: HINT_TARGET.hero })}
     >
-      <div
-        className="relative flex size-[calc(200*var(--px))] items-center justify-center"
-        aria-label={`Здоров'я: ${health} з ${maxHealth}`}
-      >
-        <span
-          className="absolute inset-0 flex items-center justify-center text-[length:calc(220*var(--px))] leading-none text-[#c8323c]"
-          aria-hidden="true"
+      <div className="flex w-full items-center justify-between">
+        <div
+          className="relative flex size-[calc(170*var(--px))] items-center justify-center"
+          aria-label={`Здоров'я: ${health} з ${maxHealth}`}
         >
-          ♥
-        </span>
-        <span
-          className="relative text-[length:calc(56*var(--px))] font-bold text-[#f4e3c1]"
-          aria-hidden="true"
-        >
-          {health}/{maxHealth}
-        </span>
+          <span
+            className="absolute inset-0 flex items-center justify-center text-[length:calc(190*var(--px))] leading-none text-[#c8323c]"
+            aria-hidden="true"
+          >
+            ♥
+          </span>
+          <span
+            className="relative text-[length:calc(48*var(--px))] font-bold text-[#f4e3c1]"
+            aria-hidden="true"
+          >
+            {health}/{maxHealth}
+          </span>
+        </div>
+        <HeroFigure size={130} />
       </div>
       <div className="flex gap-[calc(40*var(--px))] text-[length:calc(48*var(--px))] font-bold">
         <span className="text-[#e05a5a]" aria-label={`Атака: ${attack}`}>

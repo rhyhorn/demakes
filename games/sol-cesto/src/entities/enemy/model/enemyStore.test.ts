@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createEnemy } from './enemy';
 import { useEnemyStore } from './enemyStore';
 
+const shifter = createEnemy('shifter', () => 0);
+
 describe('useEnemyStore', () => {
   beforeEach(() => {
     useEnemyStore.setState(useEnemyStore.getInitialState());
@@ -19,21 +21,21 @@ describe('useEnemyStore', () => {
   });
 
   it('lets every enemy take its turn and keeps them on their cells', () => {
-    useEnemyStore.setState({ enemies: { 1: createEnemy('beast'), 5: createEnemy('shifter') } });
+    useEnemyStore.setState({ enemies: { 1: createEnemy('beast'), 5: shifter } });
 
     useEnemyStore.getState().advanceTurn();
     const { enemies } = useEnemyStore.getState();
 
     expect(enemies[1]).toEqual(createEnemy('beast'));
-    expect(enemies[5]?.activeAttack).not.toBe(createEnemy('shifter').activeAttack);
+    expect(enemies[5]?.activeAttack).not.toBe(shifter.activeAttack);
   });
 
   it('removes the enemy from a cell and keeps the others', () => {
-    useEnemyStore.setState({ enemies: { 1: createEnemy('beast'), 5: createEnemy('shifter') } });
+    useEnemyStore.setState({ enemies: { 1: createEnemy('beast'), 5: shifter } });
 
     useEnemyStore.getState().removeEnemy(1);
 
-    expect(useEnemyStore.getState().enemies).toEqual({ 5: createEnemy('shifter') });
+    expect(useEnemyStore.getState().enemies).toEqual({ 5: shifter });
   });
 
   it('does nothing when the cell has no enemy', () => {

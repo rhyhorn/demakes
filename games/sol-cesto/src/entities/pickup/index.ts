@@ -2,7 +2,9 @@ export { PICKUP_SPAWN, PICKUP_TYPES } from './config';
 export { usePickupStore } from './model/pickupStore';
 export { type PickupMap, spawnPickups } from './model/spawn';
 export {
+  PICKUP_EFFECT,
   PICKUP_TYPE,
+  type PickupEffect,
   type PickupSpawnConfig,
   type PickupType,
   type PickupTypeConfig,

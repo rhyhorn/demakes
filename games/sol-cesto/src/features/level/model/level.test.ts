@@ -51,7 +51,7 @@ describe('level', () => {
 
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 1);
-    expect(Object.keys(useEnemyStore.getState().enemies)).toHaveLength(8);
+    expect(Object.keys(useEnemyStore.getState().enemies)).toHaveLength(12);
   });
 
   it('restarts the game from scratch after game over', () => {

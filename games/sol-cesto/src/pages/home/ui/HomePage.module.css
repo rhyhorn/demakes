@@ -1,6 +1,6 @@
 .scene {
   display: grid;
-  grid-template-columns: 375fr 1170fr 375fr;
+  grid-template-columns: minmax(0, 375fr) minmax(0, 1170fr) minmax(0, 375fr);
   width: 100%;
   height: 100%;
 }
