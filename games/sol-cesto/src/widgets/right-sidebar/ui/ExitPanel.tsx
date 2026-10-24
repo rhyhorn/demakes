@@ -1,6 +1,6 @@
 import { isExitOpen, useBoardStore } from '@/entities/board';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
-import { exitLevel } from '@/features/level';
+import { enterNextRoom, exitLevel } from '@/features/level';
 import { isUpgradeRoomOpen, leaveUpgradeRoom, useUpgradeStore } from '@/features/upgrade-attack';
 
 /**
@@ -15,7 +15,10 @@ function useExit() {
 
   if (inUpgradeRoom) {
     const open = isUpgradeRoomOpen({ chosen });
-    return { open, moves: open ? 1 : 0, requiredMoves: 1, leave: () => leaveUpgradeRoom() };
+    const leave = () => {
+      if (leaveUpgradeRoom()) enterNextRoom();
+    };
+    return { open, moves: open ? 1 : 0, requiredMoves: 1, leave };
   }
   return {
     open: isExitOpen({ moves, requiredMoves }),

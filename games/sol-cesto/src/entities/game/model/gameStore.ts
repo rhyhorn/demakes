@@ -12,8 +12,8 @@ export const GAME_SCREEN = {
 
 export type GameScreen = (typeof GAME_SCREEN)[keyof typeof GAME_SCREEN];
 
-/** Screen the game opens on. The upgrade room for now, to try it out; later the dungeon. */
-export const START_SCREEN: GameScreen = GAME_SCREEN.upgrade;
+/** Screen the game opens on: a run starts in a room with enemies. */
+export const START_SCREEN: GameScreen = GAME_SCREEN.dungeon;
 
 interface GameState {
   screen: GameScreen;

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 
-import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { type HeroAttackKind, useHeroStore } from '@/entities/hero';
 
 import { UPGRADE_AMOUNT } from '../config';
@@ -26,9 +25,12 @@ export function chooseUpgrade(kind: HeroAttackKind) {
   useUpgradeStore.setState({ chosen: kind });
 }
 
-/** Leaves the open upgrade room for the dungeon. Does nothing while the room is closed. */
+/**
+ * Leaves the open upgrade room and closes it behind the hero. Does nothing while the room is closed.
+ * Returns whether the hero has left; where she goes next is up to the caller (`enterNextRoom`).
+ */
 export function leaveUpgradeRoom() {
-  if (!isUpgradeRoomOpen(useUpgradeStore.getState())) return;
+  if (!isUpgradeRoomOpen(useUpgradeStore.getState())) return false;
   useUpgradeStore.setState(useUpgradeStore.getInitialState());
-  useGameStore.getState().showScreen(GAME_SCREEN.dungeon);
+  return true;
 }

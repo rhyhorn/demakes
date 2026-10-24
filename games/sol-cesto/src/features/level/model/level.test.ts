@@ -12,7 +12,7 @@ import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { INITIAL_HERO_STATS, useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 
-import { exitLevel, restartGame, startLevel } from './level';
+import { enterNextRoom, exitLevel, getRoomScreen, restartGame, startLevel } from './level';
 
 describe('level', () => {
   beforeEach(() => {
@@ -49,15 +49,51 @@ describe('level', () => {
     expect(useEnemyStore.getState().enemies).toBe(enemies);
   });
 
-  it('spawns new enemies after leaving through the open exit', () => {
+  it('starts the run in a dungeon and puts an upgrade room on every second level', () => {
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+    expect(
+      Array.from({ length: FINAL_LEVEL }, (_, index) => getRoomScreen(FIRST_LEVEL + index)),
+    ).toEqual(
+      Array.from({ length: FINAL_LEVEL / 2 }, () => [
+        GAME_SCREEN.dungeon,
+        GAME_SCREEN.upgrade,
+      ]).flat(),
+    );
+  });
+
+  it('leads from the dungeon to the upgrade room through the open exit', () => {
     startLevel(() => 0);
+    const { enemies } = useEnemyStore.getState();
     useBoardStore.setState({ moves: REQUIRED_MOVES, visited: [0], playerIndex: 0 });
 
     exitLevel(() => 0.999);
 
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 1);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.upgrade);
+    expect(useEnemyStore.getState().enemies).toBe(enemies);
+  });
+
+  it('spawns new enemies on the dungeon after the upgrade room', () => {
+    startLevel(() => 0);
+    useBoardStore.setState({ level: FIRST_LEVEL + 1 });
+    useGameStore.setState({ screen: GAME_SCREEN.upgrade });
+
+    enterNextRoom(() => 0.999);
+
+    expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 2);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
     expect(Object.keys(useEnemyStore.getState().enemies)).toHaveLength(12);
+  });
+
+  it('wins the run after leaving the final upgrade room', () => {
+    useBoardStore.setState({ level: FINAL_LEVEL });
+    useGameStore.setState({ screen: GAME_SCREEN.upgrade });
+
+    enterNextRoom(() => 0.999);
+
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.victory);
+    expect(useBoardStore.getState().level).toBe(FINAL_LEVEL);
   });
 
   it('wins the run after leaving the final level', () => {
@@ -79,7 +115,7 @@ describe('level', () => {
     exitLevel(() => 0.999);
 
     expect(useBoardStore.getState().level).toBe(FINAL_LEVEL);
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+    expect(useGameStore.getState().screen).toBe(getRoomScreen(FINAL_LEVEL));
   });
 
   it('restarts the game from scratch after winning', () => {

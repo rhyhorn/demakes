@@ -132,6 +132,15 @@ describe('useBoardStore', () => {
       expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 2);
     });
 
+    it('moves on to the next level even while the exit is locked', () => {
+      makeMoves(1);
+
+      useBoardStore.getState().nextLevel();
+
+      expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 1);
+      expect(useBoardStore.getState().visited).toEqual([]);
+    });
+
     it('goes back to the first level on reset', () => {
       useBoardStore.setState({ level: 7 });
 

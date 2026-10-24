@@ -12,7 +12,7 @@ export const REQUIRED_MOVES = 5;
 export const FIRST_LEVEL = 1;
 
 /** Number of the last level: leaving it through the exit wins the run. */
-export const FINAL_LEVEL = 5;
+export const FINAL_LEVEL = 10;
 
 /** Placeholder content until rooms get real types: every cell is just a number. */
 export function createInitialCells(): number[] {
@@ -37,6 +37,8 @@ interface BoardState {
   enterRow: (row: number, random?: () => number) => void;
   /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */
   exitLevel: () => void;
+  /** Moves on to the next level whatever the state of the door, e.g. out of a room without moves. */
+  nextLevel: () => void;
   /** Starts the run over from the first level, even while the exit is locked. */
   reset: () => void;
 }
@@ -75,5 +77,6 @@ export const useBoardStore = create<BoardState>()((set) => ({
     }),
   exitLevel: () =>
     set((state) => (isExitOpen(state) ? { ...createLevelState(), level: state.level + 1 } : state)),
+  nextLevel: () => set((state) => ({ ...createLevelState(), level: state.level + 1 })),
   reset: () => set({ ...createLevelState(), level: FIRST_LEVEL }),
 }));

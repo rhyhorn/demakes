@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { HERO_ATTACK_KIND, INITIAL_HERO_STATS, useHeroStore } from '@/entities/hero';
 
 import { UPGRADE_AMOUNT } from '../config';
@@ -15,7 +14,6 @@ describe('upgrade room', () => {
   beforeEach(() => {
     useHeroStore.setState(useHeroStore.getInitialState());
     useUpgradeStore.setState(useUpgradeStore.getInitialState());
-    useGameStore.setState({ screen: GAME_SCREEN.upgrade });
   });
 
   it('is closed until a choice is made', () => {
@@ -46,17 +44,13 @@ describe('upgrade room', () => {
   });
 
   it('cannot be left while closed', () => {
-    leaveUpgradeRoom();
-
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.upgrade);
+    expect(leaveUpgradeRoom()).toBe(false);
   });
 
-  it('leads to the dungeon once open and closes behind the hero', () => {
+  it('can be left once open and closes behind the hero', () => {
     chooseUpgrade(HERO_ATTACK_KIND.attack);
 
-    leaveUpgradeRoom();
-
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+    expect(leaveUpgradeRoom()).toBe(true);
     expect(useUpgradeStore.getState().chosen).toBeNull();
   });
 });
