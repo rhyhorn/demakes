@@ -4,6 +4,14 @@ export const HERO_INFO = {
   description: 'Ваша героїня.',
 } as const;
 
+/** The hero's two kinds of attack: physical and magic. */
+export const HERO_ATTACK_KIND = {
+  attack: 'attack',
+  magic: 'magic',
+} as const;
+
+export type HeroAttackKind = (typeof HERO_ATTACK_KIND)[keyof typeof HERO_ATTACK_KIND];
+
 /** The most inventory slots the hero can ever have. */
 export const MAX_INVENTORY_SIZE = 6;
 

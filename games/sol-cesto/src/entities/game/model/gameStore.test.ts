@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GAME_SCREEN, useGameStore } from './gameStore';
+import { GAME_SCREEN, START_SCREEN, useGameStore } from './gameStore';
 
 describe('useGameStore', () => {
   beforeEach(() => {
     useGameStore.setState(useGameStore.getInitialState());
   });
 
-  it('starts on the dungeon screen', () => {
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+  it('starts on the start screen', () => {
+    expect(useGameStore.getState().screen).toBe(START_SCREEN);
   });
 
   it('switches to another screen', () => {

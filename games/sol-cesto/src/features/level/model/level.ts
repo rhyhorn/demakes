@@ -1,4 +1,11 @@
-import { BOARD_SIZE, CELL_COUNT, getRowCells, isExitOpen, useBoardStore } from '@/entities/board';
+import {
+  BOARD_SIZE,
+  CELL_COUNT,
+  FINAL_LEVEL,
+  getRowCells,
+  isExitOpen,
+  useBoardStore,
+} from '@/entities/board';
 import { useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
@@ -17,9 +24,17 @@ export function startLevel(random?: () => number) {
   );
 }
 
-/** Leaves through the open exit door into a new level. Does nothing while the door is locked. */
+/**
+ * Leaves through the open exit door into a new level, or wins the run when it was the final one.
+ * Does nothing while the door is locked.
+ */
 export function exitLevel(random?: () => number) {
-  if (!isExitOpen(useBoardStore.getState())) return;
+  const board = useBoardStore.getState();
+  if (!isExitOpen(board)) return;
+  if (board.level >= FINAL_LEVEL) {
+    useGameStore.getState().showScreen(GAME_SCREEN.victory);
+    return;
+  }
   useBoardStore.getState().exitLevel();
   startLevel(random);
 }

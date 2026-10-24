@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { INVENTORY_ITEM, type InventoryItem } from '../config';
+import { type HeroAttackKind, INVENTORY_ITEM, type InventoryItem } from '../config';
 
 /** Hero stats at the start of a run, as on the reference screenshot. */
 export const INITIAL_HERO_STATS = {
@@ -33,6 +33,8 @@ interface HeroState {
   takeDamage: (amount: number) => void;
   /** Raises health by `amount`, but never above `maxHealth`. Does nothing for 0 or less. */
   heal: (amount: number) => void;
+  /** Raises the attack of the kind (physical or magic) by `amount`. Does nothing for 0 or less. */
+  raiseAttack: (kind: HeroAttackKind, amount: number) => void;
   /** Puts `amount` gold into the piggy bank. Does nothing for 0 or less. */
   addGold: (amount: number) => void;
   /** Takes the item out of inventory slot `index`; later items shift down. Ignores empty slots. */
@@ -49,6 +51,8 @@ export const useHeroStore = create<HeroState>()((set) => ({
     set((state) =>
       amount > 0 ? { health: Math.min(state.maxHealth, state.health + amount) } : state,
     ),
+  raiseAttack: (kind, amount) =>
+    set((state) => (amount > 0 ? { [kind]: state[kind] + amount } : state)),
   addGold: (amount) => set((state) => (amount > 0 ? { gold: state.gold + amount } : state)),
   removeItem: (index) =>
     set((state) =>

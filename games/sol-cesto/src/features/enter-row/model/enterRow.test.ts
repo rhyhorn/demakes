@@ -34,7 +34,7 @@ describe('enterRow', () => {
   beforeEach(() => {
     useBoardStore.setState(useBoardStore.getInitialState());
     useHeroStore.setState(useHeroStore.getInitialState());
-    useGameStore.setState(useGameStore.getInitialState());
+    useGameStore.setState({ screen: GAME_SCREEN.dungeon });
     useEnemyStore.setState({ enemies: { 0: createEnemy('shifter', () => 0) } });
     usePickupStore.setState(usePickupStore.getInitialState());
   });

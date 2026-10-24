@@ -1,4 +1,6 @@
 export {
+  HERO_ATTACK_KIND,
+  type HeroAttackKind,
   HERO_INFO,
   INVENTORY_ITEM,
   INVENTORY_ITEMS,

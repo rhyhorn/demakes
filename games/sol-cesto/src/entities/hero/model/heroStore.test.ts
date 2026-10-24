@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { INVENTORY_ITEM } from '../config';
+import { HERO_ATTACK_KIND, INVENTORY_ITEM } from '../config';
 import { INITIAL_HERO_STATS, useHeroStore } from './heroStore';
 
 describe('useHeroStore', () => {
@@ -61,6 +61,22 @@ describe('useHeroStore', () => {
 
     useHeroStore.getState().heal(0);
     useHeroStore.getState().heal(-1);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
+
+  it('raises the attack of the given kind only', () => {
+    useHeroStore.getState().raiseAttack(HERO_ATTACK_KIND.magic, 2);
+
+    expect(useHeroStore.getState().magic).toBe(INITIAL_HERO_STATS.magic + 2);
+    expect(useHeroStore.getState().attack).toBe(INITIAL_HERO_STATS.attack);
+  });
+
+  it('ignores an attack raise of 0 or less', () => {
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().raiseAttack(HERO_ATTACK_KIND.attack, 0);
+    useHeroStore.getState().raiseAttack(HERO_ATTACK_KIND.attack, -1);
 
     expect(useHeroStore.getState()).toBe(before);
   });

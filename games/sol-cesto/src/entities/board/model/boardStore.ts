@@ -11,6 +11,9 @@ export const REQUIRED_MOVES = 5;
 /** Number of the level a run starts on. */
 export const FIRST_LEVEL = 1;
 
+/** Number of the last level: leaving it through the exit wins the run. */
+export const FINAL_LEVEL = 5;
+
 /** Placeholder content until rooms get real types: every cell is just a number. */
 export function createInitialCells(): number[] {
   return Array.from({ length: CELL_COUNT }, (_, index) => index + 1);

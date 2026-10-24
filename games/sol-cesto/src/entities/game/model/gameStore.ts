@@ -4,9 +4,16 @@ import { create } from 'zustand';
 export const GAME_SCREEN = {
   dungeon: 'dungeon',
   gameOver: 'game-over',
+  /** A closed room where the hero raises her physical or magic attack before the exit opens. */
+  upgrade: 'upgrade',
+  /** The run is won: the hero has left the final level. */
+  victory: 'victory',
 } as const;
 
 export type GameScreen = (typeof GAME_SCREEN)[keyof typeof GAME_SCREEN];
+
+/** Screen the game opens on. The upgrade room for now, to try it out; later the dungeon. */
+export const START_SCREEN: GameScreen = GAME_SCREEN.upgrade;
 
 interface GameState {
   screen: GameScreen;
@@ -14,6 +21,6 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>()((set) => ({
-  screen: GAME_SCREEN.dungeon,
+  screen: START_SCREEN,
   showScreen: (screen) => set({ screen }),
 }));
