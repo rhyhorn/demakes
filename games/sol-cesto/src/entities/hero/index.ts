@@ -5,6 +5,10 @@ export {
   INVENTORY_ITEM,
   INVENTORY_ITEMS,
   type InventoryItem,
+  type InventoryItemConfig,
+  ITEM_EFFECT,
+  type ItemEffect,
+  type ItemEffectKind,
   MAX_INVENTORY_SIZE,
 } from './config';
 export {

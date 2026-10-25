@@ -120,6 +120,33 @@ describe('useBoardStore', () => {
     });
   });
 
+  describe('markVisited', () => {
+    it('closes the cell without moving the player or counting a move', () => {
+      useBoardStore.getState().enterCell(1);
+
+      useBoardStore.getState().markVisited(2);
+
+      expect(useBoardStore.getState().visited).toEqual([1, 2]);
+      expect(useBoardStore.getState().playerIndex).toBe(1);
+      expect(useBoardStore.getState().moves).toBe(1);
+    });
+
+    it('keeps the closed cell out of the row picks', () => {
+      useBoardStore.getState().markVisited(0);
+
+      expect(pickRowCell(0, useBoardStore.getState().visited, () => 0)).toBe(1);
+    });
+
+    it('does nothing for a visited cell', () => {
+      useBoardStore.getState().markVisited(3);
+      const before = useBoardStore.getState();
+
+      useBoardStore.getState().markVisited(3);
+
+      expect(useBoardStore.getState()).toBe(before);
+    });
+  });
+
   describe('pickRowCell', () => {
     it('picks a free cell of the row without moving the player', () => {
       expect(pickRowCell(2, [8], pickFirst)).toBe(9);

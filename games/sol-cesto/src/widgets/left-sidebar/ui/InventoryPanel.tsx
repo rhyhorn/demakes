@@ -5,7 +5,7 @@ import {
   type InventorySlot,
   useHeroStore,
 } from '@/entities/hero';
-import { discardItem } from '@/features/inventory';
+import { canUseItem, consumeItem } from '@/features/inventory';
 
 const handIcon = (
   <span className="text-[length:calc(48*var(--px))]" aria-hidden="true">
@@ -15,27 +15,35 @@ const handIcon = (
 
 /**
  * One slot: available ones rest on a hand, locked ones are dark.
- * Clicking an item throws it away for now.
+ * Clicking an item uses it; an item that would do nothing now is dimmed and cannot be clicked.
  */
 function InventorySlotView({ slot, index }: { slot: InventorySlot; index: number }) {
+  const health = useHeroStore((state) => state.health);
+  const maxHealth = useHeroStore((state) => state.maxHealth);
   const base =
     'flex h-full w-full flex-col items-center justify-end rounded-[calc(12*var(--px))] pb-[calc(4*var(--px))] leading-none';
 
   switch (slot.state) {
-    case INVENTORY_SLOT.filled:
+    case INVENTORY_SLOT.filled: {
+      const usable = canUseItem(slot.item, { health, maxHealth });
       return (
         <button
           type="button"
-          className={`${base} cursor-pointer bg-[#2b3036] hover:bg-[#3a4048]`}
-          aria-label={`Викинути: ${INVENTORY_ITEMS[slot.item].name}`}
-          onClick={() => discardItem(index)}
+          className={`${base} bg-[#2b3036] enabled:cursor-pointer enabled:hover:bg-[#3a4048]`}
+          aria-label={`Використати: ${INVENTORY_ITEMS[slot.item].name}`}
+          disabled={!usable}
+          onClick={() => consumeItem(index)}
         >
-          <span className="text-[length:calc(56*var(--px))]" aria-hidden="true">
+          <span
+            className={`text-[length:calc(56*var(--px))] ${usable ? '' : 'opacity-50'}`}
+            aria-hidden="true"
+          >
             {INVENTORY_ITEMS[slot.item].icon}
           </span>
           {handIcon}
         </button>
       );
+    }
     case INVENTORY_SLOT.empty:
       return (
         <div className={`${base} bg-[#2b3036]`} aria-label="Вільна комірка">

@@ -42,6 +42,11 @@ interface BoardState {
   enterRow: (row: number, random?: () => number, weightOf?: CellWeight) => void;
   /** Moves the player to the cell. Does nothing if she has already been there. */
   enterCell: (index: number) => void;
+  /**
+   * Closes the cell as if the player had been there, without moving her or counting a move.
+   * Does nothing if it is already visited.
+   */
+  markVisited: (index: number) => void;
   /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */
   exitLevel: () => void;
   /** Moves on to the next level whatever the state of the door, e.g. out of a room without moves. */
@@ -95,6 +100,10 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
         moves: Math.min(state.moves + 1, state.requiredMoves),
       };
     }),
+  markVisited: (index) =>
+    set((state) =>
+      state.visited.includes(index) ? state : { visited: [...state.visited, index] },
+    ),
   exitLevel: () =>
     set((state) => (isExitOpen(state) ? { ...createLevelState(), level: state.level + 1 } : state)),
   nextLevel: () => set((state) => ({ ...createLevelState(), level: state.level + 1 })),
