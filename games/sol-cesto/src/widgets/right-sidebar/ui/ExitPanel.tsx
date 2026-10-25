@@ -2,6 +2,7 @@ import { isExitOpen, useBoardStore } from '@/entities/board';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { enterNextRoom, exitLevel } from '@/features/level';
 import { isUpgradeRoomOpen, leaveUpgradeRoom, useUpgradeStore } from '@/features/upgrade-attack';
+import styles from './ExitPanel.module.css';
 
 /**
  * State of the exit door on the current screen: on a level it opens after the required moves, in
@@ -34,7 +35,7 @@ export function ExitPanel() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-[calc(16*var(--px))] p-[calc(16*var(--px))]">
       <div
-        className="relative flex h-[calc(170*var(--px))] items-center justify-center"
+        className={`relative flex h-[calc(170*var(--px))] items-center justify-center ${exitOpen ? styles.shaking : ''}`}
         role="img"
         aria-label={exitOpen ? 'Двері відчинено' : 'Двері зачинено'}
       >

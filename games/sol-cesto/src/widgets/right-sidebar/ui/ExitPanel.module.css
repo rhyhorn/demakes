@@ -1,0 +1,33 @@
+/*
+ * An open door shakes left and right right away and then every 5 s, so the player keeps
+ * remembering they can leave. The shake takes the first 9% of the cycle (0.45 s), the rest is a
+ * pause.
+ */
+.shaking {
+  animation: shake 5s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%,
+  9%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+
+  1.5%,
+  4.5%,
+  7.5% {
+    transform: translateX(calc(-10 * var(--px))) rotate(-4deg);
+  }
+
+  3%,
+  6% {
+    transform: translateX(calc(10 * var(--px))) rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shaking {
+    animation: none;
+  }
+}
