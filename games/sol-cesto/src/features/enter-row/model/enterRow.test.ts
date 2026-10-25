@@ -6,6 +6,7 @@ import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 import { MODIFIER, type Modifier, TEST_TOOTH, TOOTH_TYPE, useToothStore } from '@/entities/tooth';
+import { TRAP_TYPE, useTrapStore } from '@/entities/trap';
 
 import { enterCell, enterRow, finishDeath, getEnemyDamage, pickEntryCell } from './enterRow';
 
@@ -38,7 +39,37 @@ describe('enterRow', () => {
     useGameStore.setState({ screen: GAME_SCREEN.dungeon });
     useEnemyStore.setState({ enemies: { 0: createEnemy('shifter', () => 0) } });
     usePickupStore.setState(usePickupStore.getInitialState());
+    useTrapStore.setState(useTrapStore.getInitialState());
     useToothStore.setState({ slots: [] });
+  });
+
+  it('hurts the hero on spikes and keeps them', () => {
+    useEnemyStore.setState({ enemies: {} });
+    useTrapStore.setState({ traps: { 4: TRAP_TYPE.spikes } });
+    useHeroStore.setState({ attack: 9, magic: 9 });
+    const { health } = useHeroStore.getState();
+
+    enterRow(1, () => 0);
+
+    expect(useBoardStore.getState().playerIndex).toBe(4);
+    expect(useHeroStore.getState().health).toBe(health - 1);
+    expect(useTrapStore.getState().traps).toEqual({ 4: TRAP_TYPE.spikes });
+  });
+
+  it('lets the hero land on spikes again once she has left them, but not while she stands there', () => {
+    useEnemyStore.setState({ enemies: {} });
+    useTrapStore.setState({ traps: { 4: TRAP_TYPE.spikes } });
+    const { health } = useHeroStore.getState();
+
+    enterCell(4);
+    expect(pickEntryCell(1, () => 0)).toBe(5);
+
+    enterCell(0);
+    expect(useBoardStore.getState().visited).toEqual([0]);
+
+    enterCell(4);
+    expect(useHeroStore.getState().health).toBe(health - 2);
+    expect(useBoardStore.getState().moves).toBe(3);
   });
 
   it('moves the player and gives enemies a turn', () => {
@@ -232,6 +263,17 @@ describe('enterRow', () => {
       enterRow(0, () => 0.72);
 
       expect(useBoardStore.getState().playerIndex).toBe(3);
+    });
+
+    it('makes spikes more likely to be landed on', () => {
+      usePickupStore.setState({ pickups: { 3: PICKUP_TYPE.strawberry } });
+      useTrapStore.setState({ traps: { 2: TRAP_TYPE.spikes } });
+      setTooth(MODIFIER.spikesChance, 100);
+
+      // Weights 1, 1, 2, 1: the spikes take the roll from 40% to 80%.
+      enterRow(0, () => 0.79);
+
+      expect(useBoardStore.getState().playerIndex).toBe(2);
     });
 
     it('adds up the properties of all the teeth', () => {

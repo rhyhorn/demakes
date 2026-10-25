@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createEnemy } from '@/entities/enemy';
 import { MODIFIER } from '@/entities/tooth';
 import { PICKUP_TYPE } from '@/entities/pickup';
+import { TRAP_TYPE } from '@/entities/trap';
 
 import { getCellWeight, getCellWeights } from './cellWeight';
 
@@ -11,6 +12,7 @@ const modifiers = {
   [MODIFIER.magicChance]: 20,
   [MODIFIER.strawberryChance]: 30,
   [MODIFIER.chestChance]: -50,
+  [MODIFIER.spikesChance]: 40,
 };
 
 describe('getCellWeight', () => {
@@ -28,6 +30,10 @@ describe('getCellWeight', () => {
     expect(getCellWeight({ pickup: PICKUP_TYPE.chest }, modifiers)).toBe(0.5);
   });
 
+  it('adds the modifier of the trap type', () => {
+    expect(getCellWeight({ trap: TRAP_TYPE.spikes }, modifiers)).toBe(1.4);
+  });
+
   it('weighs a cell as 1 when its modifier is 0', () => {
     const none = { ...modifiers, [MODIFIER.attackChance]: 0 };
 
@@ -40,11 +46,13 @@ describe('getCellWeights', () => {
     const weightOf = getCellWeights(
       { 3: createEnemy('beast') },
       { 4: PICKUP_TYPE.chest },
+      { 6: TRAP_TYPE.spikes },
       modifiers,
     );
 
     expect(weightOf(3)).toBe(1.5);
     expect(weightOf(4)).toBe(0.5);
+    expect(weightOf(6)).toBe(1.4);
     expect(weightOf(5)).toBe(1);
   });
 });

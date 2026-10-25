@@ -1,12 +1,15 @@
 import { create } from 'zustand';
 
 import { advanceEnemy } from './enemy';
-import { type EnemyMap, spawnEnemies } from './spawn';
+import type { Enemy } from './types';
+
+/** Enemies by the index of the cell they stand on. */
+export type EnemyMap = Partial<Record<number, Enemy>>;
 
 interface EnemyState {
   enemies: EnemyMap;
-  /** Replaces all enemies with new ones placed on the given rows of cell indices. */
-  spawn: (rows: readonly (readonly number[])[], random?: () => number) => void;
+  /** Replaces all enemies, e.g. with the ones of a new level. */
+  setEnemies: (enemies: EnemyMap) => void;
   /** Lets every enemy react to a player move. */
   advanceTurn: () => void;
   /** Takes the enemy off the cell. Does nothing if the cell has none. */
@@ -15,7 +18,7 @@ interface EnemyState {
 
 export const useEnemyStore = create<EnemyState>()((set) => ({
   enemies: {},
-  spawn: (rows, random) => set({ enemies: spawnEnemies(rows, random) }),
+  setEnemies: (enemies) => set({ enemies }),
   advanceTurn: () =>
     set((state) => ({
       enemies: Object.fromEntries(

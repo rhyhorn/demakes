@@ -14,6 +14,7 @@ import {
   TOOTH_TYPES,
   useToothStore,
 } from '@/entities/tooth';
+import { TRAP_TYPES, useTrapStore } from '@/entities/trap';
 import { isToothRoomOpen, useToothChoiceStore } from '@/features/choose-tooth';
 import { isUpgradeRoomOpen, useUpgradeStore } from '@/features/upgrade-attack';
 
@@ -29,13 +30,18 @@ function GoldHint() {
   return <HintCard title={GOLD_INFO.name} details={[GOLD_INFO.description]} />;
 }
 
-/** A board cell describes what is in it: the hero standing there, an enemy or a pickup. */
+/** A board cell describes what is in it: the hero standing there, an enemy, a pickup or a trap. */
 function CellHint({ index }: { index: number }) {
   const hasPlayer = useBoardStore((state) => state.playerIndex === index);
   const enemy = useEnemyStore((state) => state.enemies[index]);
   const pickup = usePickupStore((state) => state.pickups[index]);
+  const trap = useTrapStore((state) => state.traps[index]);
 
   if (hasPlayer) return <HeroHint />;
+  if (trap) {
+    const { name, description } = TRAP_TYPES[trap];
+    return <HintCard title={name} details={[description]} />;
+  }
   if (pickup) {
     const { name, description } = PICKUP_TYPES[pickup];
     return <HintCard title={name} details={[description]} />;

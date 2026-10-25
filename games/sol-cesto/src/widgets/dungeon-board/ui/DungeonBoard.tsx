@@ -19,6 +19,7 @@ import {
   usePickupStore,
 } from '@/entities/pickup';
 import { getTeethModifiers, useToothStore } from '@/entities/tooth';
+import { TrapBadge, TrapFigure, useTrapStore } from '@/entities/trap';
 import {
   CellOutcomeBadge,
   enterCell,
@@ -59,13 +60,14 @@ export function DungeonBoard() {
   const visited = useBoardStore((state) => state.visited);
   const enemies = useEnemyStore((state) => state.enemies);
   const pickups = usePickupStore((state) => state.pickups);
+  const traps = useTrapStore((state) => state.traps);
   const health = useHeroStore((state) => state.health);
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
   const teeth = useToothStore((state) => state.slots);
   const deaths = useCellRemovals(enemies, visited);
   const takenPickups = useCellRemovals(pickups, visited);
-  const weightOf = getCellWeights(enemies, pickups, getTeethModifiers(teeth));
+  const weightOf = getCellWeights(enemies, pickups, traps, getTeethModifiers(teeth));
   const heroRef = useRef<HTMLSpanElement>(null);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Cell the hero is walking to. The move itself happens once she gets there.
@@ -98,6 +100,7 @@ export function DungeonBoard() {
               const chance = getCellChance(index, visited, weightOf);
               const enemy = enemies[index];
               const pickup = pickups[index];
+              const trap = traps[index];
               const canEnter = chance > 0;
 
               return (
@@ -115,17 +118,15 @@ export function DungeonBoard() {
                   <span className={canEnter ? HIDE_ON_HOVER : ''}>
                     {enemy && <EnemyAttackBadge enemy={enemy} />}
                     {pickup && <PickupBadge type={pickup} />}
+                    {trap && <TrapBadge type={trap} />}
                   </span>
                   {enemy && <EnemyFigure enemy={enemy} />}
                   {pickup && <PickupFigure type={pickup} />}
+                  {trap && <TrapFigure type={trap} />}
                   {canEnter && (
                     <span className={SHOW_ON_HOVER}>
                       <CellOutcomeBadge
-                        outcome={getCellOutcome(enemy, {
-                          health,
-                          attack,
-                          magic,
-                        })}
+                        outcome={getCellOutcome({ enemy, trap }, { health, attack, magic })}
                       />
                       <Badge
                         corner="right"

@@ -22,6 +22,7 @@ describe('getTeethModifiers', () => {
       [MODIFIER.magicChance]: 30,
       [MODIFIER.strawberryChance]: -50,
       [MODIFIER.chestChance]: 0,
+      [MODIFIER.spikesChance]: 0,
     });
   });
 

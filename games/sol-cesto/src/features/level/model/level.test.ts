@@ -12,6 +12,7 @@ import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { INITIAL_HERO_STATS, useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 import { createStartingSlots, useToothStore } from '@/entities/tooth';
+import { TRAP_TYPE, useTrapStore } from '@/entities/trap';
 
 import { enterNextRoom, exitLevel, getRoomScreen, restartGame, startLevel } from './level';
 
@@ -23,6 +24,7 @@ describe('level', () => {
     usePickupStore.setState(usePickupStore.getInitialState());
     useGameStore.setState(useGameStore.getInitialState());
     useToothStore.setState(useToothStore.getInitialState());
+    useTrapStore.setState(useTrapStore.getInitialState());
   });
 
   it('starts a level with one enemy per row at least', () => {
@@ -73,7 +75,18 @@ describe('level', () => {
     expect(useEnemyStore.getState().enemies).toBe(enemies);
   });
 
-  it('spawns new enemies on the dungeon after the upgrade room', () => {
+  it('puts spikes among the enemies and no pickups on them', () => {
+    // The last entry of the pool (spikes) on every pick.
+    startLevel(() => 0.999);
+    const { traps } = useTrapStore.getState();
+    const { pickups } = usePickupStore.getState();
+
+    expect(Object.values(traps)).toHaveLength(12);
+    expect(Object.values(traps).every((trap) => trap === TRAP_TYPE.spikes)).toBe(true);
+    Object.keys(traps).forEach((cell) => expect(cell in pickups).toBe(false));
+  });
+
+  it('spawns new dangers on the dungeon after the upgrade room', () => {
     startLevel(() => 0);
     useBoardStore.setState({ level: FIRST_LEVEL + 1 });
     useGameStore.setState({ screen: GAME_SCREEN.upgrade });
@@ -82,7 +95,7 @@ describe('level', () => {
 
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 2);
     expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
-    expect(Object.keys(useEnemyStore.getState().enemies)).toHaveLength(12);
+    expect(Object.keys(useTrapStore.getState().traps)).toHaveLength(12);
   });
 
   it('wins the run after leaving the final upgrade room', () => {

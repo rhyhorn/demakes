@@ -48,6 +48,11 @@ interface BoardState {
    */
   markVisited: (index: number) => void;
   /**
+   * Lets the player enter a visited cell again, e.g. spikes that stay on the floor. Does nothing
+   * while she stands on it.
+   */
+  reopenCell: (index: number) => void;
+  /**
    * Counts a move towards opening the exit door without walking anywhere. Every way to kill an
    * enemy counts as a move, like walking into it does.
    */
@@ -112,6 +117,12 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
   markVisited: (index) =>
     set((state) =>
       state.visited.includes(index) ? state : { visited: [...state.visited, index] },
+    ),
+  reopenCell: (index) =>
+    set((state) =>
+      index === state.playerIndex || !state.visited.includes(index)
+        ? state
+        : { visited: state.visited.filter((cell) => cell !== index) },
     ),
   countMove: () => set((state) => ({ moves: nextMoves(state) })),
   exitLevel: () =>

@@ -11,18 +11,24 @@ import { GAME_SCREEN, type GameScreen, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 import { usePickupStore } from '@/entities/pickup';
 import { useToothStore } from '@/entities/tooth';
+import { useTrapStore } from '@/entities/trap';
 
 import { SHOP_ROOM_LEVELS, TOOTH_ROOM_EVERY, UPGRADE_ROOM_EVERY } from '../config';
+import { spawnDangers } from './spawnDangers';
 
 const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => getRowCells(row));
 const CELLS = Array.from({ length: CELL_COUNT }, (_, cell) => cell);
 
-/** Fills the current level with new enemies, then fills every cell left free with pickups. */
+/**
+ * Fills the current level with new enemies and spikes, then fills every cell left free with
+ * pickups.
+ */
 export function startLevel(random?: () => number) {
-  useEnemyStore.getState().spawn(ROWS, random);
-  const { enemies } = useEnemyStore.getState();
+  const { enemies, traps } = spawnDangers(ROWS, random);
+  useEnemyStore.getState().setEnemies(enemies);
+  useTrapStore.getState().setTraps(traps);
   usePickupStore.getState().spawn(
-    CELLS.filter((cell) => !(cell in enemies)),
+    CELLS.filter((cell) => !(cell in enemies) && !(cell in traps)),
     random,
   );
 }

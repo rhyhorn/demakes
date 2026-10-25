@@ -14,10 +14,12 @@ describe('useEnemyStore', () => {
     expect(useEnemyStore.getState().enemies).toEqual({});
   });
 
-  it('spawns enemies on the given rows', () => {
-    useEnemyStore.getState().spawn([[0, 1, 2, 3]], () => 0);
+  it('replaces all enemies', () => {
+    useEnemyStore.setState({ enemies: { 1: createEnemy('beast') } });
 
-    expect(Object.keys(useEnemyStore.getState().enemies)).toEqual(['0']);
+    useEnemyStore.getState().setEnemies({ 5: shifter });
+
+    expect(useEnemyStore.getState().enemies).toEqual({ 5: shifter });
   });
 
   it('lets every enemy take its turn and keeps them on their cells', () => {

@@ -259,4 +259,22 @@ describe('useBoardStore', () => {
       expect(visited).toEqual([]);
     });
   });
+
+  it('reopens a visited cell the player has left', () => {
+    useBoardStore.setState({ visited: [0, 5], playerIndex: 5 });
+
+    useBoardStore.getState().reopenCell(0);
+
+    expect(useBoardStore.getState().visited).toEqual([5]);
+  });
+
+  it('keeps the cell the player stands on closed', () => {
+    useBoardStore.setState({ visited: [0, 5], playerIndex: 5 });
+    const before = useBoardStore.getState();
+
+    useBoardStore.getState().reopenCell(5);
+    useBoardStore.getState().reopenCell(9);
+
+    expect(useBoardStore.getState()).toBe(before);
+  });
 });

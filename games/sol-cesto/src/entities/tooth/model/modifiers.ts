@@ -17,6 +17,7 @@ export const NO_MODIFIERS: Modifiers = {
   [MODIFIER.magicChance]: 0,
   [MODIFIER.strawberryChance]: 0,
   [MODIFIER.chestChance]: 0,
+  [MODIFIER.spikesChance]: 0,
 };
 
 /** The value kept within `MIN_MODIFIER`..`MAX_MODIFIER`. */

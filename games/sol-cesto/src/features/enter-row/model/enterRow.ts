@@ -4,6 +4,7 @@ import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 import { PICKUP_EFFECT, type PickupEffect, PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { getTeethGoldMultiplier, getTeethModifiers, useToothStore } from '@/entities/tooth';
+import { TRAP_TYPES, type TrapType, useTrapStore } from '@/entities/trap';
 import { pickCount } from '@/shared/lib';
 
 import { getCellWeights } from './cellWeight';
@@ -15,6 +16,24 @@ import { getCellWeights } from './cellWeight';
 export function getEnemyDamage(enemy: Enemy, hero: { attack: number; magic: number }): number {
   const { kind, value } = getActiveAttack(enemy);
   return Math.max(0, value - hero[kind]);
+}
+
+/** What hurts the hero on a cell: an enemy, a trap or nothing. */
+export interface CellDanger {
+  enemy?: Enemy;
+  trap?: TrapType;
+}
+
+/**
+ * Damage the hero takes on entering a cell: the enemy's (see `getEnemyDamage`) or the trap's, which
+ * hurts the same whatever her attack.
+ */
+export function getCellDamage(
+  { enemy, trap }: CellDanger,
+  hero: { attack: number; magic: number },
+): number {
+  if (enemy) return getEnemyDamage(enemy, hero);
+  return trap ? TRAP_TYPES[trap].damage : 0;
 }
 
 /**
@@ -30,13 +49,14 @@ function applyPickupEffect(effect: PickupEffect, random: () => number) {
 
 /**
  * Cell of the row the player is going to land on, or undefined if the row has no cells left. Cells
- * with enemies and pickups are more or less likely to be picked as the chance modifiers of the teeth say.
+ * with enemies, pickups and traps are more or less likely to be picked as the chance modifiers of the teeth say.
  * Nothing changes yet: the board shows the hero walking there first and then calls `enterCell`.
  */
 export function pickEntryCell(row: number, random: () => number = Math.random): number | undefined {
   const weightOf = getCellWeights(
     useEnemyStore.getState().enemies,
     usePickupStore.getState().pickups,
+    useTrapStore.getState().traps,
     getTeethModifiers(useToothStore.getState().slots),
   );
   return pickRowCell(row, useBoardStore.getState().visited, random, weightOf);
@@ -44,22 +64,25 @@ export function pickEntryCell(row: number, random: () => number = Math.random): 
 
 /**
  * Moves the player into the cell. If she hasn't been there yet, an enemy on it hits the hero and
- * disappears, and a pickup there gives her what it holds (health or gold) and disappears too. Then
- * the rest of the enemies take their turn. When the hit takes the hero's health to 0 she dies, but
+ * disappears, and a pickup there gives her what it holds (health or gold) and disappears too.
+ * Spikes hurt her but stay, and once she leaves them she can land on them again. Then the
+ * enemies take their turn. When the hit takes the hero's health to 0 she dies, but
  * the game isn't over yet: the board plays her death first and then calls `finishDeath`.
  */
 export function enterCell(index: number, random: () => number = Math.random) {
-  const { visited } = useBoardStore.getState();
+  const { visited, playerIndex: previousIndex } = useBoardStore.getState();
   useBoardStore.getState().enterCell(index);
   const { visited: visitedNow, playerIndex } = useBoardStore.getState();
   if (visitedNow === visited || playerIndex === null) return;
 
-  const { enemies, removeEnemy, advanceTurn } = useEnemyStore.getState();
-  const enemy = enemies[playerIndex];
-  if (enemy) {
-    const hero = useHeroStore.getState();
-    hero.takeDamage(getEnemyDamage(enemy, hero));
+  const { traps } = useTrapStore.getState();
+  if (previousIndex !== null && traps[previousIndex]) {
+    useBoardStore.getState().reopenCell(previousIndex);
   }
+
+  const { enemies, removeEnemy, advanceTurn } = useEnemyStore.getState();
+  const hero = useHeroStore.getState();
+  hero.takeDamage(getCellDamage({ enemy: enemies[playerIndex], trap: traps[playerIndex] }, hero));
   removeEnemy(playerIndex);
 
   const { pickups, removePickup } = usePickupStore.getState();

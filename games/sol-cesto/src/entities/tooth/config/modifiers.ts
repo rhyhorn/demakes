@@ -12,6 +12,8 @@ export const MODIFIER = {
   strawberryChance: 'strawberryChance',
   /** Chance to land on a chest. */
   chestChance: 'chestChance',
+  /** Chance to land on spikes. */
+  spikesChance: 'spikesChance',
 } as const;
 
 export type Modifier = (typeof MODIFIER)[keyof typeof MODIFIER];
@@ -66,5 +68,12 @@ export const MODIFIERS: Record<
     icon: '🪎',
     color: '',
     helpsWhenRaised: true,
+  },
+  [MODIFIER.spikesChance]: {
+    name: 'Шанс шипів',
+    description: 'Шанс потрапити на шипи.',
+    icon: '▲',
+    color: 'text-[#8b8b84]',
+    helpsWhenRaised: false,
   },
 };

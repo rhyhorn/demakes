@@ -6,8 +6,7 @@ export {
   getActiveAttack,
   getEnemyTraits,
 } from './model/enemy';
-export { useEnemyStore } from './model/enemyStore';
-export { type EnemyMap, spawnEnemies } from './model/spawn';
+export { type EnemyMap, useEnemyStore } from './model/enemyStore';
 export type {
   AttackKind,
   Enemy,

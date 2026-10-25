@@ -2,6 +2,7 @@ import type { CellWeight } from '@/entities/board';
 import { type AttackKind, type Enemy, type EnemyMap, getActiveAttack } from '@/entities/enemy';
 import { MODIFIER, type Modifier, type Modifiers } from '@/entities/tooth';
 import { PICKUP_TYPE, type PickupMap, type PickupType } from '@/entities/pickup';
+import { TRAP_TYPE, type TrapMap, type TrapType } from '@/entities/trap';
 
 /** The modifier that makes enemies with this active attack easier or harder to land on. */
 const ENEMY_CHANCE_MODIFIER: Record<AttackKind, Modifier> = {
@@ -15,15 +16,22 @@ const PICKUP_CHANCE_MODIFIER: Record<PickupType, Modifier> = {
   [PICKUP_TYPE.chest]: MODIFIER.chestChance,
 };
 
-/** What lies on a cell: an enemy, a pickup or nothing. */
+/** The modifier that makes traps of this type easier or harder to land on. */
+const TRAP_CHANCE_MODIFIER: Record<TrapType, Modifier> = {
+  [TRAP_TYPE.spikes]: MODIFIER.spikesChance,
+};
+
+/** What lies on a cell: an enemy, a pickup, a trap or nothing. */
 interface CellContent {
   enemy?: Enemy;
   pickup?: PickupType;
+  trap?: TrapType;
 }
 
-function getChanceModifier({ enemy, pickup }: CellContent): Modifier | undefined {
+function getChanceModifier({ enemy, pickup, trap }: CellContent): Modifier | undefined {
   if (enemy) return ENEMY_CHANCE_MODIFIER[getActiveAttack(enemy).kind];
-  return pickup && PICKUP_CHANCE_MODIFIER[pickup];
+  if (pickup) return PICKUP_CHANCE_MODIFIER[pickup];
+  return trap && TRAP_CHANCE_MODIFIER[trap];
 }
 
 /**
@@ -36,11 +44,13 @@ export function getCellWeight(content: CellContent, modifiers: Modifiers): numbe
   return modifier ? 1 + modifiers[modifier] / 100 : 1;
 }
 
-/** Weights of every board cell for these enemies, pickups and modifiers. */
+/** Weights of every board cell for these enemies, pickups, traps and modifiers. */
 export function getCellWeights(
   enemies: EnemyMap,
   pickups: PickupMap,
+  traps: TrapMap,
   modifiers: Modifiers,
 ): CellWeight {
-  return (index) => getCellWeight({ enemy: enemies[index], pickup: pickups[index] }, modifiers);
+  return (index) =>
+    getCellWeight({ enemy: enemies[index], pickup: pickups[index], trap: traps[index] }, modifiers);
 }
