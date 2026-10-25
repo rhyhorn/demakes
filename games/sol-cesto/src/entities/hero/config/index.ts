@@ -57,6 +57,7 @@ export const INVENTORY_ITEM = {
   potion: 'potion',
   spear: 'spear',
   bomb: 'bomb',
+  whirlwind: 'whirlwind',
 } as const;
 
 export type InventoryItem = (typeof INVENTORY_ITEM)[keyof typeof INVENTORY_ITEM];
@@ -72,6 +73,11 @@ export const ITEM_EFFECT = {
    * the exit door, not one per kill.
    */
   killEnemyPerRow: 'kill-enemy-per-row',
+  /**
+   * Kills every enemy in the row the player picks on the board. Using it counts as one move towards
+   * opening the exit door, not one per kill.
+   */
+  killRowEnemies: 'kill-row-enemies',
 } as const;
 
 export type ItemEffectKind = (typeof ITEM_EFFECT)[keyof typeof ITEM_EFFECT];
@@ -79,7 +85,8 @@ export type ItemEffectKind = (typeof ITEM_EFFECT)[keyof typeof ITEM_EFFECT];
 export type ItemEffect =
   | { kind: typeof ITEM_EFFECT.heal; amount: number }
   | { kind: typeof ITEM_EFFECT.killEnemy }
-  | { kind: typeof ITEM_EFFECT.killEnemyPerRow };
+  | { kind: typeof ITEM_EFFECT.killEnemyPerRow }
+  | { kind: typeof ITEM_EFFECT.killRowEnemies };
 
 export interface InventoryItemConfig {
   name: string;
@@ -97,7 +104,7 @@ export const INVENTORY_ITEMS: Record<InventoryItem, InventoryItemConfig> = {
   [INVENTORY_ITEM.potion]: {
     name: 'Зілля',
     icon: '🧪',
-    description: 'Лікує вас на 1 здоров\'я',
+    description: "Лікує вас на 1 здоров'я",
     effect: { kind: ITEM_EFFECT.heal, amount: 1 },
     price: 3,
   },
@@ -111,9 +118,15 @@ export const INVENTORY_ITEMS: Record<InventoryItem, InventoryItemConfig> = {
   [INVENTORY_ITEM.bomb]: {
     name: 'Бомба',
     icon: '💣',
-    description:
-      'Убиває по одному ворогу в кожному рядку',
+    description: 'Убиває по одному ворогу в кожному рядку',
     effect: { kind: ITEM_EFFECT.killEnemyPerRow },
     price: 7,
+  },
+  [INVENTORY_ITEM.whirlwind]: {
+    name: 'Вихор',
+    icon: '🌪️',
+    description: 'Змітає всіх ворогів в обраному рядку',
+    effect: { kind: ITEM_EFFECT.killRowEnemies },
+    price: 6,
   },
 };

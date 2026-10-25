@@ -4,7 +4,7 @@ import { useBoardStore } from '@/entities/board';
 import { createEnemy, useEnemyStore } from '@/entities/enemy';
 import { INVENTORY_ITEM, useHeroStore } from '@/entities/hero';
 
-import { applyItem, canUseItem, consumeItem, pickItemTarget } from './inventory';
+import { applyItem, canUseItem, consumeItem, getRowItemTargets, pickItemTarget } from './inventory';
 
 describe('canUseItem', () => {
   it('lets a potion be used only while the hero is hurt', () => {
@@ -15,6 +15,15 @@ describe('canUseItem', () => {
   it('always lets a spear and a bomb be used', () => {
     expect(canUseItem(INVENTORY_ITEM.spear, { health: 5, maxHealth: 5 })).toBe(true);
     expect(canUseItem(INVENTORY_ITEM.bomb, { health: 5, maxHealth: 5 })).toBe(true);
+  });
+});
+
+describe('getRowItemTargets', () => {
+  it('lists the rows with enemies', () => {
+    const beast = createEnemy('beast');
+
+    expect(getRowItemTargets({ 1: beast, 3: beast, 13: beast })).toEqual([0, 3]);
+    expect(getRowItemTargets({})).toEqual([]);
   });
 });
 
@@ -155,6 +164,30 @@ describe('applyItem', () => {
     expect(useBoardStore.getState().visited).toEqual([2]);
     expect(useBoardStore.getState().moves).toBe(1);
     expect(useHeroStore.getState().inventory).toEqual([]);
+  });
+
+  it('kills every enemy in the row a whirlwind is aimed at and counts it as a single move', () => {
+    const beast = createEnemy('beast');
+    // Row 1 is cells 4–7.
+    useEnemyStore.setState({ enemies: { 2: beast, 4: beast, 6: beast, 7: beast } });
+    useBoardStore.setState({ moves: 2 });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.whirlwind, INVENTORY_ITEM.potion] });
+
+    expect(applyItem(0, 1)).toBe(true);
+
+    expect(useEnemyStore.getState().enemies).toEqual({ 2: beast });
+    expect(useBoardStore.getState().visited).toEqual([4, 6, 7]);
+    expect(useBoardStore.getState().moves).toBe(3);
+    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
+  });
+
+  it('keeps a whirlwind without a row', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.whirlwind] });
+
+    expect(consumeItem(0)).toBe(false);
+
+    expect(useBoardStore.getState().moves).toBe(0);
+    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.whirlwind]);
   });
 
   it('uses up the spear when its enemy is already gone', () => {

@@ -1,14 +1,26 @@
 import { type MouseEvent, useState } from 'react';
 
+import { useEnemyStore } from '@/entities/enemy';
+import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import {
   getInventorySlots,
   INVENTORY_ITEMS,
   INVENTORY_SLOT,
+  type InventoryItem,
   type InventorySlot,
   useHeroStore,
 } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
-import { applyItem, canUseItem, pickItemTarget } from '@/features/inventory';
+import {
+  applyItem,
+  cancelItemAim,
+  canUseItem,
+  getRowItemTargets,
+  isRowItem,
+  pickItemTarget,
+  toggleItemAim,
+  useItemAimStore,
+} from '@/features/inventory';
 
 import { ItemProjectile } from './ItemProjectile';
 
@@ -33,27 +45,40 @@ interface InventorySlotViewProps {
   enabled: boolean;
   /** Whether this slot's item is the one flying: the slot looks empty meanwhile. */
   flying: boolean;
+  /** Whether the player is picking a row on the board for this slot's item. */
+  aiming: boolean;
   onUse: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
 /**
  * One slot: available ones rest on a hand, locked ones are dark.
  * Clicking an item uses it; an item that would do nothing now is dimmed and cannot be clicked.
+ * A row item is used only in the dungeon, on a row with enemies: clicking it starts aiming (the slot
+ * glows), and clicking it again stops.
  */
-function InventorySlotView({ slot, enabled, flying, onUse }: InventorySlotViewProps) {
+function InventorySlotView({ slot, enabled, flying, aiming, onUse }: InventorySlotViewProps) {
   const health = useHeroStore((state) => state.health);
   const maxHealth = useHeroStore((state) => state.maxHealth);
+  const inDungeon = useGameStore((state) => state.screen === GAME_SCREEN.dungeon);
+  const hasRowTargets = useEnemyStore((state) => getRowItemTargets(state.enemies).length > 0);
   const base =
     'flex h-full w-full flex-col items-center justify-end rounded-[calc(12*var(--px))] pb-[calc(4*var(--px))] leading-none';
 
   switch (slot.state) {
     case INVENTORY_SLOT.filled: {
-      const usable = canUseItem(slot.item, { health, maxHealth });
+      const usable =
+        canUseItem(slot.item, { health, maxHealth }) &&
+        (!isRowItem(slot.item) || (inDungeon && hasRowTargets));
       return (
         <button
           type="button"
-          className={`${base} bg-[#2b3036] enabled:cursor-pointer enabled:hover:bg-[#3a4048]`}
+          className={`${base} enabled:cursor-pointer ${
+            aiming
+              ? 'bg-[#5a2a24] shadow-[0_0_calc(16*var(--px))_#e0533d]'
+              : 'bg-[#2b3036] enabled:hover:bg-[#3a4048]'
+          }`}
           aria-label={`Використати: ${INVENTORY_ITEMS[slot.item].name}`}
+          aria-pressed={isRowItem(slot.item) ? aiming : undefined}
           disabled={!usable || !enabled}
           onClick={onUse}
         >
@@ -99,6 +124,7 @@ export function InventoryPanel() {
   const slots = getInventorySlots(inventory, inventorySize);
   // Item on its way to the enemy it hits. It is used once it gets there.
   const [thrown, setThrown] = useState<Throw | null>(null);
+  const aimingSlot = useItemAimStore((state) => state.aimingSlot);
 
   const throwItem = (slot: number, icon: string, event: MouseEvent<HTMLButtonElement>) => {
     const target = pickItemTarget(slot);
@@ -108,6 +134,16 @@ export function InventoryPanel() {
       return;
     }
     setThrown({ slot, target, icon, from: iconElement.getBoundingClientRect() });
+  };
+
+  const clickItem = (slot: number, item: InventoryItem, event: MouseEvent<HTMLButtonElement>) => {
+    if (isRowItem(item)) {
+      toggleItemAim(slot);
+      return;
+    }
+    // Using another item shifts the slots after it, so the aimed one would be lost.
+    cancelItemAim();
+    throwItem(slot, INVENTORY_ITEMS[item].icon, event);
   };
 
   return (
@@ -129,9 +165,9 @@ export function InventoryPanel() {
             slot={slot}
             enabled={thrown === null}
             flying={thrown?.slot === index}
+            aiming={aimingSlot === index}
             onUse={(event) =>
-              slot.state === INVENTORY_SLOT.filled &&
-              throwItem(index, INVENTORY_ITEMS[slot.item].icon, event)
+              slot.state === INVENTORY_SLOT.filled && clickItem(index, slot.item, event)
             }
           />
         </li>

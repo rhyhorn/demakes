@@ -149,6 +149,8 @@ describe('useHeroStore', () => {
   });
 
   it('adds an item after the carried ones', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.potion, INVENTORY_ITEM.spear] });
+
     useHeroStore.getState().addItem(INVENTORY_ITEM.potion);
 
     expect(useHeroStore.getState().inventory).toEqual([

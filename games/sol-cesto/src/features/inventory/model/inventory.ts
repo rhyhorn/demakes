@@ -1,5 +1,5 @@
 import { BOARD_SIZE, getRowCells, useBoardStore } from '@/entities/board';
-import { useEnemyStore } from '@/entities/enemy';
+import { type EnemyMap, useEnemyStore } from '@/entities/enemy';
 import { INVENTORY_ITEMS, ITEM_EFFECT, type InventoryItem, useHeroStore } from '@/entities/hero';
 import { pickCells } from '@/shared/lib';
 
@@ -13,6 +13,7 @@ export const canUseItem = (item: InventoryItem, hero: { health: number; maxHealt
       return hero.health < hero.maxHealth;
     case ITEM_EFFECT.killEnemy:
     case ITEM_EFFECT.killEnemyPerRow:
+    case ITEM_EFFECT.killRowEnemies:
       return true;
     default: {
       const unknown: never = effect;
@@ -70,10 +71,37 @@ const explodeBomb = (random: () => number) => {
 };
 
 /**
- * Uses the item in inventory slot `index` on `target` (from `pickItemTarget`): applies its effect
- * and takes it out of the inventory. A spear without a target is simply used up. `random` picks
- * the enemies a bomb kills. Does nothing (and keeps the item) if the slot is empty or the item would
- * do nothing now. Returns whether the item was used.
+ * A whirlwind: kills every enemy in the row, closing their cells as if visited. Using it counts as
+ * one move towards opening the exit door, however many enemies it kills.
+ */
+const sweepRow = (row: number) => {
+  const { enemies, removeEnemy } = useEnemyStore.getState();
+  const board = useBoardStore.getState();
+  getRowCells(row)
+    .filter((cell) => cell in enemies)
+    .forEach((cell) => {
+      removeEnemy(cell);
+      board.markVisited(cell);
+    });
+  board.countMove();
+};
+
+/** Whether the item is aimed at a row the player picks on the board, like a whirlwind. */
+export const isRowItem = (item: InventoryItem) =>
+  INVENTORY_ITEMS[item].effect?.kind === ITEM_EFFECT.killRowEnemies;
+
+/** Rows a row item can be aimed at: the ones with enemies, so it is never wasted on an empty row. */
+export const getRowItemTargets = (enemies: EnemyMap) =>
+  Array.from({ length: BOARD_SIZE }, (_, row) => row).filter((row) =>
+    getRowCells(row).some((cell) => cell in enemies),
+  );
+
+/**
+ * Uses the item in inventory slot `index` on `target`: the cell from `pickItemTarget`, or for a
+ * row item the row the player picked. Applies its effect and takes it out of the inventory. A spear
+ * without a target is simply used up. `random` picks the enemies a bomb kills. Does nothing (and
+ * keeps the item) if the slot is empty, the item would do nothing now or a row item has no row.
+ * Returns whether the item was used.
  */
 export const applyItem = (index: number, target?: number, random: () => number = Math.random) => {
   const hero = useHeroStore.getState();
@@ -81,6 +109,10 @@ export const applyItem = (index: number, target?: number, random: () => number =
   if (item === undefined || !canUseItem(item, hero)) return false;
 
   const { effect } = INVENTORY_ITEMS[item];
+  if (effect?.kind === ITEM_EFFECT.killRowEnemies) {
+    if (target === undefined) return false;
+    sweepRow(target);
+  }
   if (effect?.kind === ITEM_EFFECT.heal) hero.heal(effect.amount);
   if (effect?.kind === ITEM_EFFECT.killEnemy && target !== undefined) killEnemy(target);
   if (effect?.kind === ITEM_EFFECT.killEnemyPerRow) explodeBomb(random);

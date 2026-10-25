@@ -23,8 +23,12 @@ export const INITIAL_HERO_STATS = {
   goldMultiplier: 1,
   /** How many inventory slots are available (0 to `MAX_INVENTORY_SIZE`). */
   inventorySize: 3,
-  /** Placeholder items, as on the reference: a potion and a spear. */
-  inventory: [INVENTORY_ITEM.potion, INVENTORY_ITEM.spear] as readonly InventoryItem[],
+  /** Placeholder items, as on the reference: a potion and a spear, plus a whirlwind to try out. */
+  inventory: [
+    INVENTORY_ITEM.potion,
+    INVENTORY_ITEM.spear,
+    INVENTORY_ITEM.whirlwind,
+  ] as readonly InventoryItem[],
 } as const;
 
 interface HeroState {

@@ -1,4 +1,4 @@
-import { type CSSProperties, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 
 import {
   BOARD_SIZE,
@@ -28,6 +28,12 @@ import {
   getCellWeights,
   pickEntryCell,
 } from '@/features/enter-row';
+import {
+  applyAimedItem,
+  cancelItemAim,
+  getRowItemTargets,
+  useItemAimStore,
+} from '@/features/inventory';
 import { Badge } from '@/shared/ui';
 
 import { useCellRemovals } from '../lib/useCellRemovals';
@@ -55,6 +61,11 @@ const boardStyle = { '--board-size': BOARD_SIZE } as CSSProperties;
  */
 const SHOW_ON_HOVER = 'hidden group-enabled:group-hover:contents group-focus-visible:contents';
 const HIDE_ON_HOVER = 'group-enabled:group-hover:hidden group-focus-visible:hidden';
+/** A hovered row: grey when the hero would walk into it, red when a row item is aimed at it. */
+const WALK_HOVER =
+  'group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36]';
+const AIM_HOVER =
+  'group-enabled:group-hover:border-[#e0533d] group-enabled:group-hover:bg-[#4a2a26] group-focus-visible:border-[#e0533d]';
 
 export function DungeonBoard() {
   const playerIndex = useBoardStore((state) => state.playerIndex);
@@ -76,11 +87,25 @@ export function DungeonBoard() {
   const heroIndex = destination ?? playerIndex;
   // Her health has run out: the board plays her death, then the game is over.
   const isDead = health === 0;
+  // A row item is aimed: clicking a row with enemies uses it there instead of moving the hero.
+  const isAiming = useItemAimStore((state) => state.aimingSlot !== null);
+  const aimTargets = getRowItemTargets(enemies);
   // A hit that doesn't kill her makes her flash red; a deadly one plays her death instead.
   const { hitId, finishHit } = useHeroHit(health);
   let heroAnimationClass: string | undefined;
   if (isDead) heroAnimationClass = styles.heroDeath;
   else if (hitId !== null) heroAnimationClass = styles.heroHit;
+  // Escape puts the aimed item back, and so does leaving the board.
+  useEffect(() => {
+    if (!isAiming) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') cancelItemAim();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isAiming]);
+  useEffect(() => cancelItemAim, []);
+
   useHeroMoveAnimation(heroIndex, heroRef, cellRefs, () => {
     if (destination === null) return;
     enterCell(destination);
@@ -95,19 +120,27 @@ export function DungeonBoard() {
           <button
             key={row}
             type="button"
-            className="group col-span-full grid cursor-pointer grid-cols-subgrid disabled:cursor-default"
+            className={`group col-span-full grid grid-cols-subgrid disabled:cursor-default ${
+              isAiming ? 'cursor-crosshair' : 'cursor-pointer'
+            }`}
             disabled={
-              isDead || destination !== null || getAvailableCells(row, visited).length === 0
+              isDead ||
+              destination !== null ||
+              (isAiming ? !aimTargets.includes(row) : getAvailableCells(row, visited).length === 0)
             }
-            aria-label={`Рядок ${row + 1}`}
-            onClick={() => setDestination(pickEntryCell(row) ?? null)}
+            aria-label={isAiming ? `Змести ворогів у рядку ${row + 1}` : `Рядок ${row + 1}`}
+            onClick={() => {
+              if (isAiming) applyAimedItem(row);
+              else setDestination(pickEntryCell(row) ?? null);
+            }}
           >
             {cellIndices.map((index) => {
               const chance = getCellChance(index, visited, weightOf);
               const enemy = enemies[index];
               const pickup = pickups[index];
               const trap = traps[index];
-              const canEnter = chance > 0;
+              // While aiming there is no move to preview.
+              const canEnter = chance > 0 && !isAiming;
 
               return (
                 <div
@@ -116,9 +149,9 @@ export function DungeonBoard() {
                     cellRefs.current[index] = element;
                     registerBoardCell(index, element);
                   }}
-                  className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36] ${
-                    visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''
-                  }`}
+                  className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] ${
+                    isAiming ? AIM_HOVER : WALK_HOVER
+                  } ${visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''}`}
                   {...getHintHandlers({ kind: HINT_TARGET.cell, index })}
                 >
                   <span className={canEnter ? HIDE_ON_HOVER : ''}>
