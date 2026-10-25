@@ -1,3 +1,4 @@
+import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import {
   getTeethModifiers,
   MODIFIER,
@@ -20,6 +21,7 @@ function ModifierRow({ modifier, value }: { modifier: Modifier; value: number })
     <li
       className="flex items-center justify-between gap-[calc(8*var(--px))]"
       aria-label={`${name}: ${formatModifier(value)}`}
+      {...getHintHandlers({ kind: HINT_TARGET.modifier, modifier })}
     >
       <span className={`text-[length:calc(48*var(--px))] leading-none ${color}`} aria-hidden="true">
         {icon}

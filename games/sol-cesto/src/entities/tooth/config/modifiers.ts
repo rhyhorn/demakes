@@ -21,33 +21,37 @@ export const MIN_MODIFIER = -100;
 export const MAX_MODIFIER = 100;
 
 /**
- * How each modifier looks and is called in the book. `helpsWhenRaised` tells whether raising it is
+ * How each modifier looks, is called and described in the book. `helpsWhenRaised` tells whether raising it is
  * good for the hero: more strawberries help her, more enemies hurt her.
  */
 export const MODIFIERS: Record<
   Modifier,
-  { name: string; icon: string; color: string; helpsWhenRaised: boolean }
+  { name: string; description: string; icon: string; color: string; helpsWhenRaised: boolean }
 > = {
   [MODIFIER.attackChance]: {
     name: 'Шанс фізичного ворога',
+    description: 'Шанс потрапити на фізичного ворога.',
     icon: '🗡',
     color: 'text-[#e05a5a]',
     helpsWhenRaised: false,
   },
   [MODIFIER.magicChance]: {
     name: 'Шанс магічного ворога',
+    description: 'Шанс потрапити на магічного ворога.',
     icon: '🌀',
     color: 'text-[#5a8de0]',
     helpsWhenRaised: false,
   },
   [MODIFIER.strawberryChance]: {
     name: 'Шанс полуниці',
+    description: 'Шанс потрапити на полуницю.',
     icon: '🍓',
     color: '',
     helpsWhenRaised: true,
   },
   [MODIFIER.chestChance]: {
     name: 'Шанс скрині',
+    description: 'Шанс потрапити на скриню.',
     icon: '🪎',
     color: '',
     helpsWhenRaised: true,

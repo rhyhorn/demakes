@@ -1,6 +1,7 @@
 .sidebar {
   display: grid;
-  grid-template-rows: 290fr 140fr 425fr 225fr;
+  /* minmax(0, …): a long hint must not grow its row and push the panels below. */
+  grid-template-rows: minmax(0, 290fr) minmax(0, 140fr) minmax(0, 425fr) minmax(0, 225fr);
   gap: calc(6 * var(--px));
   height: 100%;
   padding: calc(6 * var(--px));

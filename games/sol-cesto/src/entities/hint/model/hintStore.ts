@@ -6,6 +6,7 @@ export const HINT_TARGET = {
   hero: 'hero',
   tooth: 'tooth',
   item: 'item',
+  modifier: 'modifier',
 } as const;
 
 export type HintTargetKind = (typeof HINT_TARGET)[keyof typeof HINT_TARGET];
@@ -30,6 +31,11 @@ export type HintTarget =
       kind: typeof HINT_TARGET.item;
       /** Slot in the hero's inventory. */
       slot: number;
+    }
+  | {
+      kind: typeof HINT_TARGET.modifier;
+      /** Modifier in the book, one of `MODIFIER` from `entities/tooth`. */
+      modifier: string;
     };
 
 /** Targets are plain objects of primitives, so equal fields mean the same element. */

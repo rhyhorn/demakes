@@ -3,7 +3,15 @@ import { ENEMY_TYPES, getEnemyTraits, useEnemyStore } from '@/entities/enemy';
 import { HERO_INFO, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { HINT_TARGET, HintCard, type HintTarget, useHintStore } from '@/entities/hint';
-import { describeToothProperty, TOOTH_TYPES, useToothStore } from '@/entities/tooth';
+import {
+  describeToothProperty,
+  formatModifier,
+  getTeethModifiers,
+  type Modifier,
+  MODIFIERS,
+  TOOTH_TYPES,
+  useToothStore,
+} from '@/entities/tooth';
 
 function HeroHint() {
   return <HintCard title={HERO_INFO.name} details={[HERO_INFO.description]} />;
@@ -46,6 +54,25 @@ function ItemHint({ slot }: { slot: number }) {
   return <HintCard title={name} details={[description]} />;
 }
 
+const isModifier = (value: string): value is Modifier => value in MODIFIERS;
+
+/**
+ * A modifier of the book shows its icon and current value from the teeth, as in the book, and
+ * tells what it changes.
+ */
+function ModifierHint({ modifier }: { modifier: string }) {
+  const teeth = useToothStore((state) => state.slots);
+
+  if (!isModifier(modifier)) return null;
+  const { icon, description } = MODIFIERS[modifier];
+  return (
+    <HintCard
+      title={`${icon} ${formatModifier(getTeethModifiers(teeth)[modifier])}`}
+      details={[description]}
+    />
+  );
+}
+
 /** One view per kind of target. The `never` check makes TypeScript demand a view for a new kind. */
 function HintView({ target }: { target: HintTarget }) {
   switch (target.kind) {
@@ -57,6 +84,8 @@ function HintView({ target }: { target: HintTarget }) {
       return <ToothHint slot={target.slot} />;
     case HINT_TARGET.item:
       return <ItemHint slot={target.slot} />;
+    case HINT_TARGET.modifier:
+      return <ModifierHint modifier={target.modifier} />;
     default: {
       const unknownTarget: never = target;
       return unknownTarget;
