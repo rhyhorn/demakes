@@ -1,7 +1,5 @@
-import { useHeroStore } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import {
-  getTeethGoldMultiplier,
   getTeethModifiers,
   MODIFIER,
   type Modifier,
@@ -9,6 +7,8 @@ import {
   MODIFIERS,
   useToothStore,
 } from '@/entities/tooth';
+
+import { useGoldMultiplier } from '../lib/useGoldMultiplier';
 
 /** Modifiers on each page of the book, top to bottom, as on the reference. */
 const PAGES: readonly (readonly Modifier[])[] = [
@@ -38,17 +38,20 @@ function ModifierRow({ modifier, value }: { modifier: Modifier; value: number })
   );
 }
 
+const GOLD_MULTIPLIER_HINT = { kind: HINT_TARGET.goldMultiplier } as const;
+
 /**
  * The gold multiplier: every gold income is multiplied by it. Unlike the others it is not a
  * percentage: the hero's base multiplier plus the bonus of the teeth in the mouth.
  */
-function GoldMultiplierRow({ teethBonus }: { teethBonus: number }) {
-  const multiplier = useHeroStore((state) => state.goldMultiplier) + teethBonus;
+function GoldMultiplierRow() {
+  const multiplier = useGoldMultiplier();
 
   return (
     <li
       className="flex items-center justify-between gap-[calc(8*var(--px))]"
       aria-label={`Множник золота: ×${multiplier}`}
+      {...getHintHandlers(GOLD_MULTIPLIER_HINT)}
     >
       <span className="text-[length:calc(40*var(--px))] leading-none" aria-hidden="true">
         🪙
@@ -86,9 +89,7 @@ export function ModifiersPanel() {
           {page.map((modifier) => (
             <ModifierRow key={modifier} modifier={modifier} value={total[modifier]} />
           ))}
-          {pageIndex === PAGES.length - 1 && (
-            <GoldMultiplierRow teethBonus={getTeethGoldMultiplier(teeth)} />
-          )}
+          {pageIndex === PAGES.length - 1 && <GoldMultiplierRow />}
         </ul>
       ))}
     </div>

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 
 /** Screens of the game. Only one is shown at a time, instead of the whole scene. */
 export const GAME_SCREEN = {
+  /** The player picks the hero of the run. */
+  heroSelect: 'hero-select',
   dungeon: 'dungeon',
   gameOver: 'game-over',
   /** A closed room where the hero raises her physical or magic attack before the exit opens. */
@@ -16,8 +18,8 @@ export const GAME_SCREEN = {
 
 export type GameScreen = (typeof GAME_SCREEN)[keyof typeof GAME_SCREEN];
 
-/** Screen the game opens on: a run starts in a room with enemies. */
-export const START_SCREEN: GameScreen = GAME_SCREEN.dungeon;
+/** Screen the game opens on: a run starts with picking the hero, then goes into a room with enemies. */
+export const START_SCREEN: GameScreen = GAME_SCREEN.heroSelect;
 
 interface GameState {
   screen: GameScreen;

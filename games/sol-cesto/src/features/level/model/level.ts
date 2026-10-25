@@ -59,13 +59,13 @@ export function exitLevel(random?: () => number) {
 }
 
 /**
- * Starts a new run from the very beginning: a fresh hero with the starting teeth on a fresh
- * level, back in the dungeon.
+ * Starts a new run from the very beginning: the starting teeth on a fresh level, and back to
+ * picking the hero, who then goes into the dungeon.
  */
 export function restartGame(random?: () => number) {
   useHeroStore.getState().reset();
   useToothStore.getState().reset(random);
   useBoardStore.getState().reset();
   startLevel(random);
-  useGameStore.getState().showScreen(GAME_SCREEN.dungeon);
+  useGameStore.getState().showScreen(GAME_SCREEN.heroSelect);
 }

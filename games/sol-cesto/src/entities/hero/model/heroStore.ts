@@ -1,13 +1,23 @@
 import { create } from 'zustand';
 
-import { type HeroAttackKind, INVENTORY_ITEM, type InventoryItem } from '../config';
+import {
+  DEFAULT_HERO_CLASS,
+  type HeroAttackKind,
+  type HeroClass,
+  HERO_CLASSES,
+  INVENTORY_ITEM,
+  type InventoryItem,
+} from '../config';
 
-/** Hero stats at the start of a run, as on the reference screenshot. */
+/** Stats a hero of the class starts a run with: full health, their own attack and magic. */
+const getClassStats = (heroClass: HeroClass) => {
+  const { maxHealth, attack, magic } = HERO_CLASSES[heroClass].stats;
+  return { heroClass, health: maxHealth, maxHealth, attack, magic };
+};
+
+/** Hero stats at the start of a run, before the player picks a hero (`chooseHero`). */
 export const INITIAL_HERO_STATS = {
-  health: 5,
-  maxHealth: 5,
-  attack: 2,
-  magic: 1,
+  ...getClassStats(DEFAULT_HERO_CLASS),
   gold: 0,
   /** Every gold income is multiplied by this plus the bonus of the teeth; 1 keeps it as is. */
   goldMultiplier: 1,
@@ -18,6 +28,8 @@ export const INITIAL_HERO_STATS = {
 } as const;
 
 interface HeroState {
+  /** Which hero the player picked: the stats a run starts with come from `HERO_CLASSES`. */
+  heroClass: HeroClass;
   /** Current health, from 0 up to `maxHealth`. */
   health: number;
   maxHealth: number;
@@ -50,6 +62,8 @@ interface HeroState {
   addItem: (item: InventoryItem) => void;
   /** Takes the item out of inventory slot `index`; later items shift down. Ignores empty slots. */
   removeItem: (index: number) => void;
+  /** Makes the hero of the class: their stats as `HERO_CLASSES` says, health full. */
+  chooseHero: (heroClass: HeroClass) => void;
   /** Brings back the stats the hero starts a run with. */
   reset: () => void;
 }
@@ -84,5 +98,6 @@ export const useHeroStore = create<HeroState>()((set) => ({
         ? { inventory: state.inventory.filter((_, slot) => slot !== index) }
         : state,
     ),
+  chooseHero: (heroClass) => set(getClassStats(heroClass)),
   reset: () => set(INITIAL_HERO_STATS),
 }));

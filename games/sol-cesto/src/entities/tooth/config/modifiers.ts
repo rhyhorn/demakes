@@ -22,7 +22,8 @@ export type Modifier = (typeof MODIFIER)[keyof typeof MODIFIER];
  */
 export const GOLD_MULTIPLIER_INFO = {
   name: 'Множник золота',
-  description: 'Кожне отримане золото множиться на нього.',
+  /** What the multiplier does, for the player. */
+  describe: (multiplier: number) => `Кількість отриманого золота збільшується на ×${multiplier}`,
   icon: '🪙',
 } as const;
 

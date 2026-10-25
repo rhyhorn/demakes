@@ -1,13 +1,14 @@
 import { describeMovesLeft, DOOR_INFO, isExitOpen, useBoardStore } from '@/entities/board';
 import { ENEMY_TYPES, getEnemyTraits, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
-import { GOLD_INFO, HERO_INFO, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
+import { GOLD_INFO, HERO_CLASSES, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { HINT_TARGET, HintCard, type HintTarget, useHintStore } from '@/entities/hint';
 import {
   describeToothProperty,
   formatModifier,
   getTeethModifiers,
+  GOLD_MULTIPLIER_INFO,
   type Modifier,
   MODIFIERS,
   TOOTH_TYPES,
@@ -16,8 +17,12 @@ import {
 import { isToothRoomOpen, useToothChoiceStore } from '@/features/choose-tooth';
 import { isUpgradeRoomOpen, useUpgradeStore } from '@/features/upgrade-attack';
 
+import { useGoldMultiplier } from '../lib/useGoldMultiplier';
+
+/** The hero the player picked: their name and what they are good at. */
 function HeroHint() {
-  return <HintCard title={HERO_INFO.name} details={[HERO_INFO.description]} />;
+  const { name, description } = HERO_CLASSES[useHeroStore((state) => state.heroClass)];
+  return <HintCard title={name} details={[description]} />;
 }
 
 function GoldHint() {
@@ -80,6 +85,13 @@ function ModifierHint({ modifier }: { modifier: string }) {
   );
 }
 
+/** The gold multiplier shows its icon and current value, as in the book, and tells what it does. */
+function GoldMultiplierHint() {
+  const multiplier = useGoldMultiplier();
+  const { icon, describe } = GOLD_MULTIPLIER_INFO;
+  return <HintCard title={`${icon} ×${multiplier}`} details={[describe(multiplier)]} />;
+}
+
 /**
  * The door tells what it takes to open it, or that it leads on. Open as in `ExitPanel`: on a level
  * after the required moves, in the upgrade and tooth rooms after the choice, in the shop at once.
@@ -122,6 +134,8 @@ function HintView({ target }: { target: HintTarget }) {
       return <ItemHint slot={target.slot} />;
     case HINT_TARGET.modifier:
       return <ModifierHint modifier={target.modifier} />;
+    case HINT_TARGET.goldMultiplier:
+      return <GoldMultiplierHint />;
     default: {
       const unknownTarget: never = target;
       return unknownTarget;

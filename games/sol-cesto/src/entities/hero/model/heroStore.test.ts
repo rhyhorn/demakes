@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { HERO_ATTACK_KIND, INVENTORY_ITEM } from '../config';
+import { HERO_ATTACK_KIND, HERO_CLASS, HERO_CLASSES, INVENTORY_ITEM } from '../config';
 import { INITIAL_HERO_STATS, useHeroStore } from './heroStore';
 
 describe('useHeroStore', () => {
@@ -9,19 +9,9 @@ describe('useHeroStore', () => {
   });
 
   it('starts with full health, base attack and magic and no gold', () => {
-    const { health, maxHealth, attack, magic, gold, goldMultiplier, inventorySize, inventory } =
-      useHeroStore.getState();
+    const { health, maxHealth, gold } = useHeroStore.getState();
 
-    expect({
-      health,
-      maxHealth,
-      attack,
-      magic,
-      gold,
-      goldMultiplier,
-      inventorySize,
-      inventory,
-    }).toEqual(INITIAL_HERO_STATS);
+    expect(useHeroStore.getState()).toMatchObject(INITIAL_HERO_STATS);
     expect(health).toBe(maxHealth);
     expect(gold).toBe(0);
   });
@@ -177,24 +167,32 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
+  it('becomes the chosen hero with their stats and full health', () => {
+    useHeroStore.setState({ health: 2 });
+
+    useHeroStore.getState().chooseHero(HERO_CLASS.sorceress);
+    const { heroClass, health, maxHealth, attack, magic } = useHeroStore.getState();
+
+    expect({ heroClass, health, maxHealth, attack, magic }).toEqual({
+      heroClass: HERO_CLASS.sorceress,
+      health: HERO_CLASSES.sorceress.stats.maxHealth,
+      ...HERO_CLASSES.sorceress.stats,
+    });
+  });
+
+  it('gives the warrior more attack and the sorceress more magic', () => {
+    expect(HERO_CLASSES.warrior.stats).toMatchObject({ attack: 2, magic: 1 });
+    expect(HERO_CLASSES.sorceress.stats).toMatchObject({ attack: 1, magic: 2 });
+  });
+
   it('brings back the starting stats on reset', () => {
+    useHeroStore.getState().chooseHero(HERO_CLASS.sorceress);
     useHeroStore.getState().takeDamage(3);
     useHeroStore.getState().addGold(5);
-    useHeroStore.setState({ goldMultiplier: 1 });
+    useHeroStore.setState({ goldMultiplier: 2 });
 
     useHeroStore.getState().reset();
-    const { health, maxHealth, attack, magic, gold, goldMultiplier, inventorySize, inventory } =
-      useHeroStore.getState();
 
-    expect({
-      health,
-      maxHealth,
-      attack,
-      magic,
-      gold,
-      goldMultiplier,
-      inventorySize,
-      inventory,
-    }).toEqual(INITIAL_HERO_STATS);
+    expect(useHeroStore.getState()).toMatchObject(INITIAL_HERO_STATS);
   });
 });

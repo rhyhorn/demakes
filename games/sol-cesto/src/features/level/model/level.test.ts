@@ -51,10 +51,10 @@ describe('level', () => {
     expect(useEnemyStore.getState().enemies).toBe(enemies);
   });
 
-  it('starts the run in a dungeon, then a shop, and alternates upgrade and tooth rooms on every second level', () => {
-    const { dungeon, upgrade, tooth, shop } = GAME_SCREEN;
+  it('starts the run with picking the hero, then a dungeon, a shop, and alternates upgrade and tooth rooms on every second level', () => {
+    const { heroSelect, dungeon, upgrade, tooth, shop } = GAME_SCREEN;
 
-    expect(useGameStore.getState().screen).toBe(dungeon);
+    expect(useGameStore.getState().screen).toBe(heroSelect);
     expect(
       Array.from({ length: FINAL_LEVEL }, (_, index) => getRoomScreen(FIRST_LEVEL + index)),
     ).toEqual([dungeon, shop, dungeon, tooth, dungeon, upgrade, dungeon, tooth, dungeon, upgrade]);
@@ -124,7 +124,7 @@ describe('level', () => {
     restartGame(() => 0);
 
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.heroSelect);
   });
 
   it('restarts the game from scratch after game over', () => {
@@ -140,6 +140,6 @@ describe('level', () => {
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
     expect(Object.keys(useEnemyStore.getState().enemies)).toEqual(['0', '4', '8', '12']);
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.heroSelect);
   });
 });
