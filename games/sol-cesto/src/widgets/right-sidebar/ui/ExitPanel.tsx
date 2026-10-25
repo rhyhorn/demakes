@@ -2,6 +2,7 @@ import { isExitOpen, useBoardStore } from '@/entities/board';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { isToothRoomOpen, leaveToothRoom, useToothChoiceStore } from '@/features/choose-tooth';
 import { enterNextRoom, exitLevel } from '@/features/level';
+import { leaveShop } from '@/features/shop';
 import { isUpgradeRoomOpen, leaveUpgradeRoom, useUpgradeStore } from '@/features/upgrade-attack';
 import styles from './ExitPanel.module.css';
 
@@ -15,7 +16,7 @@ function getChoiceExit(open: boolean, leaveRoom: () => boolean) {
 
 /**
  * State of the exit door on the current screen: on a level it opens after the required moves, in
- * the upgrade and tooth rooms after the one choice.
+ * the upgrade and tooth rooms after the one choice, in the shop at once.
  */
 function useExit() {
   const screen = useGameStore((state) => state.screen);
@@ -29,6 +30,9 @@ function useExit() {
   }
   if (screen === GAME_SCREEN.tooth) {
     return getChoiceExit(isToothRoomOpen({ chosen: toothChosen }), () => leaveToothRoom());
+  }
+  if (screen === GAME_SCREEN.shop) {
+    return getChoiceExit(true, () => leaveShop());
   }
   return {
     open: isExitOpen({ moves, requiredMoves }),

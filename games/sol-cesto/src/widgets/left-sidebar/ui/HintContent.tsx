@@ -1,6 +1,6 @@
 import { useBoardStore } from '@/entities/board';
 import { ENEMY_TYPES, getEnemyTraits, useEnemyStore } from '@/entities/enemy';
-import { HERO_INFO } from '@/entities/hero';
+import { HERO_INFO, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { HINT_TARGET, HintCard, type HintTarget, useHintStore } from '@/entities/hint';
 import { describeToothProperty, TOOTH_TYPES, useToothStore } from '@/entities/tooth';
@@ -37,6 +37,15 @@ function ToothHint({ slot }: { slot: number }) {
   );
 }
 
+/** An inventory item tells what it does, as in the shop. */
+function ItemHint({ slot }: { slot: number }) {
+  const item = useHeroStore((state) => state.inventory[slot]);
+
+  if (item === undefined) return null;
+  const { name, description } = INVENTORY_ITEMS[item];
+  return <HintCard title={name} details={[description]} />;
+}
+
 /** One view per kind of target. The `never` check makes TypeScript demand a view for a new kind. */
 function HintView({ target }: { target: HintTarget }) {
   switch (target.kind) {
@@ -46,6 +55,8 @@ function HintView({ target }: { target: HintTarget }) {
       return <HeroHint />;
     case HINT_TARGET.tooth:
       return <ToothHint slot={target.slot} />;
+    case HINT_TARGET.item:
+      return <ItemHint slot={target.slot} />;
     default: {
       const unknownTarget: never = target;
       return unknownTarget;

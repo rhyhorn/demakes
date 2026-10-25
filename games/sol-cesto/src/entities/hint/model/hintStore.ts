@@ -5,6 +5,7 @@ export const HINT_TARGET = {
   cell: 'cell',
   hero: 'hero',
   tooth: 'tooth',
+  item: 'item',
 } as const;
 
 export type HintTargetKind = (typeof HINT_TARGET)[keyof typeof HINT_TARGET];
@@ -23,6 +24,11 @@ export type HintTarget =
   | {
       kind: typeof HINT_TARGET.tooth;
       /** Slot in the mouth. */
+      slot: number;
+    }
+  | {
+      kind: typeof HINT_TARGET.item;
+      /** Slot in the hero's inventory. */
       slot: number;
     };
 

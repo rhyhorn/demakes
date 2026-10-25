@@ -51,27 +51,16 @@ describe('level', () => {
     expect(useEnemyStore.getState().enemies).toBe(enemies);
   });
 
-  it('starts the run in a dungeon and alternates upgrade and tooth rooms on every second level', () => {
-    const { dungeon, upgrade, tooth } = GAME_SCREEN;
+  it('starts the run in a dungeon, then a shop, and alternates upgrade and tooth rooms on every second level', () => {
+    const { dungeon, upgrade, tooth, shop } = GAME_SCREEN;
 
     expect(useGameStore.getState().screen).toBe(dungeon);
     expect(
       Array.from({ length: FINAL_LEVEL }, (_, index) => getRoomScreen(FIRST_LEVEL + index)),
-    ).toEqual([
-      dungeon,
-      upgrade,
-      dungeon,
-      tooth,
-      dungeon,
-      upgrade,
-      dungeon,
-      tooth,
-      dungeon,
-      upgrade,
-    ]);
+    ).toEqual([dungeon, shop, dungeon, tooth, dungeon, upgrade, dungeon, tooth, dungeon, upgrade]);
   });
 
-  it('leads from the dungeon to the upgrade room through the open exit', () => {
+  it('leads from the first dungeon to the shop through the open exit', () => {
     startLevel(() => 0);
     const { enemies } = useEnemyStore.getState();
     useBoardStore.setState({ moves: REQUIRED_MOVES, visited: [0], playerIndex: 0 });
@@ -80,7 +69,7 @@ describe('level', () => {
 
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL + 1);
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.upgrade);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.shop);
     expect(useEnemyStore.getState().enemies).toBe(enemies);
   });
 

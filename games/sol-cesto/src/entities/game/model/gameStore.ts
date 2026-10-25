@@ -8,6 +8,8 @@ export const GAME_SCREEN = {
   upgrade: 'upgrade',
   /** A closed room where the hero takes one of the offered teeth before the exit opens. */
   tooth: 'tooth',
+  /** A room where the hero buys items for gold. It is open at once: buying is not required. */
+  shop: 'shop',
   /** The run is won: the hero has left the final level. */
   victory: 'victory',
 } as const;

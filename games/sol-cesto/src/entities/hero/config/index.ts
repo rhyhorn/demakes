@@ -39,8 +39,12 @@ export type ItemEffect =
 export interface InventoryItemConfig {
   name: string;
   icon: string;
+  /** What the item does, for the player. */
+  description: string;
   /** What using the item does; `null` if it cannot be used yet. A used item is gone. */
   effect: ItemEffect | null;
+  /** How much gold the item costs in the shop. */
+  price: number;
 }
 
 /** How each item looks, is called and works in the inventory. */
@@ -48,11 +52,15 @@ export const INVENTORY_ITEMS: Record<InventoryItem, InventoryItemConfig> = {
   [INVENTORY_ITEM.potion]: {
     name: 'Зілля',
     icon: '🧪',
+    description: "Лікує вас на 1 здоров'я",
     effect: { kind: ITEM_EFFECT.heal, amount: 1 },
+    price: 3,
   },
   [INVENTORY_ITEM.spear]: {
     name: 'Спис',
     icon: '🔱',
+    description: 'Убиває випадкового ворога на полі',
     effect: { kind: ITEM_EFFECT.killEnemy },
+    price: 5,
   },
 };

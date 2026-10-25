@@ -116,6 +116,44 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
+  it('spends gold from the piggy bank', () => {
+    useHeroStore.setState({ gold: 5 });
+
+    useHeroStore.getState().spendGold(3);
+
+    expect(useHeroStore.getState().gold).toBe(2);
+  });
+
+  it('ignores spending more gold than there is, or 0 or less', () => {
+    useHeroStore.setState({ gold: 2 });
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().spendGold(3);
+    useHeroStore.getState().spendGold(0);
+    useHeroStore.getState().spendGold(-1);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
+
+  it('adds an item after the carried ones', () => {
+    useHeroStore.getState().addItem(INVENTORY_ITEM.potion);
+
+    expect(useHeroStore.getState().inventory).toEqual([
+      INVENTORY_ITEM.potion,
+      INVENTORY_ITEM.spear,
+      INVENTORY_ITEM.potion,
+    ]);
+  });
+
+  it('ignores adding an item to a full inventory', () => {
+    useHeroStore.setState({ inventorySize: 2 });
+    const before = useHeroStore.getState();
+
+    useHeroStore.getState().addItem(INVENTORY_ITEM.potion);
+
+    expect(useHeroStore.getState()).toBe(before);
+  });
+
   it('brings back the starting stats on reset', () => {
     useHeroStore.getState().takeDamage(3);
     useHeroStore.getState().addGold(5);

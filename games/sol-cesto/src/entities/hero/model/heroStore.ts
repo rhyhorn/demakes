@@ -37,6 +37,10 @@ interface HeroState {
   raiseAttack: (kind: HeroAttackKind, amount: number) => void;
   /** Puts `amount` gold into the piggy bank. Does nothing for 0 or less. */
   addGold: (amount: number) => void;
+  /** Takes `amount` gold out of the piggy bank. Does nothing for 0 or less, or if there is not enough. */
+  spendGold: (amount: number) => void;
+  /** Puts the item into the first free inventory slot. Does nothing when the inventory is full. */
+  addItem: (item: InventoryItem) => void;
   /** Takes the item out of inventory slot `index`; later items shift down. Ignores empty slots. */
   removeItem: (index: number) => void;
   /** Brings back the stats the hero starts a run with. */
@@ -54,6 +58,14 @@ export const useHeroStore = create<HeroState>()((set) => ({
   raiseAttack: (kind, amount) =>
     set((state) => (amount > 0 ? { [kind]: state[kind] + amount } : state)),
   addGold: (amount) => set((state) => (amount > 0 ? { gold: state.gold + amount } : state)),
+  spendGold: (amount) =>
+    set((state) => (amount > 0 && amount <= state.gold ? { gold: state.gold - amount } : state)),
+  addItem: (item) =>
+    set((state) =>
+      state.inventory.length < state.inventorySize
+        ? { inventory: [...state.inventory, item] }
+        : state,
+    ),
   removeItem: (index) =>
     set((state) =>
       index >= 0 && index < state.inventory.length

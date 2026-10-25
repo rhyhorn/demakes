@@ -7,6 +7,7 @@ import {
   type InventorySlot,
   useHeroStore,
 } from '@/entities/hero';
+import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { applyItem, canUseItem, pickItemTarget } from '@/features/inventory';
 
 import { ItemProjectile } from './ItemProjectile';
@@ -116,8 +117,14 @@ export function InventoryPanel() {
     >
       {slots.map((slot, index) => (
         // Slots never move, so their position is a stable key.
-        // eslint-disable-next-line react/no-array-index-key
-        <li key={index} className="min-h-0">
+        // The hint handlers are on the slot, not the button: React gives no mouse events to a
+        // disabled button, and an item that cannot be used now should still describe itself.
+        <li
+          // eslint-disable-next-line react/no-array-index-key
+          key={index}
+          className="min-h-0"
+          {...getHintHandlers({ kind: HINT_TARGET.item, slot: index })}
+        >
           <InventorySlotView
             slot={slot}
             enabled={thrown === null}
