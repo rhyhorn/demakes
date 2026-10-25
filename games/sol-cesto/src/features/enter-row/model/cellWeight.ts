@@ -1,6 +1,6 @@
 import type { CellWeight } from '@/entities/board';
 import { type AttackKind, type Enemy, type EnemyMap, getActiveAttack } from '@/entities/enemy';
-import { MODIFIER, type Modifier, type Modifiers } from '@/entities/modifier';
+import { MODIFIER, type Modifier, type Modifiers } from '@/entities/tooth';
 import { PICKUP_TYPE, type PickupMap, type PickupType } from '@/entities/pickup';
 
 /** The modifier that makes enemies with this active attack easier or harder to land on. */

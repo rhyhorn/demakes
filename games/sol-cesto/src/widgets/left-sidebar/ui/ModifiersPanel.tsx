@@ -1,4 +1,10 @@
-import { MODIFIER, type Modifier, MODIFIERS, useModifierStore } from '@/entities/modifier';
+import {
+  getTeethModifiers,
+  MODIFIER,
+  type Modifier,
+  MODIFIERS,
+  useToothStore,
+} from '@/entities/tooth';
 
 /** Modifiers on each page of the book, top to bottom, as on the reference. */
 const PAGES: readonly (readonly Modifier[])[] = [
@@ -9,8 +15,7 @@ const PAGES: readonly (readonly Modifier[])[] = [
 /** A percentage with its sign, as in the book: +50%, -50%, +0%. */
 const formatModifier = (value: number) => `${value < 0 ? '' : '+'}${value}%`;
 
-function ModifierRow({ modifier }: { modifier: Modifier }) {
-  const value = useModifierStore((state) => state.modifiers[modifier]);
+function ModifierRow({ modifier, value }: { modifier: Modifier; value: number }) {
   const { name, icon, color } = MODIFIERS[modifier];
 
   return (
@@ -31,22 +36,28 @@ function ModifierRow({ modifier }: { modifier: Modifier }) {
   );
 }
 
-/** The book of modifiers: two open pages with an icon and a percentage per row. */
+/**
+ * The book of modifiers: two open pages with an icon and a percentage per row. The percentages are
+ * the properties of the teeth in the mouth added up.
+ */
 export function ModifiersPanel() {
+  const teeth = useToothStore((state) => state.slots);
+  const total = getTeethModifiers(teeth);
+
   return (
     <div
       className="grid h-full w-full grid-cols-2 gap-[calc(4*var(--px))] p-[calc(12*var(--px))]"
       aria-label="Модифікатори"
     >
-      {PAGES.map((modifiers, page) => (
+      {PAGES.map((page, pageIndex) => (
         <ul
           // Pages never move, so their position is a stable key.
           // eslint-disable-next-line react/no-array-index-key
-          key={page}
+          key={pageIndex}
           className="flex flex-col gap-[calc(12*var(--px))] rounded-[calc(8*var(--px))] bg-[#e8dcc0] p-[calc(14*var(--px))] shadow-[inset_0_0_calc(12*var(--px))_rgba(90,70,40,0.5)]"
         >
-          {modifiers.map((modifier) => (
-            <ModifierRow key={modifier} modifier={modifier} />
+          {page.map((modifier) => (
+            <ModifierRow key={modifier} modifier={modifier} value={total[modifier]} />
           ))}
         </ul>
       ))}

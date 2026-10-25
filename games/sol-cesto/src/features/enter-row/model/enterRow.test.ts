@@ -4,8 +4,8 @@ import { getRowCells, useBoardStore } from '@/entities/board';
 import { createEnemy, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
-import { MODIFIER, useModifierStore } from '@/entities/modifier';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
+import { MODIFIER, type Modifier, TEST_TOOTH, TOOTH_TYPE, useToothStore } from '@/entities/tooth';
 
 import { enterCell, enterRow, getEnemyDamage, pickEntryCell } from './enterRow';
 
@@ -38,7 +38,7 @@ describe('enterRow', () => {
     useGameStore.setState({ screen: GAME_SCREEN.dungeon });
     useEnemyStore.setState({ enemies: { 0: createEnemy('shifter', () => 0) } });
     usePickupStore.setState(usePickupStore.getInitialState());
-    useModifierStore.setState(useModifierStore.getInitialState());
+    useToothStore.setState({ slots: [] });
   });
 
   it('moves the player and gives enemies a turn', () => {
@@ -141,12 +141,11 @@ describe('enterRow', () => {
   });
 
   describe('chance modifiers', () => {
-    const noModifiers = {
-      [MODIFIER.attackChance]: 0,
-      [MODIFIER.magicChance]: 0,
-      [MODIFIER.strawberryChance]: 0,
-      [MODIFIER.chestChance]: 0,
-    };
+    /** Puts a single tooth with one property into the mouth. */
+    const setTooth = (modifier: Modifier, value: number) =>
+      useToothStore.setState({
+        slots: [{ type: TOOTH_TYPE.test, properties: [{ modifier, value }] }],
+      });
 
     // Row 0: a physical beast on cell 0, a magic shifter on cell 1, a chest and a strawberry.
     beforeEach(() => {
@@ -157,7 +156,7 @@ describe('enterRow', () => {
     });
 
     it('makes a physical enemy more likely to be landed on', () => {
-      useModifierStore.setState({ modifiers: { ...noModifiers, [MODIFIER.attackChance]: 100 } });
+      setTooth(MODIFIER.attackChance, 100);
 
       // Weights 2, 1, 1, 1: the first 40% of the roll goes to the beast.
       enterRow(0, () => 0.39);
@@ -166,7 +165,7 @@ describe('enterRow', () => {
     });
 
     it('makes a magic enemy more likely to be landed on', () => {
-      useModifierStore.setState({ modifiers: { ...noModifiers, [MODIFIER.magicChance]: 100 } });
+      setTooth(MODIFIER.magicChance, 100);
 
       // Weights 1, 2, 1, 1: the shifter takes the roll from 20% to 60%.
       enterRow(0, () => 0.59);
@@ -175,9 +174,7 @@ describe('enterRow', () => {
     });
 
     it('makes a strawberry more likely to be landed on', () => {
-      useModifierStore.setState({
-        modifiers: { ...noModifiers, [MODIFIER.strawberryChance]: 100 },
-      });
+      setTooth(MODIFIER.strawberryChance, 100);
 
       // Weights 1, 1, 1, 2: the strawberry takes the roll from 60% on.
       enterRow(0, () => 0.61);
@@ -186,12 +183,22 @@ describe('enterRow', () => {
     });
 
     it('makes a chest less likely to be landed on', () => {
-      useModifierStore.setState({ modifiers: { ...noModifiers, [MODIFIER.chestChance]: -50 } });
+      setTooth(MODIFIER.chestChance, -50);
 
       // Weights 1, 1, 0.5, 1: the chest only keeps the roll from 4/7 to 5/7.
       enterRow(0, () => 0.72);
 
       expect(useBoardStore.getState().playerIndex).toBe(3);
+    });
+
+    it('adds up the properties of all the teeth', () => {
+      useToothStore.setState({ slots: [TEST_TOOTH, TEST_TOOTH] });
+
+      // Two test teeth: +100% to physical enemies and -100% to strawberries, so weights 2, 1, 1, 0
+      // and the beast takes the roll up to 1/2.
+      enterRow(0, () => 0.49);
+
+      expect(useBoardStore.getState().playerIndex).toBe(0);
     });
   });
 });
@@ -203,7 +210,7 @@ describe('pickEntryCell and enterCell', () => {
     useGameStore.setState({ screen: GAME_SCREEN.dungeon });
     useEnemyStore.setState({ enemies: { 1: createEnemy('beast') } });
     usePickupStore.setState(usePickupStore.getInitialState());
-    useModifierStore.setState(useModifierStore.getInitialState());
+    useToothStore.setState({ slots: [] });
   });
 
   it('picks the cell without changing anything yet', () => {

@@ -2,8 +2,8 @@ import { pickRowCell, useBoardStore } from '@/entities/board';
 import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
-import { useModifierStore } from '@/entities/modifier';
 import { PICKUP_EFFECT, type PickupEffect, PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
+import { getTeethModifiers, useToothStore } from '@/entities/tooth';
 import { pickCount } from '@/shared/lib';
 
 import { getCellWeights } from './cellWeight';
@@ -26,14 +26,14 @@ function applyPickupEffect(effect: PickupEffect, random: () => number) {
 
 /**
  * Cell of the row the player is going to land on, or undefined if the row has no cells left. Cells
- * with enemies and pickups are more or less likely to be picked as the chance modifiers say.
+ * with enemies and pickups are more or less likely to be picked as the chance modifiers of the teeth say.
  * Nothing changes yet: the board shows the hero walking there first and then calls `enterCell`.
  */
 export function pickEntryCell(row: number, random: () => number = Math.random): number | undefined {
   const weightOf = getCellWeights(
     useEnemyStore.getState().enemies,
     usePickupStore.getState().pickups,
-    useModifierStore.getState().modifiers,
+    getTeethModifiers(useToothStore.getState().slots),
   );
   return pickRowCell(row, useBoardStore.getState().visited, random, weightOf);
 }

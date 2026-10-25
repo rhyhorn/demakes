@@ -10,8 +10,8 @@ import {
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { HeroFigure, useHeroStore } from '@/entities/hero';
-import { useModifierStore } from '@/entities/modifier';
 import { PickupBadge, PickupFigure, usePickupStore } from '@/entities/pickup';
+import { getTeethModifiers, useToothStore } from '@/entities/tooth';
 import {
   CellOutcomeBadge,
   enterCell,
@@ -46,8 +46,8 @@ export function DungeonBoard() {
   const health = useHeroStore((state) => state.health);
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
-  const modifiers = useModifierStore((state) => state.modifiers);
-  const weightOf = getCellWeights(enemies, pickups, modifiers);
+  const teeth = useToothStore((state) => state.slots);
+  const weightOf = getCellWeights(enemies, pickups, getTeethModifiers(teeth));
   const heroRef = useRef<HTMLSpanElement>(null);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Cell the hero is walking to. The move itself happens once she gets there.

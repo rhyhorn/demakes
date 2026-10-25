@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createEnemy } from '@/entities/enemy';
-import { MODIFIER } from '@/entities/modifier';
+import { MODIFIER } from '@/entities/tooth';
 import { PICKUP_TYPE } from '@/entities/pickup';
 
 import { getCellWeight, getCellWeights } from './cellWeight';

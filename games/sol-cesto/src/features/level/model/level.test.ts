@@ -10,9 +10,8 @@ import {
 import { useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { INITIAL_HERO_STATS, useHeroStore } from '@/entities/hero';
-import { INITIAL_MODIFIERS, MODIFIER, useModifierStore } from '@/entities/modifier';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
-import { INITIAL_TOOTH_SLOTS, useToothStore } from '@/entities/tooth';
+import { createStartingSlots, useToothStore } from '@/entities/tooth';
 
 import { enterNextRoom, exitLevel, getRoomScreen, restartGame, startLevel } from './level';
 
@@ -23,7 +22,6 @@ describe('level', () => {
     useHeroStore.setState(useHeroStore.getInitialState());
     usePickupStore.setState(usePickupStore.getInitialState());
     useGameStore.setState(useGameStore.getInitialState());
-    useModifierStore.setState(useModifierStore.getInitialState());
     useToothStore.setState(useToothStore.getInitialState());
   });
 
@@ -134,7 +132,6 @@ describe('level', () => {
 
   it('restarts the game from scratch after game over', () => {
     useHeroStore.setState({ health: 0 });
-    useModifierStore.getState().setModifier(MODIFIER.magicChance, 80);
     useToothStore.getState().removeTooth(0);
     useBoardStore.setState({ moves: 2, visited: [0, 4], playerIndex: 4, level: 3 });
     useGameStore.setState({ screen: GAME_SCREEN.gameOver });
@@ -142,8 +139,7 @@ describe('level', () => {
     restartGame(() => 0);
 
     expect(useHeroStore.getState().health).toBe(INITIAL_HERO_STATS.health);
-    expect(useModifierStore.getState().modifiers).toEqual(INITIAL_MODIFIERS);
-    expect(useToothStore.getState().slots).toEqual(INITIAL_TOOTH_SLOTS);
+    expect(useToothStore.getState().slots).toEqual(createStartingSlots(() => 0));
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().level).toBe(FIRST_LEVEL);
     expect(Object.keys(useEnemyStore.getState().enemies)).toEqual(['0', '4', '8', '12']);

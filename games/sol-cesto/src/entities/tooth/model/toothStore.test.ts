@@ -1,21 +1,28 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { TOOTH_SLOT_COUNT, TOOTH_TYPE } from '../config';
-import { INITIAL_TOOTH_SLOTS, useToothStore } from './toothStore';
+import { TOOTH_SLOT_COUNT } from '../config';
+import { createStartingSlots, TEST_TOOTH, useToothStore } from './toothStore';
 
-const tooth = { type: TOOTH_TYPE.placeholder };
+const tooth = TEST_TOOTH;
+
+describe('createStartingSlots', () => {
+  it('puts the test tooth into a random slot and leaves the rest empty', () => {
+    const slots = createStartingSlots(() => 0.5);
+
+    expect(slots).toHaveLength(TOOTH_SLOT_COUNT);
+    expect(slots[6]).toBe(TEST_TOOTH);
+    expect(slots.filter((slot) => slot !== null)).toHaveLength(1);
+  });
+
+  it('can use the first and the last slot', () => {
+    expect(createStartingSlots(() => 0)[0]).toBe(TEST_TOOTH);
+    expect(createStartingSlots(() => 0.999)[TOOTH_SLOT_COUNT - 1]).toBe(TEST_TOOTH);
+  });
+});
 
 describe('useToothStore', () => {
   beforeEach(() => {
-    useToothStore.setState(useToothStore.getInitialState());
-  });
-
-  it('starts with three placeholder teeth and the rest of the slots empty', () => {
-    const { slots } = useToothStore.getState();
-
-    expect(slots).toHaveLength(TOOTH_SLOT_COUNT);
-    expect(slots.slice(0, 3)).toEqual([tooth, tooth, tooth]);
-    expect(slots.slice(3).every((slot) => slot === null)).toBe(true);
+    useToothStore.setState({ slots: createStartingSlots(() => 0) });
   });
 
   it('puts a tooth into an empty slot', () => {
@@ -37,15 +44,15 @@ describe('useToothStore', () => {
     placeTooth(-1, tooth);
     removeTooth(TOOTH_SLOT_COUNT);
 
-    expect(useToothStore.getState().slots).toEqual(INITIAL_TOOTH_SLOTS);
+    expect(useToothStore.getState().slots).toEqual(createStartingSlots(() => 0));
   });
 
   it('brings back the starting slots on reset', () => {
     useToothStore.getState().removeTooth(0);
     useToothStore.getState().placeTooth(7, tooth);
 
-    useToothStore.getState().reset();
+    useToothStore.getState().reset(() => 0.5);
 
-    expect(useToothStore.getState().slots).toEqual(INITIAL_TOOTH_SLOTS);
+    expect(useToothStore.getState().slots).toEqual(createStartingSlots(() => 0.5));
   });
 });
