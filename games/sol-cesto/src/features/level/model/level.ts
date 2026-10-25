@@ -14,6 +14,7 @@ import { useToothStore } from '@/entities/tooth';
 import { useTrapStore } from '@/entities/trap';
 
 import { SHOP_ROOM_LEVELS, TOOTH_ROOM_EVERY, UPGRADE_ROOM_EVERY } from '../config';
+import { useRoomClearStore } from './roomClearStore';
 import { spawnDangers } from './spawnDangers';
 
 const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => getRowCells(row));
@@ -72,6 +73,7 @@ export function restartGame(random?: () => number) {
   useHeroStore.getState().reset();
   useToothStore.getState().reset(random);
   useBoardStore.getState().reset();
+  useRoomClearStore.setState({ reward: null });
   startLevel(random);
   useGameStore.getState().showScreen(GAME_SCREEN.heroSelect);
 }

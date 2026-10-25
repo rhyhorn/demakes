@@ -3,6 +3,7 @@ import { ScaledStage } from '@/shared/ui';
 import { DungeonBoard } from '@/widgets/dungeon-board';
 import { LeftSidebar } from '@/widgets/left-sidebar';
 import { RightSidebar } from '@/widgets/right-sidebar';
+import { RoomClearedOverlay } from '@/widgets/room-cleared';
 
 import styles from './HomePage.module.css';
 
@@ -13,6 +14,7 @@ export function HomePage() {
         <LeftSidebar />
         <DungeonBoard />
         <RightSidebar />
+        <RoomClearedOverlay />
       </div>
     </ScaledStage>
   );

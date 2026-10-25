@@ -1,4 +1,6 @@
 .scene {
+  /* Room-wide overlays (the room is cleared) cover the whole scene. */
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 375fr) minmax(0, 1170fr) minmax(0, 375fr);
   width: 100%;
