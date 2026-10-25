@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Це набір незалежних браузерних ігор на TypeScript + Vite. Компоненти ігор пишуться на React 19 (`.tsx`). Хаб (`src/`) — звичайний TypeScript без React. Технічно це один Vite-проєкт із кількома сторінками:
 
-- `index.html` + `src/` — головна сторінка (хаб) зі списком посилань на ігри. Список ігор задано в `src/main.ts`.
+- `index.html` + `src/` — головна сторінка (хаб): по центру картки ігор (обкладинка, назва золотим шрифтом Cormorant SC з Google Fonts, опис і кнопка «Грати»; уся картка — посилання). Список ігор задано в `src/main.ts` (`games`: `id`, `title`, `description` і обкладинка — поле 4×4 з емодзі `cover` та клітинка героя `heroTile`), стилі — у `src/style.css`.
 - `games/<id>/index.html` + `games/<id>/src/` — кожна гра є окремим SPA, доступним за адресою `/games/<id>/`.
 - `scripts/games.mjs` — `listGames()`, автоматичне виявлення ігор: кожна папка `games/<id>/` з власним `index.html`. Цю функцію використовують `vite.config.mjs` (точки входу збірки), `eslint.config.mjs` (зони ізоляції) і `scripts/game.mjs` (запуск однієї гри).
 
