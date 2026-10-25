@@ -2,6 +2,7 @@ import styles from './LeftSidebar.module.css';
 import { InventoryPanel } from './InventoryPanel';
 import { ModifiersPanel } from './ModifiersPanel';
 import { PortraitPanel } from './PortraitPanel';
+import { TeethPanel } from './TeethPanel';
 
 export function LeftSidebar() {
   return (
@@ -9,7 +10,9 @@ export function LeftSidebar() {
       <section className={styles.slot} aria-label="Портрет">
         <PortraitPanel />
       </section>
-      <section className={styles.slot}>Зуби</section>
+      <section className={styles.slot}>
+        <TeethPanel />
+      </section>
       <section className={styles.slot}>
         <InventoryPanel />
       </section>

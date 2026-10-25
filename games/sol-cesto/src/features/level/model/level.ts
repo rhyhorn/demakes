@@ -11,6 +11,7 @@ import { GAME_SCREEN, type GameScreen, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 import { useModifierStore } from '@/entities/modifier';
 import { usePickupStore } from '@/entities/pickup';
+import { useToothStore } from '@/entities/tooth';
 
 import { UPGRADE_ROOM_EVERY } from '../config';
 
@@ -54,12 +55,13 @@ export function exitLevel(random?: () => number) {
 }
 
 /**
- * Starts a new run from the very beginning: a fresh hero with the starting modifiers on a fresh
+ * Starts a new run from the very beginning: a fresh hero with the starting modifiers and teeth on a fresh
  * level, back in the dungeon.
  */
 export function restartGame(random?: () => number) {
   useHeroStore.getState().reset();
   useModifierStore.getState().reset();
+  useToothStore.getState().reset();
   useBoardStore.getState().reset();
   startLevel(random);
   useGameStore.getState().showScreen(GAME_SCREEN.dungeon);
