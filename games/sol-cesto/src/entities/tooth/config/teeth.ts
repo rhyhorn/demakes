@@ -19,6 +19,12 @@ export const SWEET_TOOTH: Tooth = {
   properties: [{ modifier: strawberryChance, value: 25 }],
 };
 
+/** A tooth that adds 1 to the gold multiplier. */
+export const GREEDY_TOOTH: Tooth = {
+  type: TOOTH_TYPE.greedy,
+  properties: [{ goldMultiplier: 1 }],
+};
+
 /**
  * Every tooth the hero may be offered during a run, e.g. in the tooth room. The pool is fixed:
  * edit it here to balance the buffs against the debuffs. Taking a tooth doesn't remove it from
@@ -77,7 +83,8 @@ export const TOOTH_POOL: readonly Tooth[] = [
       { modifier: attackChance, value: 20 },
     ],
   },
+  GREEDY_TOOTH,
 ];
 
-/** Teeth a run starts with. */
-export const STARTING_TEETH: readonly Tooth[] = [TEST_TOOTH, SWEET_TOOTH];
+/** Teeth a run starts with. The greedy tooth is here for testing the gold multiplier. */
+export const STARTING_TEETH: readonly Tooth[] = [TEST_TOOTH, SWEET_TOOTH, GREEDY_TOOTH];

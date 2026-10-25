@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createStartingSlots, TOOTH_POOL, useToothStore } from '@/entities/tooth';
+import { TOOTH_POOL, TOOTH_SLOT_COUNT, type ToothSlot, useToothStore } from '@/entities/tooth';
 
 import { TOOTH_OFFER_COUNT } from '../config';
 import {
@@ -20,15 +20,21 @@ describe('createToothOffers', () => {
     expect(new Set(createToothOffers(() => 0.5)).size).toBe(TOOTH_OFFER_COUNT);
   });
 
-  it('picks from a pool of ten different teeth', () => {
-    expect(TOOTH_POOL).toHaveLength(10);
+  it('picks from a pool of different teeth', () => {
+    expect(TOOTH_POOL).toHaveLength(11);
     expect(new Set(TOOTH_POOL.map(({ type }) => type)).size).toBe(TOOTH_POOL.length);
   });
 });
 
+/** A mouth with the first two teeth of the pool in slots 0 and 1 and the rest empty. */
+const TWO_TEETH: readonly ToothSlot[] = Array.from(
+  { length: TOOTH_SLOT_COUNT },
+  (_, slot) => TOOTH_POOL.slice(0, 2)[slot] ?? null,
+);
+
 describe('tooth room', () => {
   beforeEach(() => {
-    useToothStore.setState({ slots: createStartingSlots(() => 0) });
+    useToothStore.setState({ slots: TWO_TEETH });
     useToothChoiceStore.setState({
       offers: createToothOffers(() => 0),
       chosen: null,
@@ -43,7 +49,7 @@ describe('tooth room', () => {
   it('puts the taken tooth into a random empty slot and opens the room', () => {
     chooseTooth(2, () => 0);
 
-    // Slots 0 and 1 hold the starting teeth.
+    // Slots 0 and 1 already hold teeth.
     expect(useToothStore.getState().slots[2]).toBe(TOOTH_POOL[2]);
     expect(useToothChoiceStore.getState().chosen).toBe(2);
     expect(isToothRoomOpen(useToothChoiceStore.getState())).toBe(true);
@@ -97,7 +103,7 @@ describe('tooth room', () => {
     chooseTooth(0, () => 0);
 
     expect(useToothChoiceStore.getState().offers[0]).toBe(TOOTH_POOL[0]);
-    // The mouth already starts with this tooth in slot 0.
+    // The mouth already holds this tooth in slot 0.
     expect(useToothStore.getState().slots.filter((slot) => slot === TOOTH_POOL[0])).toHaveLength(3);
   });
 });

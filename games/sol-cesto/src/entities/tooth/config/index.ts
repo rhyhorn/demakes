@@ -13,6 +13,7 @@ export const TOOTH_TYPE = {
   bone: 'bone',
   crystal: 'crystal',
   wisdom: 'wisdom',
+  greedy: 'greedy',
 } as const;
 
 export type ToothType = (typeof TOOTH_TYPE)[keyof typeof TOOTH_TYPE];
@@ -29,4 +30,5 @@ export const TOOTH_TYPES: Record<ToothType, { name: string }> = {
   [TOOTH_TYPE.bone]: { name: 'Кістяний зуб' },
   [TOOTH_TYPE.crystal]: { name: 'Кришталевий зуб' },
   [TOOTH_TYPE.wisdom]: { name: 'Зуб мудрості' },
+  [TOOTH_TYPE.greedy]: { name: 'Жадібний зуб' },
 };

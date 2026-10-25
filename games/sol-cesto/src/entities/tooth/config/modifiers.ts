@@ -16,6 +16,16 @@ export const MODIFIER = {
 
 export type Modifier = (typeof MODIFIER)[keyof typeof MODIFIER];
 
+/**
+ * The gold multiplier is not a chance and not a percentage: every gold income is multiplied by it.
+ * Some teeth add to it; how it looks in the hints and the tooth room.
+ */
+export const GOLD_MULTIPLIER_INFO = {
+  name: 'Множник золота',
+  description: 'Кожне отримане золото множиться на нього.',
+  icon: '🪙',
+} as const;
+
 /** At -100% the cells of a modifier can't be landed on while the row has others. */
 export const MIN_MODIFIER = -100;
 export const MAX_MODIFIER = 100;

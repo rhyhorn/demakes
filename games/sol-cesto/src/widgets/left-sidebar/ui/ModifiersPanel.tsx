@@ -1,6 +1,7 @@
 import { useHeroStore } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import {
+  getTeethGoldMultiplier,
   getTeethModifiers,
   MODIFIER,
   type Modifier,
@@ -37,9 +38,12 @@ function ModifierRow({ modifier, value }: { modifier: Modifier; value: number })
   );
 }
 
-/** The gold multiplier: every gold income is multiplied by it. Unlike the others it is not a percentage. */
-function GoldMultiplierRow() {
-  const multiplier = useHeroStore((state) => state.goldMultiplier);
+/**
+ * The gold multiplier: every gold income is multiplied by it. Unlike the others it is not a
+ * percentage: the hero's base multiplier plus the bonus of the teeth in the mouth.
+ */
+function GoldMultiplierRow({ teethBonus }: { teethBonus: number }) {
+  const multiplier = useHeroStore((state) => state.goldMultiplier) + teethBonus;
 
   return (
     <li
@@ -82,7 +86,9 @@ export function ModifiersPanel() {
           {page.map((modifier) => (
             <ModifierRow key={modifier} modifier={modifier} value={total[modifier]} />
           ))}
-          {pageIndex === PAGES.length - 1 && <GoldMultiplierRow />}
+          {pageIndex === PAGES.length - 1 && (
+            <GoldMultiplierRow teethBonus={getTeethGoldMultiplier(teeth)} />
+          )}
         </ul>
       ))}
     </div>

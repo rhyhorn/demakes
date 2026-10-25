@@ -1,7 +1,10 @@
 import { useState } from 'react';
 
 import {
+  formatGoldMultiplierBonus,
   formatModifier,
+  GOLD_MULTIPLIER_INFO,
+  isModifierProperty,
   isToothPropertyHelpful,
   MODIFIERS,
   type Tooth,
@@ -31,16 +34,29 @@ function ToothPreview({ tooth }: { tooth: Tooth }) {
             className={`flex flex-col gap-[calc(20*var(--px))] border-[length:calc(10*var(--px))] border-dotted bg-black px-[calc(24*var(--px))] py-[calc(28*var(--px))] text-center ${frame}`}
             aria-label={label}
           >
-            {properties.map(({ modifier, value }) => (
-              <li key={modifier} className="flex flex-col gap-[calc(6*var(--px))]">
-                <span className={`text-[length:calc(26*var(--px))] leading-none ${text}`}>
-                  {MODIFIERS[modifier].name}
-                </span>
-                <span className="text-[length:calc(36*var(--px))] leading-none font-bold text-[#f4ecd6]">
-                  {formatModifier(value)}
-                </span>
-              </li>
-            ))}
+            {properties.map((property) => {
+              const [key, name, value] = isModifierProperty(property)
+                ? [
+                    property.modifier,
+                    MODIFIERS[property.modifier].name,
+                    formatModifier(property.value),
+                  ]
+                : [
+                    'goldMultiplier',
+                    GOLD_MULTIPLIER_INFO.name,
+                    formatGoldMultiplierBonus(property.goldMultiplier),
+                  ];
+              return (
+                <li key={key} className="flex flex-col gap-[calc(6*var(--px))]">
+                  <span className={`text-[length:calc(26*var(--px))] leading-none ${text}`}>
+                    {name}
+                  </span>
+                  <span className="text-[length:calc(36*var(--px))] leading-none font-bold text-[#f4ecd6]">
+                    {value}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         );
       })}

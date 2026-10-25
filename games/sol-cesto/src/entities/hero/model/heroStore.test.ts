@@ -96,6 +96,14 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState().gold).toBe(14);
   });
 
+  it('adds the bonus to the gold multiplier', () => {
+    useHeroStore.setState({ gold: 0, goldMultiplier: 1 });
+
+    useHeroStore.getState().addGold(2, 1);
+
+    expect(useHeroStore.getState().gold).toBe(4);
+  });
+
   it('adds gold as is with a multiplier of 1', () => {
     useHeroStore.setState({ gold: 2, goldMultiplier: 1 });
 

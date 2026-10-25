@@ -3,7 +3,7 @@ import { type Enemy, getActiveAttack, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import { useHeroStore } from '@/entities/hero';
 import { PICKUP_EFFECT, type PickupEffect, PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
-import { getTeethModifiers, useToothStore } from '@/entities/tooth';
+import { getTeethGoldMultiplier, getTeethModifiers, useToothStore } from '@/entities/tooth';
 import { pickCount } from '@/shared/lib';
 
 import { getCellWeights } from './cellWeight';
@@ -17,11 +17,15 @@ export function getEnemyDamage(enemy: Enemy, hero: { attack: number; magic: numb
   return Math.max(0, value - hero[kind]);
 }
 
-/** Gives the hero what the pickup holds: health back or a random amount of gold. */
+/**
+ * Gives the hero what the pickup holds: health back or a random amount of gold, multiplied by her
+ * gold multiplier with the bonus of the teeth in the mouth.
+ */
 function applyPickupEffect(effect: PickupEffect, random: () => number) {
   const hero = useHeroStore.getState();
   if (effect.kind === PICKUP_EFFECT.heal) hero.heal(effect.amount);
-  else hero.addGold(pickCount(effect, random));
+  else
+    hero.addGold(pickCount(effect, random), getTeethGoldMultiplier(useToothStore.getState().slots));
 }
 
 /**

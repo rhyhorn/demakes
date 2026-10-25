@@ -4,7 +4,7 @@ import { TOOTH_TYPE } from '../config';
 import { MODIFIER } from '../config/modifiers';
 import { TEST_TOOTH } from '../config/teeth';
 import { NO_MODIFIERS } from './modifiers';
-import { getTeethModifiers } from './teethModifiers';
+import { getTeethGoldMultiplier, getTeethModifiers } from './teethModifiers';
 
 describe('getTeethModifiers', () => {
   it('is 0% everywhere when the mouth is empty', () => {
@@ -25,10 +25,28 @@ describe('getTeethModifiers', () => {
     });
   });
 
+  it('ignores the gold multiplier properties', () => {
+    const greedyTooth = { type: TOOTH_TYPE.greedy, properties: [{ goldMultiplier: 1 }] } as const;
+
+    expect(getTeethModifiers([greedyTooth])).toEqual(NO_MODIFIERS);
+  });
+
   it('keeps the totals within the allowed range', () => {
     expect(getTeethModifiers([TEST_TOOTH, TEST_TOOTH, TEST_TOOTH])).toMatchObject({
       [MODIFIER.attackChance]: 100,
       [MODIFIER.strawberryChance]: -100,
     });
+  });
+});
+
+describe('getTeethGoldMultiplier', () => {
+  const greedyTooth = { type: TOOTH_TYPE.greedy, properties: [{ goldMultiplier: 1 }] } as const;
+
+  it('is 0 without teeth that change the gold multiplier', () => {
+    expect(getTeethGoldMultiplier([TEST_TOOTH, null])).toBe(0);
+  });
+
+  it('adds up the bonuses of every tooth', () => {
+    expect(getTeethGoldMultiplier([greedyTooth, TEST_TOOTH, greedyTooth])).toBe(2);
   });
 });

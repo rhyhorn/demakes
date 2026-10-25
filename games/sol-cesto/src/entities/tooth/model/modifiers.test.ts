@@ -18,12 +18,22 @@ describe('describeToothProperty', () => {
       '🍓 -50%',
     );
   });
+
+  it('shows the coin and the bonus to the gold multiplier', () => {
+    expect(describeToothProperty({ goldMultiplier: 1 })).toBe('🪙 ×+1');
+    expect(describeToothProperty({ goldMultiplier: -1 })).toBe('🪙 ×-1');
+  });
 });
 
 describe('isToothPropertyHelpful', () => {
   it('counts more strawberries and chests as a buff', () => {
     expect(isToothPropertyHelpful({ modifier: MODIFIER.strawberryChance, value: 25 })).toBe(true);
     expect(isToothPropertyHelpful({ modifier: MODIFIER.chestChance, value: -25 })).toBe(false);
+  });
+
+  it('counts a higher gold multiplier as a buff', () => {
+    expect(isToothPropertyHelpful({ goldMultiplier: 1 })).toBe(true);
+    expect(isToothPropertyHelpful({ goldMultiplier: -1 })).toBe(false);
   });
 
   it('counts more enemies as a debuff', () => {

@@ -142,6 +142,18 @@ describe('enterRow', () => {
     expect(usePickupStore.getState().pickups).toEqual({ 5: PICKUP_TYPE.strawberry });
   });
 
+  it('adds the bonus of the teeth to the gold multiplier', () => {
+    useHeroStore.setState({ goldMultiplier: 1 });
+    useToothStore.setState({
+      slots: [{ type: TOOTH_TYPE.greedy, properties: [{ goldMultiplier: 1 }] }, null],
+    });
+    usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest } });
+
+    enterRow(1, () => 0);
+
+    expect(useHeroStore.getState().gold).toBe(6);
+  });
+
   it('gives from 3 to 6 gold for a chest', () => {
     useHeroStore.setState({ goldMultiplier: 1 });
     usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest } });

@@ -7,10 +7,21 @@ import type { Modifier } from '../config/modifiers';
 import { STARTING_TEETH } from '../config/teeth';
 
 /** A property of a tooth: while the tooth is in the mouth, it adds `value` percent to the modifier. */
-export interface ToothProperty {
+export interface ToothModifierProperty {
   modifier: Modifier;
   value: number;
 }
+
+/** A property of a tooth: while the tooth is in the mouth, it adds `goldMultiplier` to the gold multiplier. */
+export interface ToothGoldProperty {
+  goldMultiplier: number;
+}
+
+export type ToothProperty = ToothModifierProperty | ToothGoldProperty;
+
+/** Whether the property changes a chance modifier (rather than the gold multiplier). */
+export const isModifierProperty = (property: ToothProperty): property is ToothModifierProperty =>
+  'modifier' in property;
 
 export interface Tooth {
   type: ToothType;

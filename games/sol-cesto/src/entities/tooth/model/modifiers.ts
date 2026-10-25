@@ -5,7 +5,8 @@ import {
   type Modifier,
   MODIFIERS,
 } from '../config/modifiers';
-import type { ToothProperty } from './toothStore';
+import { GOLD_MULTIPLIER_INFO } from '../config/modifiers';
+import { isModifierProperty, type ToothProperty } from './toothStore';
 
 /** Percentage of every modifier, from `MIN_MODIFIER` to `MAX_MODIFIER`. */
 export type Modifiers = Record<Modifier, number>;
@@ -25,10 +26,20 @@ export const clampModifier = (value: number) =>
 /** A percentage with its sign, as in the book: +50%, -50%, +0%. */
 export const formatModifier = (value: number) => `${value < 0 ? '' : '+'}${value}%`;
 
-/** Whether the property is good for the hero (a buff) rather than bad (a debuff). */
-export const isToothPropertyHelpful = ({ modifier, value }: ToothProperty) =>
-  value > 0 === MODIFIERS[modifier].helpsWhenRaised;
+/** A bonus to the gold multiplier with its sign: ×+1, ×-1. */
+export const formatGoldMultiplierBonus = (value: number) => `×${value < 0 ? '' : '+'}${value}`;
 
-/** A tooth property as the hint shows it: the modifier's icon and the percentage, `🗡 +50%`. */
-export const describeToothProperty = ({ modifier, value }: ToothProperty) =>
-  `${MODIFIERS[modifier].icon} ${formatModifier(value)}`;
+/** Whether the property is good for the hero (a buff) rather than bad (a debuff). */
+export const isToothPropertyHelpful = (property: ToothProperty) =>
+  isModifierProperty(property)
+    ? property.value > 0 === MODIFIERS[property.modifier].helpsWhenRaised
+    : property.goldMultiplier > 0;
+
+/**
+ * A tooth property as the hint shows it: the modifier's icon and the percentage, `🗡 +50%`, or the
+ * coin and the bonus to the gold multiplier, `🪙 ×+1`.
+ */
+export const describeToothProperty = (property: ToothProperty) =>
+  isModifierProperty(property)
+    ? `${MODIFIERS[property.modifier].icon} ${formatModifier(property.value)}`
+    : `${GOLD_MULTIPLIER_INFO.icon} ${formatGoldMultiplierBonus(property.goldMultiplier)}`;

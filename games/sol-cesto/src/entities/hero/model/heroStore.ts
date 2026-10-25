@@ -9,8 +9,8 @@ export const INITIAL_HERO_STATS = {
   attack: 2,
   magic: 1,
   gold: 0,
-  /** Every gold income is multiplied by this. Normally 2; raised to 3 for testing. */
-  goldMultiplier: 3,
+  /** Every gold income is multiplied by this plus the bonus of the teeth; 1 keeps it as is. */
+  goldMultiplier: 1,
   /** How many inventory slots are available (0 to `MAX_INVENTORY_SIZE`). */
   inventorySize: 3,
   /** Placeholder items, as on the reference: a potion and a spear. */
@@ -27,7 +27,7 @@ interface HeroState {
   magic: number;
   /** Gold in the piggy bank. */
   gold: number;
-  /** Every gold income (`addGold`) is multiplied by this. */
+  /** The base gold multiplier: every gold income (`addGold`) is multiplied by it plus the bonus. */
   goldMultiplier: number;
   /** How many inventory slots are available, from 0 up to `MAX_INVENTORY_SIZE`. */
   inventorySize: number;
@@ -39,8 +39,11 @@ interface HeroState {
   heal: (amount: number) => void;
   /** Raises the attack of the kind (physical or magic) by `amount`. Does nothing for 0 or less. */
   raiseAttack: (kind: HeroAttackKind, amount: number) => void;
-  /** Puts `amount` × `goldMultiplier` gold into the piggy bank. Does nothing for 0 or less. */
-  addGold: (amount: number) => void;
+  /**
+   * Puts `amount` × (`goldMultiplier` + `multiplierBonus`) gold into the piggy bank, e.g. with the
+   * bonus of the teeth in the mouth. Does nothing for 0 or less.
+   */
+  addGold: (amount: number, multiplierBonus?: number) => void;
   /** Takes `amount` gold out of the piggy bank. Does nothing for 0 or less, or if there is not enough. */
   spendGold: (amount: number) => void;
   /** Puts the item into the first free inventory slot. Does nothing when the inventory is full. */
@@ -61,8 +64,12 @@ export const useHeroStore = create<HeroState>()((set) => ({
     ),
   raiseAttack: (kind, amount) =>
     set((state) => (amount > 0 ? { [kind]: state[kind] + amount } : state)),
-  addGold: (amount) =>
-    set((state) => (amount > 0 ? { gold: state.gold + amount * state.goldMultiplier } : state)),
+  addGold: (amount, multiplierBonus = 0) =>
+    set((state) =>
+      amount > 0
+        ? { gold: state.gold + amount * Math.max(0, state.goldMultiplier + multiplierBonus) }
+        : state,
+    ),
   spendGold: (amount) =>
     set((state) => (amount > 0 && amount <= state.gold ? { gold: state.gold - amount } : state)),
   addItem: (item) =>
