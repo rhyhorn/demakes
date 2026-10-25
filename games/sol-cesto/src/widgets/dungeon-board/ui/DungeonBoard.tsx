@@ -67,12 +67,15 @@ const HIDE_ON_HOVER = 'group-enabled:group-hover:hidden group-focus-visible:hidd
 const WALK_HOVER =
   'group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36]';
 /**
- * While an item is aimed, everything it can hit has a dim red frame, so the player sees the targets
- * at once, and the one under the cursor (or focused) lights up bright red. For a whirlwind these are
- * the cells of the rows with enemies, for an arrow the enemies themselves.
+ * While an item is aimed, every enemy it can hit has a dim red frame, so the player sees the targets
+ * at once, and what it would hit now lights up bright red: the enemy under the cursor (or focused)
+ * for an arrow, every enemy of the hovered row for a whirlwind. The hovered row itself turns grey,
+ * as when the hero would walk into it.
  */
-const ROW_AIM =
-  'group-enabled:border-[#e0533d]/50 group-enabled:bg-[#33282a] group-enabled:group-hover:border-[#ff6a4d] group-enabled:group-hover:bg-[#5a2a24] group-focus-visible:border-[#ff6a4d] group-focus-visible:bg-[#5a2a24]';
+const AIM_FRAME =
+  'absolute inset-0 z-20 rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-transparent';
+const ROW_ENEMY_AIM =
+  'group-enabled:border-[#e0533d]/50 group-enabled:bg-[#e0533d]/10 group-enabled:group-hover:border-[#ff6a4d] group-enabled:group-hover:bg-[#e0533d]/35 group-focus-visible:border-[#ff6a4d] group-focus-visible:bg-[#e0533d]/35';
 const ENEMY_AIM =
   'enabled:border-[#e0533d]/50 enabled:bg-[#e0533d]/10 enabled:hover:border-[#ff6a4d] enabled:hover:bg-[#e0533d]/35 focus-visible:border-[#ff6a4d] focus-visible:bg-[#e0533d]/35';
 
@@ -132,6 +135,7 @@ export function DungeonBoard() {
     // While aiming there is no move to preview.
     const canEnter = chance > 0 && !isAiming;
     const isEnemyTarget = aim === ITEM_AIM.enemy && enemy !== undefined;
+    const isRowEnemyTarget = aim === ITEM_AIM.row && enemy !== undefined;
 
     return (
       <div
@@ -140,9 +144,7 @@ export function DungeonBoard() {
           cellRefs.current[index] = element;
           registerBoardCell(index, element);
         }}
-        className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] ${
-          aim === ITEM_AIM.row ? ROW_AIM : WALK_HOVER
-        } ${visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''}`}
+        className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] ${WALK_HOVER} ${visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''}`}
         {...getHintHandlers({ kind: HINT_TARGET.cell, index })}
       >
         <span className={canEnter ? HIDE_ON_HOVER : ''}>
@@ -155,10 +157,17 @@ export function DungeonBoard() {
           // The rows are plain while an arrow is aimed, so each enemy is a target of its own.
           <button
             type="button"
-            className={`absolute inset-0 z-20 cursor-crosshair rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-transparent outline-none disabled:cursor-default ${ENEMY_AIM}`}
+            className={`${AIM_FRAME} cursor-crosshair outline-none disabled:cursor-default ${ENEMY_AIM}`}
             disabled={isDead || destination !== null || isShooting}
             aria-label={`Вистрілити: ${ENEMY_TYPES[enemy.type].name}`}
             onClick={() => fireAimedItem(index)}
+          />
+        )}
+        {isRowEnemyTarget && (
+          // The whole row is the button, so the frame only shows what the whirlwind sweeps away.
+          <span
+            className={`pointer-events-none ${AIM_FRAME} ${ROW_ENEMY_AIM}`}
+            aria-hidden="true"
           />
         )}
         {pickup && <PickupFigure type={pickup} />}
