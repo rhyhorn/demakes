@@ -47,6 +47,11 @@ interface BoardState {
    * Does nothing if it is already visited.
    */
   markVisited: (index: number) => void;
+  /**
+   * Counts a move towards opening the exit door without walking anywhere. Every way to kill an
+   * enemy counts as a move, like walking into it does.
+   */
+  countMove: () => void;
   /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */
   exitLevel: () => void;
   /** Moves on to the next level whatever the state of the door, e.g. out of a room without moves. */
@@ -56,6 +61,10 @@ interface BoardState {
 }
 
 /** The exit door opens once the player has made all the moves the level requires. */
+/** Moves after one more move: never more than the level requires. */
+const nextMoves = ({ moves, requiredMoves }: Pick<BoardState, 'moves' | 'requiredMoves'>) =>
+  Math.min(moves + 1, requiredMoves);
+
 export function isExitOpen({ moves, requiredMoves }: Pick<BoardState, 'moves' | 'requiredMoves'>) {
   return moves >= requiredMoves;
 }
@@ -97,13 +106,14 @@ export const useBoardStore = create<BoardState>()((set, get) => ({
       return {
         playerIndex: index,
         visited: [...state.visited, index],
-        moves: Math.min(state.moves + 1, state.requiredMoves),
+        moves: nextMoves(state),
       };
     }),
   markVisited: (index) =>
     set((state) =>
       state.visited.includes(index) ? state : { visited: [...state.visited, index] },
     ),
+  countMove: () => set((state) => ({ moves: nextMoves(state) })),
   exitLevel: () =>
     set((state) => (isExitOpen(state) ? { ...createLevelState(), level: state.level + 1 } : state)),
   nextLevel: () => set((state) => ({ ...createLevelState(), level: state.level + 1 })),

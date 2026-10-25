@@ -1,4 +1,5 @@
 export { BOARD_SIZE } from './config';
+export { getBoardCellRect, registerBoardCell } from './lib/boardCells';
 export {
   CELL_COUNT,
   FINAL_LEVEL,

@@ -5,6 +5,7 @@ import {
   getAvailableCells,
   getCellChance,
   getRowCells,
+  registerBoardCell,
   useBoardStore,
 } from '@/entities/board';
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
@@ -82,6 +83,7 @@ export function DungeonBoard() {
                   key={index}
                   ref={(element) => {
                     cellRefs.current[index] = element;
+                    registerBoardCell(index, element);
                   }}
                   className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36] ${
                     visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''

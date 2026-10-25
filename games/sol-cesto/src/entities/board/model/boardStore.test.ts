@@ -179,6 +179,21 @@ describe('useBoardStore', () => {
       expect(useBoardStore.getState().moves).toBe(4);
     });
 
+    it('counts a move without walking and stops at the required moves', () => {
+      useBoardStore.setState({ moves: 0, requiredMoves: 2 });
+
+      useBoardStore.getState().countMove();
+
+      expect(useBoardStore.getState().moves).toBe(1);
+      expect(useBoardStore.getState().playerIndex).toBeNull();
+      expect(useBoardStore.getState().visited).toEqual([]);
+
+      useBoardStore.getState().countMove();
+      useBoardStore.getState().countMove();
+
+      expect(useBoardStore.getState().moves).toBe(2);
+    });
+
     it('unlocks the exit once the required moves are made and stops counting', () => {
       makeMoves(REQUIRED_MOVES + 2);
 

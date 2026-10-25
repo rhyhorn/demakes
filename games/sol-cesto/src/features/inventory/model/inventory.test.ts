@@ -4,7 +4,7 @@ import { useBoardStore } from '@/entities/board';
 import { createEnemy, useEnemyStore } from '@/entities/enemy';
 import { INVENTORY_ITEM, useHeroStore } from '@/entities/hero';
 
-import { canUseItem, consumeItem } from './inventory';
+import { applyItem, canUseItem, consumeItem, pickItemTarget } from './inventory';
 
 describe('canUseItem', () => {
   it('lets a potion be used only while the hero is hurt', () => {
@@ -55,6 +55,7 @@ describe('consumeItem', () => {
     expect(useEnemyStore.getState().enemies).toEqual({ 2: beast, 9: beast });
     expect(useBoardStore.getState().visited).toEqual([5]);
     expect(useBoardStore.getState().playerIndex).toBeNull();
+    expect(useBoardStore.getState().moves).toBe(1);
     expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
   });
 
@@ -64,6 +65,7 @@ describe('consumeItem', () => {
     expect(consumeItem(0)).toBe(true);
 
     expect(useEnemyStore.getState().enemies).toEqual({});
+    expect(useBoardStore.getState().moves).toBe(0);
     expect(useHeroStore.getState().inventory).toEqual([]);
   });
 
@@ -74,5 +76,68 @@ describe('consumeItem', () => {
     expect(consumeItem(1)).toBe(false);
 
     expect(useHeroStore.getState()).toBe(before);
+  });
+});
+
+describe('pickItemTarget', () => {
+  beforeEach(() => {
+    useHeroStore.setState(useHeroStore.getInitialState());
+    useEnemyStore.setState({ enemies: {} });
+    useBoardStore.setState(useBoardStore.getInitialState());
+  });
+
+  it('aims a spear at a random enemy without changing anything', () => {
+    const beast = createEnemy('beast');
+    useEnemyStore.setState({ enemies: { 2: beast, 5: beast, 9: beast } });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.spear] });
+    const enemies = useEnemyStore.getState();
+    const hero = useHeroStore.getState();
+
+    expect(pickItemTarget(0, () => 0.999)).toBe(9);
+
+    expect(useEnemyStore.getState()).toBe(enemies);
+    expect(useHeroStore.getState()).toBe(hero);
+  });
+
+  it('has no target without enemies or for an item that hits nothing', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.spear, INVENTORY_ITEM.potion] });
+
+    expect(pickItemTarget(0)).toBeUndefined();
+
+    useEnemyStore.setState({ enemies: { 3: createEnemy('beast') } });
+
+    expect(pickItemTarget(1)).toBeUndefined();
+    expect(pickItemTarget(2)).toBeUndefined();
+  });
+});
+
+describe('applyItem', () => {
+  beforeEach(() => {
+    useHeroStore.setState(useHeroStore.getInitialState());
+    useEnemyStore.setState({ enemies: {} });
+    useBoardStore.setState(useBoardStore.getInitialState());
+  });
+
+  it('kills the enemy the spear was aimed at', () => {
+    const beast = createEnemy('beast');
+    useEnemyStore.setState({ enemies: { 2: beast, 5: beast } });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.spear] });
+
+    expect(applyItem(0, 2)).toBe(true);
+
+    expect(useEnemyStore.getState().enemies).toEqual({ 5: beast });
+    expect(useBoardStore.getState().visited).toEqual([2]);
+    expect(useBoardStore.getState().moves).toBe(1);
+    expect(useHeroStore.getState().inventory).toEqual([]);
+  });
+
+  it('uses up the spear when its enemy is already gone', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.spear] });
+
+    expect(applyItem(0, 2)).toBe(true);
+
+    expect(useBoardStore.getState().visited).toEqual([]);
+    expect(useBoardStore.getState().moves).toBe(0);
+    expect(useHeroStore.getState().inventory).toEqual([]);
   });
 });

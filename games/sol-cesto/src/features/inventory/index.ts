@@ -1,1 +1,1 @@
-export { canUseItem, consumeItem } from './model/inventory';
+export { applyItem, canUseItem, consumeItem, pickItemTarget } from './model/inventory';

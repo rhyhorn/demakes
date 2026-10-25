@@ -1,3 +1,5 @@
+import { type MouseEvent, useState } from 'react';
+
 import {
   getInventorySlots,
   INVENTORY_ITEMS,
@@ -5,7 +7,9 @@ import {
   type InventorySlot,
   useHeroStore,
 } from '@/entities/hero';
-import { canUseItem, consumeItem } from '@/features/inventory';
+import { applyItem, canUseItem, pickItemTarget } from '@/features/inventory';
+
+import { ItemProjectile } from './ItemProjectile';
 
 const handIcon = (
   <span className="text-[length:calc(48*var(--px))]" aria-hidden="true">
@@ -13,11 +17,29 @@ const handIcon = (
   </span>
 );
 
+/** An item flying from its slot to the board cell it hits. */
+interface Throw {
+  slot: number;
+  target: number;
+  icon: string;
+  /** Where the item's icon was in the slot on the screen. */
+  from: DOMRect;
+}
+
+interface InventorySlotViewProps {
+  slot: InventorySlot;
+  /** Whether items can be used now: not while one is flying. */
+  enabled: boolean;
+  /** Whether this slot's item is the one flying: the slot looks empty meanwhile. */
+  flying: boolean;
+  onUse: (event: MouseEvent<HTMLButtonElement>) => void;
+}
+
 /**
  * One slot: available ones rest on a hand, locked ones are dark.
  * Clicking an item uses it; an item that would do nothing now is dimmed and cannot be clicked.
  */
-function InventorySlotView({ slot, index }: { slot: InventorySlot; index: number }) {
+function InventorySlotView({ slot, enabled, flying, onUse }: InventorySlotViewProps) {
   const health = useHeroStore((state) => state.health);
   const maxHealth = useHeroStore((state) => state.maxHealth);
   const base =
@@ -31,11 +53,13 @@ function InventorySlotView({ slot, index }: { slot: InventorySlot; index: number
           type="button"
           className={`${base} bg-[#2b3036] enabled:cursor-pointer enabled:hover:bg-[#3a4048]`}
           aria-label={`Використати: ${INVENTORY_ITEMS[slot.item].name}`}
-          disabled={!usable}
-          onClick={() => consumeItem(index)}
+          disabled={!usable || !enabled}
+          onClick={onUse}
         >
           <span
-            className={`text-[length:calc(56*var(--px))] ${usable ? '' : 'opacity-50'}`}
+            className={`text-[length:calc(56*var(--px))] ${usable ? '' : 'opacity-50'} ${
+              flying ? 'invisible' : ''
+            }`}
             aria-hidden="true"
           >
             {INVENTORY_ITEMS[slot.item].icon}
@@ -72,6 +96,18 @@ export function InventoryPanel() {
   const inventory = useHeroStore((state) => state.inventory);
   const inventorySize = useHeroStore((state) => state.inventorySize);
   const slots = getInventorySlots(inventory, inventorySize);
+  // Item on its way to the enemy it hits. It is used once it gets there.
+  const [thrown, setThrown] = useState<Throw | null>(null);
+
+  const throwItem = (slot: number, icon: string, event: MouseEvent<HTMLButtonElement>) => {
+    const target = pickItemTarget(slot);
+    const iconElement = event.currentTarget.firstElementChild;
+    if (target === undefined || !iconElement) {
+      applyItem(slot);
+      return;
+    }
+    setThrown({ slot, target, icon, from: iconElement.getBoundingClientRect() });
+  };
 
   return (
     <ul
@@ -82,9 +118,28 @@ export function InventoryPanel() {
         // Slots never move, so their position is a stable key.
         // eslint-disable-next-line react/no-array-index-key
         <li key={index} className="min-h-0">
-          <InventorySlotView slot={slot} index={index} />
+          <InventorySlotView
+            slot={slot}
+            enabled={thrown === null}
+            flying={thrown?.slot === index}
+            onUse={(event) =>
+              slot.state === INVENTORY_SLOT.filled &&
+              throwItem(index, INVENTORY_ITEMS[slot.item].icon, event)
+            }
+          />
         </li>
       ))}
+      {thrown && (
+        <ItemProjectile
+          icon={thrown.icon}
+          from={thrown.from}
+          target={thrown.target}
+          onHit={() => {
+            applyItem(thrown.slot, thrown.target);
+            setThrown(null);
+          }}
+        />
+      )}
     </ul>
   );
 }
