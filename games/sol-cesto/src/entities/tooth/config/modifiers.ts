@@ -20,26 +20,36 @@ export type Modifier = (typeof MODIFIER)[keyof typeof MODIFIER];
 export const MIN_MODIFIER = -100;
 export const MAX_MODIFIER = 100;
 
-/** How each modifier looks and is called in the book. */
-export const MODIFIERS: Record<Modifier, { name: string; icon: string; color: string }> = {
+/**
+ * How each modifier looks and is called in the book. `helpsWhenRaised` tells whether raising it is
+ * good for the hero: more strawberries help her, more enemies hurt her.
+ */
+export const MODIFIERS: Record<
+  Modifier,
+  { name: string; icon: string; color: string; helpsWhenRaised: boolean }
+> = {
   [MODIFIER.attackChance]: {
     name: 'Шанс фізичного ворога',
     icon: '🗡',
     color: 'text-[#e05a5a]',
+    helpsWhenRaised: false,
   },
   [MODIFIER.magicChance]: {
     name: 'Шанс магічного ворога',
     icon: '🌀',
     color: 'text-[#5a8de0]',
+    helpsWhenRaised: false,
   },
   [MODIFIER.strawberryChance]: {
     name: 'Шанс полуниці',
     icon: '🍓',
     color: '',
+    helpsWhenRaised: true,
   },
   [MODIFIER.chestChance]: {
     name: 'Шанс скрині',
     icon: '🪎',
     color: '',
+    helpsWhenRaised: true,
   },
 };

@@ -6,6 +6,8 @@ export const GAME_SCREEN = {
   gameOver: 'game-over',
   /** A closed room where the hero raises her physical or magic attack before the exit opens. */
   upgrade: 'upgrade',
+  /** A closed room where the hero takes one of the offered teeth before the exit opens. */
+  tooth: 'tooth',
   /** The run is won: the hero has left the final level. */
   victory: 'victory',
 } as const;

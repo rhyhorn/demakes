@@ -12,7 +12,7 @@ import { useHeroStore } from '@/entities/hero';
 import { usePickupStore } from '@/entities/pickup';
 import { useToothStore } from '@/entities/tooth';
 
-import { UPGRADE_ROOM_EVERY } from '../config';
+import { TOOTH_ROOM_EVERY, UPGRADE_ROOM_EVERY } from '../config';
 
 const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => getRowCells(row));
 const CELLS = Array.from({ length: CELL_COUNT }, (_, cell) => cell);
@@ -27,8 +27,12 @@ export function startLevel(random?: () => number) {
   );
 }
 
-/** Room of a level: every `UPGRADE_ROOM_EVERY`-th one is an upgrade room, the rest have enemies. */
+/**
+ * Room of a level: every `TOOTH_ROOM_EVERY`-th one is a tooth room, every other
+ * `UPGRADE_ROOM_EVERY`-th one an upgrade room, the rest have enemies.
+ */
 export function getRoomScreen(level: number): GameScreen {
+  if (level % TOOTH_ROOM_EVERY === 0) return GAME_SCREEN.tooth;
   return level % UPGRADE_ROOM_EVERY === 0 ? GAME_SCREEN.upgrade : GAME_SCREEN.dungeon;
 }
 

@@ -3,6 +3,7 @@ import { type ComponentType, useEffect, useLayoutEffect, useRef } from 'react';
 import { GAME_SCREEN, type GameScreen, useGameStore } from '@/entities/game';
 import { GameOverPage } from '@/pages/game-over';
 import { HomePage } from '@/pages/home';
+import { ToothPage } from '@/pages/tooth';
 import { UpgradePage } from '@/pages/upgrade';
 import { VictoryPage } from '@/pages/victory';
 
@@ -10,6 +11,7 @@ const SCREENS: Record<GameScreen, ComponentType> = {
   [GAME_SCREEN.dungeon]: HomePage,
   [GAME_SCREEN.gameOver]: GameOverPage,
   [GAME_SCREEN.upgrade]: UpgradePage,
+  [GAME_SCREEN.tooth]: ToothPage,
   [GAME_SCREEN.victory]: VictoryPage,
 };
 

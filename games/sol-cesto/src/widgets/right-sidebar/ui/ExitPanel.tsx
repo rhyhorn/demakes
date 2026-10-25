@@ -1,25 +1,34 @@
 import { isExitOpen, useBoardStore } from '@/entities/board';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
+import { isToothRoomOpen, leaveToothRoom, useToothChoiceStore } from '@/features/choose-tooth';
 import { enterNextRoom, exitLevel } from '@/features/level';
 import { isUpgradeRoomOpen, leaveUpgradeRoom, useUpgradeStore } from '@/features/upgrade-attack';
 import styles from './ExitPanel.module.css';
 
+/** A room that opens after a single choice: the counter shows `0/1` until it is made. */
+function getChoiceExit(open: boolean, leaveRoom: () => boolean) {
+  const leave = () => {
+    if (leaveRoom()) enterNextRoom();
+  };
+  return { open, moves: open ? 1 : 0, requiredMoves: 1, leave };
+}
+
 /**
  * State of the exit door on the current screen: on a level it opens after the required moves, in
- * the upgrade room after the one choice.
+ * the upgrade and tooth rooms after the one choice.
  */
 function useExit() {
-  const inUpgradeRoom = useGameStore((state) => state.screen === GAME_SCREEN.upgrade);
+  const screen = useGameStore((state) => state.screen);
   const moves = useBoardStore((state) => state.moves);
   const requiredMoves = useBoardStore((state) => state.requiredMoves);
-  const chosen = useUpgradeStore((state) => state.chosen);
+  const upgradeChosen = useUpgradeStore((state) => state.chosen);
+  const toothChosen = useToothChoiceStore((state) => state.chosen);
 
-  if (inUpgradeRoom) {
-    const open = isUpgradeRoomOpen({ chosen });
-    const leave = () => {
-      if (leaveUpgradeRoom()) enterNextRoom();
-    };
-    return { open, moves: open ? 1 : 0, requiredMoves: 1, leave };
+  if (screen === GAME_SCREEN.upgrade) {
+    return getChoiceExit(isUpgradeRoomOpen({ chosen: upgradeChosen }), leaveUpgradeRoom);
+  }
+  if (screen === GAME_SCREEN.tooth) {
+    return getChoiceExit(isToothRoomOpen({ chosen: toothChosen }), () => leaveToothRoom());
   }
   return {
     open: isExitOpen({ moves, requiredMoves }),

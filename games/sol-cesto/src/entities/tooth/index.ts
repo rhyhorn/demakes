@@ -4,6 +4,7 @@ export {
   clampModifier,
   describeToothProperty,
   formatModifier,
+  isToothPropertyHelpful,
   type Modifiers,
   NO_MODIFIERS,
 } from './model/modifiers';
@@ -13,6 +14,7 @@ export {
   STARTING_TEETH,
   SWEET_TOOTH,
   TEST_TOOTH,
+  TOOTH_POOL,
   type Tooth,
   type ToothProperty,
   type ToothSlot,

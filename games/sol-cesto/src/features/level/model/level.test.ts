@@ -51,16 +51,24 @@ describe('level', () => {
     expect(useEnemyStore.getState().enemies).toBe(enemies);
   });
 
-  it('starts the run in a dungeon and puts an upgrade room on every second level', () => {
-    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+  it('starts the run in a dungeon and alternates upgrade and tooth rooms on every second level', () => {
+    const { dungeon, upgrade, tooth } = GAME_SCREEN;
+
+    expect(useGameStore.getState().screen).toBe(dungeon);
     expect(
       Array.from({ length: FINAL_LEVEL }, (_, index) => getRoomScreen(FIRST_LEVEL + index)),
-    ).toEqual(
-      Array.from({ length: FINAL_LEVEL / 2 }, () => [
-        GAME_SCREEN.dungeon,
-        GAME_SCREEN.upgrade,
-      ]).flat(),
-    );
+    ).toEqual([
+      dungeon,
+      upgrade,
+      dungeon,
+      tooth,
+      dungeon,
+      upgrade,
+      dungeon,
+      tooth,
+      dungeon,
+      upgrade,
+    ]);
   });
 
   it('leads from the dungeon to the upgrade room through the open exit', () => {

@@ -33,6 +33,21 @@ describe('useToothStore', () => {
     expect(useToothStore.getState().slots[5]).toEqual(tooth);
   });
 
+  it('adds a tooth into a random empty slot', () => {
+    // Slots 0 and 1 hold the starting teeth, so the first empty one is 2.
+    expect(useToothStore.getState().addTooth(tooth, () => 0)).toBe(2);
+    expect(useToothStore.getState().slots[2]).toBe(tooth);
+    expect(useToothStore.getState().addTooth(tooth, () => 0.999)).toBe(TOOTH_SLOT_COUNT - 1);
+  });
+
+  it('replaces a random tooth when the mouth is full', () => {
+    useToothStore.setState({ slots: Array.from({ length: TOOTH_SLOT_COUNT }, () => SWEET_TOOTH) });
+
+    expect(useToothStore.getState().addTooth(tooth, () => 0)).toBe(0);
+    expect(useToothStore.getState().slots[0]).toBe(tooth);
+    expect(useToothStore.getState().slots.filter((slot) => slot === tooth)).toHaveLength(1);
+  });
+
   it('empties a slot', () => {
     useToothStore.getState().removeTooth(0);
 

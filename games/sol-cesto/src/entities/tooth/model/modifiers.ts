@@ -25,6 +25,10 @@ export const clampModifier = (value: number) =>
 /** A percentage with its sign, as in the book: +50%, -50%, +0%. */
 export const formatModifier = (value: number) => `${value < 0 ? '' : '+'}${value}%`;
 
+/** Whether the property is good for the hero (a buff) rather than bad (a debuff). */
+export const isToothPropertyHelpful = ({ modifier, value }: ToothProperty) =>
+  value > 0 === MODIFIERS[modifier].helpsWhenRaised;
+
 /** A tooth property as the hint shows it: the modifier's icon and the percentage, `🗡 +50%`. */
 export const describeToothProperty = ({ modifier, value }: ToothProperty) =>
   `${MODIFIERS[modifier].icon} ${formatModifier(value)}`;
