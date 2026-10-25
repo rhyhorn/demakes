@@ -22,8 +22,10 @@ import {
 } from '@/features/enter-row';
 import { Badge } from '@/shared/ui';
 
+import { useEnemyDeaths } from '../lib/useEnemyDeaths';
 import { useHeroMoveAnimation } from '../lib/useHeroMoveAnimation';
 import styles from './DungeonBoard.module.css';
+import { EnemyDeathEffect } from './EnemyDeathEffect';
 
 const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => ({
   row,
@@ -48,6 +50,7 @@ export function DungeonBoard() {
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
   const teeth = useToothStore((state) => state.slots);
+  const { deaths, finishDeath } = useEnemyDeaths(enemies, visited);
   const weightOf = getCellWeights(enemies, pickups, getTeethModifiers(teeth));
   const heroRef = useRef<HTMLSpanElement>(null);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -114,6 +117,15 @@ export function DungeonBoard() {
                       </Badge>
                     </span>
                   )}
+                  {deaths
+                    .filter((death) => death.cell === index)
+                    .map((death) => (
+                      <EnemyDeathEffect
+                        key={death.id}
+                        enemy={death.enemy}
+                        onFinish={() => finishDeath(death.id)}
+                      />
+                    ))}
                   {index === heroIndex && (
                     // Over whatever is in the cell she walks to, above the other cells she walks
                     // over, and doesn't steal their hover.
