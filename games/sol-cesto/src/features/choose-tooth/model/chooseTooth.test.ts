@@ -7,6 +7,7 @@ import {
   chooseTooth,
   createToothOffers,
   isToothRoomOpen,
+  landTooth,
   leaveToothRoom,
   useToothChoiceStore,
 } from './chooseTooth';
@@ -28,7 +29,11 @@ describe('createToothOffers', () => {
 describe('tooth room', () => {
   beforeEach(() => {
     useToothStore.setState({ slots: createStartingSlots(() => 0) });
-    useToothChoiceStore.setState({ offers: createToothOffers(() => 0), chosen: null });
+    useToothChoiceStore.setState({
+      offers: createToothOffers(() => 0),
+      chosen: null,
+      flight: null,
+    });
   });
 
   it('is closed until a tooth is taken', () => {
@@ -42,6 +47,21 @@ describe('tooth room', () => {
     expect(useToothStore.getState().slots[2]).toBe(TOOTH_POOL[2]);
     expect(useToothChoiceStore.getState().chosen).toBe(2);
     expect(isToothRoomOpen(useToothChoiceStore.getState())).toBe(true);
+  });
+
+  it('sends the tooth flying into its slot over what the slot held before', () => {
+    const from = { left: 10, top: 20, width: 150, height: 190 } as DOMRect;
+    chooseTooth(2, () => 0, from);
+
+    expect(useToothChoiceStore.getState().flight).toEqual({ from, slot: 2, previous: null });
+    landTooth();
+    expect(useToothChoiceStore.getState().flight).toBeNull();
+  });
+
+  it('flies nowhere without a place to fly from', () => {
+    chooseTooth(2, () => 0);
+
+    expect(useToothChoiceStore.getState().flight).toBeNull();
   });
 
   it('counts only the first choice', () => {
@@ -67,6 +87,7 @@ describe('tooth room', () => {
 
     expect(leaveToothRoom(() => 0.999)).toBe(true);
     expect(useToothChoiceStore.getState().chosen).toBeNull();
+    expect(useToothChoiceStore.getState().flight).toBeNull();
     expect(useToothChoiceStore.getState().offers).toEqual(createToothOffers(() => 0.999));
   });
 

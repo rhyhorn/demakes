@@ -3,6 +3,8 @@ export {
   chooseTooth,
   createToothOffers,
   isToothRoomOpen,
+  landTooth,
   leaveToothRoom,
+  type ToothFlight,
   useToothChoiceStore,
 } from './model/chooseTooth';

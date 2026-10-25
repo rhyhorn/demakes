@@ -74,13 +74,18 @@ export function ToothRoom() {
             <li key={offer} className="flex flex-col items-center gap-[calc(16*var(--px))]">
               <button
                 type="button"
-                className={`h-[calc(190*var(--px))] w-[calc(150*var(--px))] cursor-pointer rounded-t-[calc(18*var(--px))] rounded-b-[calc(60*var(--px))] border-[length:calc(4*var(--px))] border-[#c9bb98] bg-[#f4ecd6] shadow-[inset_0_calc(-12*var(--px))_calc(16*var(--px))_rgba(150,130,90,0.45)] transition-[transform,box-shadow,opacity] focus-visible:outline-none enabled:hover:-translate-y-[calc(12*var(--px))] enabled:hover:shadow-[0_0_calc(48*var(--px))_#e8c46a] enabled:focus-visible:-translate-y-[calc(12*var(--px))] enabled:focus-visible:shadow-[0_0_calc(48*var(--px))_#e8c46a] disabled:cursor-default ${
-                  isChosen ? 'shadow-[0_0_calc(64*var(--px))_#e8c46a]' : ''
+                className={`h-[calc(190*var(--px))] w-[calc(150*var(--px))] cursor-pointer rounded-t-[calc(18*var(--px))] rounded-b-[calc(60*var(--px))] border-[length:calc(4*var(--px))] transition-[transform,box-shadow,opacity] focus-visible:outline-none enabled:hover:-translate-y-[calc(12*var(--px))] enabled:hover:shadow-[0_0_calc(48*var(--px))_#e8c46a] enabled:focus-visible:-translate-y-[calc(12*var(--px))] enabled:focus-visible:shadow-[0_0_calc(48*var(--px))_#e8c46a] disabled:cursor-default ${
+                  // The taken tooth has flown into the mouth: only its outline is left.
+                  isChosen
+                    ? 'border-dashed border-[#e8c46a] bg-transparent'
+                    : 'border-[#c9bb98] bg-[#f4ecd6] shadow-[inset_0_calc(-12*var(--px))_calc(16*var(--px))_rgba(150,130,90,0.45)]'
                 } ${chosen !== null && !isChosen ? 'opacity-30' : ''}`}
                 disabled={chosen !== null}
                 aria-pressed={isChosen}
                 aria-label={name}
-                onClick={() => chooseTooth(offer)}
+                onClick={(event) =>
+                  chooseTooth(offer, undefined, event.currentTarget.getBoundingClientRect())
+                }
                 onMouseEnter={() => setHovered(offer)}
                 onMouseLeave={() => setHovered(null)}
                 onFocus={() => setHovered(offer)}
