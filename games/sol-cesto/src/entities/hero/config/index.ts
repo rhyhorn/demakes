@@ -58,6 +58,7 @@ export const INVENTORY_ITEM = {
   spear: 'spear',
   bomb: 'bomb',
   whirlwind: 'whirlwind',
+  arrow: 'arrow',
 } as const;
 
 export type InventoryItem = (typeof INVENTORY_ITEM)[keyof typeof INVENTORY_ITEM];
@@ -78,6 +79,8 @@ export const ITEM_EFFECT = {
    * opening the exit door, not one per kill.
    */
   killRowEnemies: 'kill-row-enemies',
+  /** Kills the enemy the player picks on the board, whatever its attack. */
+  killChosenEnemy: 'kill-chosen-enemy',
 } as const;
 
 export type ItemEffectKind = (typeof ITEM_EFFECT)[keyof typeof ITEM_EFFECT];
@@ -86,7 +89,8 @@ export type ItemEffect =
   | { kind: typeof ITEM_EFFECT.heal; amount: number }
   | { kind: typeof ITEM_EFFECT.killEnemy }
   | { kind: typeof ITEM_EFFECT.killEnemyPerRow }
-  | { kind: typeof ITEM_EFFECT.killRowEnemies };
+  | { kind: typeof ITEM_EFFECT.killRowEnemies }
+  | { kind: typeof ITEM_EFFECT.killChosenEnemy };
 
 export interface InventoryItemConfig {
   name: string;
@@ -128,5 +132,12 @@ export const INVENTORY_ITEMS: Record<InventoryItem, InventoryItemConfig> = {
     description: 'Змітає всіх ворогів в обраному рядку',
     effect: { kind: ITEM_EFFECT.killRowEnemies },
     price: 6,
+  },
+  [INVENTORY_ITEM.arrow]: {
+    name: 'Стріла',
+    icon: '🏹',
+    description: 'Убиває обраного ворога на полі',
+    effect: { kind: ITEM_EFFECT.killChosenEnemy },
+    price: 4,
   },
 };

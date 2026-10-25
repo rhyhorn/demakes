@@ -12,7 +12,7 @@ import {
   useShopStore,
 } from './shop';
 
-const { potion, spear, whirlwind } = INVENTORY_ITEM;
+const { potion, spear, arrow } = INVENTORY_ITEM;
 
 describe('shop', () => {
   beforeEach(() => {
@@ -76,7 +76,7 @@ describe('shop', () => {
     expect(leaveShop(() => 0.999)).toBe(true);
 
     expect(useShopStore.getState()).toMatchObject({
-      offers: Array.from({ length: SHOP_OFFER_COUNT }, () => whirlwind),
+      offers: Array.from({ length: SHOP_OFFER_COUNT }, () => arrow),
       sold: [],
     });
   });

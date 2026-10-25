@@ -181,6 +181,28 @@ describe('applyItem', () => {
     expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
   });
 
+  it('kills the enemy an arrow is aimed at, whatever its attack', () => {
+    const shark = createEnemy('shark');
+    useEnemyStore.setState({ enemies: { 6: shark, 11: shark } });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.arrow] });
+
+    expect(applyItem(0, 11)).toBe(true);
+
+    expect(useEnemyStore.getState().enemies).toEqual({ 6: shark });
+    expect(useBoardStore.getState().visited).toEqual([11]);
+    expect(useBoardStore.getState().moves).toBe(1);
+    expect(useHeroStore.getState().inventory).toEqual([]);
+  });
+
+  it('keeps an arrow without a target', () => {
+    useEnemyStore.setState({ enemies: { 6: createEnemy('beast') } });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.arrow] });
+
+    expect(consumeItem(0)).toBe(false);
+
+    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.arrow]);
+  });
+
   it('keeps a whirlwind without a row', () => {
     useHeroStore.setState({ inventory: [INVENTORY_ITEM.whirlwind] });
 

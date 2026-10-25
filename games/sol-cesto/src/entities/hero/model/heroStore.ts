@@ -22,12 +22,16 @@ export const INITIAL_HERO_STATS = {
   /** Every gold income is multiplied by this plus the bonus of the teeth; 1 keeps it as is. */
   goldMultiplier: 1,
   /** How many inventory slots are available (0 to `MAX_INVENTORY_SIZE`). */
-  inventorySize: 3,
-  /** Placeholder items, as on the reference: a potion and a spear, plus a whirlwind to try out. */
+  inventorySize: 4,
+  /**
+   * Placeholder items, as on the reference: a potion and a spear, plus a whirlwind and an arrow to
+   * try out.
+   */
   inventory: [
     INVENTORY_ITEM.potion,
     INVENTORY_ITEM.spear,
     INVENTORY_ITEM.whirlwind,
+    INVENTORY_ITEM.arrow,
   ] as readonly InventoryItem[],
 } as const;
 

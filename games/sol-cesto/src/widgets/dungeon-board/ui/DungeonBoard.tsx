@@ -8,7 +8,7 @@ import {
   registerBoardCell,
   useBoardStore,
 } from '@/entities/board';
-import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
+import { ENEMY_TYPES, EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { HeroFigure, useHeroStore } from '@/entities/hero';
 import {
@@ -31,7 +31,9 @@ import {
 import {
   applyAimedItem,
   cancelItemAim,
+  fireAimedItem,
   getRowItemTargets,
+  ITEM_AIM,
   useItemAimStore,
 } from '@/features/inventory';
 import { Badge } from '@/shared/ui';
@@ -61,11 +63,18 @@ const boardStyle = { '--board-size': BOARD_SIZE } as CSSProperties;
  */
 const SHOW_ON_HOVER = 'hidden group-enabled:group-hover:contents group-focus-visible:contents';
 const HIDE_ON_HOVER = 'group-enabled:group-hover:hidden group-focus-visible:hidden';
-/** A hovered row: grey when the hero would walk into it, red when a row item is aimed at it. */
+/** A hovered row the hero would walk into turns grey. */
 const WALK_HOVER =
   'group-enabled:group-hover:border-[#77776c] group-enabled:group-hover:bg-[#3a3a36]';
-const AIM_HOVER =
-  'group-enabled:group-hover:border-[#e0533d] group-enabled:group-hover:bg-[#4a2a26] group-focus-visible:border-[#e0533d]';
+/**
+ * While an item is aimed, everything it can hit has a dim red frame, so the player sees the targets
+ * at once, and the one under the cursor (or focused) lights up bright red. For a whirlwind these are
+ * the cells of the rows with enemies, for an arrow the enemies themselves.
+ */
+const ROW_AIM =
+  'group-enabled:border-[#e0533d]/50 group-enabled:bg-[#33282a] group-enabled:group-hover:border-[#ff6a4d] group-enabled:group-hover:bg-[#5a2a24] group-focus-visible:border-[#ff6a4d] group-focus-visible:bg-[#5a2a24]';
+const ENEMY_AIM =
+  'enabled:border-[#e0533d]/50 enabled:bg-[#e0533d]/10 enabled:hover:border-[#ff6a4d] enabled:hover:bg-[#e0533d]/35 focus-visible:border-[#ff6a4d] focus-visible:bg-[#e0533d]/35';
 
 export function DungeonBoard() {
   const playerIndex = useBoardStore((state) => state.playerIndex);
@@ -87,8 +96,11 @@ export function DungeonBoard() {
   const heroIndex = destination ?? playerIndex;
   // Her health has run out: the board plays her death, then the game is over.
   const isDead = health === 0;
-  // A row item is aimed: clicking a row with enemies uses it there instead of moving the hero.
-  const isAiming = useItemAimStore((state) => state.aimingSlot !== null);
+  // An item is aimed: clicking a row with enemies (a whirlwind) or an enemy (an arrow) uses it
+  // there instead of moving the hero.
+  const aim = useItemAimStore((state) => state.aiming?.aim ?? null);
+  const isAiming = aim !== null;
+  const isShooting = useItemAimStore((state) => state.shot !== null);
   const aimTargets = getRowItemTargets(enemies);
   // A hit that doesn't kill her makes her flash red; a deadly one plays her death instead.
   const { hitId, finishHit } = useHeroHit(health);
@@ -112,120 +124,142 @@ export function DungeonBoard() {
     setDestination(null);
   });
 
+  const renderCell = (index: number) => {
+    const chance = getCellChance(index, visited, weightOf);
+    const enemy = enemies[index];
+    const pickup = pickups[index];
+    const trap = traps[index];
+    // While aiming there is no move to preview.
+    const canEnter = chance > 0 && !isAiming;
+    const isEnemyTarget = aim === ITEM_AIM.enemy && enemy !== undefined;
+
+    return (
+      <div
+        key={index}
+        ref={(element) => {
+          cellRefs.current[index] = element;
+          registerBoardCell(index, element);
+        }}
+        className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] ${
+          aim === ITEM_AIM.row ? ROW_AIM : WALK_HOVER
+        } ${visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''}`}
+        {...getHintHandlers({ kind: HINT_TARGET.cell, index })}
+      >
+        <span className={canEnter ? HIDE_ON_HOVER : ''}>
+          {enemy && <EnemyAttackBadge enemy={enemy} />}
+          {pickup && <PickupBadge type={pickup} />}
+          {trap && <TrapBadge type={trap} />}
+        </span>
+        {enemy && <EnemyFigure enemy={enemy} />}
+        {isEnemyTarget && (
+          // The rows are plain while an arrow is aimed, so each enemy is a target of its own.
+          <button
+            type="button"
+            className={`absolute inset-0 z-20 cursor-crosshair rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-transparent outline-none disabled:cursor-default ${ENEMY_AIM}`}
+            disabled={isDead || destination !== null || isShooting}
+            aria-label={`Вистрілити: ${ENEMY_TYPES[enemy.type].name}`}
+            onClick={() => fireAimedItem(index)}
+          />
+        )}
+        {pickup && <PickupFigure type={pickup} />}
+        {trap && <TrapFigure type={trap} />}
+        {canEnter && (
+          <span className={SHOW_ON_HOVER}>
+            <CellOutcomeBadge
+              outcome={getCellOutcome({ enemy, trap }, { health, attack, magic })}
+            />
+            <Badge
+              corner="right"
+              label={`Шанс: ${Math.round(chance * 100)}%`}
+              className="bg-[#1a1d21] text-[#e8e2d4]"
+            >
+              <span aria-hidden="true">{Math.round(chance * 100)}%</span>
+            </Badge>
+          </span>
+        )}
+        {deaths.removals
+          .filter((death) => death.cell === index)
+          .map((death) => (
+            <CellVanishEffect
+              key={`enemy-${death.id}`}
+              tone={VANISH_TONE.negative}
+              icon="💀"
+              onFinish={() => deaths.finishRemoval(death.id)}
+            >
+              <EnemyFigure enemy={death.item} />
+            </CellVanishEffect>
+          ))}
+        {takenPickups.removals
+          .filter((taken) => taken.cell === index)
+          .map((taken) => (
+            <CellVanishEffect
+              key={`pickup-${taken.id}`}
+              tone={VANISH_TONE.positive}
+              icon={PICKUP_VANISH_ICONS[taken.item]}
+              onFinish={() => takenPickups.finishRemoval(taken.id)}
+            >
+              <PickupFigure type={taken.item} />
+            </CellVanishEffect>
+          ))}
+        {index === heroIndex && (
+          // Over whatever is in the cell she walks to, above the other cells she walks
+          // over, and doesn't steal their hover.
+          <span
+            ref={heroRef}
+            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+          >
+            <span
+              // A new key restarts the hit animation when she is hit again.
+              key={hitId ?? 'idle'}
+              className={heroAnimationClass}
+              onAnimationEnd={(event) => {
+                if (event.target !== event.currentTarget) return;
+                if (isDead) finishDeath();
+                else finishHit();
+              }}
+            >
+              <HeroFigure size={90} />
+            </span>
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <main className={styles.area}>
       {isDead && <div className={styles.deathShade} aria-hidden="true" />}
       <div className={styles.board} style={boardStyle} aria-label="Поле підземелля">
-        {ROWS.map(({ row, cellIndices }) => (
-          <button
-            key={row}
-            type="button"
-            className={`group col-span-full grid grid-cols-subgrid disabled:cursor-default ${
-              isAiming ? 'cursor-crosshair' : 'cursor-pointer'
-            }`}
-            disabled={
-              isDead ||
-              destination !== null ||
-              (isAiming ? !aimTargets.includes(row) : getAvailableCells(row, visited).length === 0)
-            }
-            aria-label={isAiming ? `Змести ворогів у рядку ${row + 1}` : `Рядок ${row + 1}`}
-            onClick={() => {
-              if (isAiming) applyAimedItem(row);
-              else setDestination(pickEntryCell(row) ?? null);
-            }}
-          >
-            {cellIndices.map((index) => {
-              const chance = getCellChance(index, visited, weightOf);
-              const enemy = enemies[index];
-              const pickup = pickups[index];
-              const trap = traps[index];
-              // While aiming there is no move to preview.
-              const canEnter = chance > 0 && !isAiming;
-
-              return (
-                <div
-                  key={index}
-                  ref={(element) => {
-                    cellRefs.current[index] = element;
-                    registerBoardCell(index, element);
-                  }}
-                  className={`relative flex items-center justify-center rounded-[calc(4*var(--px))] border-[calc(2*var(--px))] border-[#3a3a36] bg-[#2b2b28] ${
-                    isAiming ? AIM_HOVER : WALK_HOVER
-                  } ${visited.includes(index) && index !== playerIndex ? 'opacity-40' : ''}`}
-                  {...getHintHandlers({ kind: HINT_TARGET.cell, index })}
-                >
-                  <span className={canEnter ? HIDE_ON_HOVER : ''}>
-                    {enemy && <EnemyAttackBadge enemy={enemy} />}
-                    {pickup && <PickupBadge type={pickup} />}
-                    {trap && <TrapBadge type={trap} />}
-                  </span>
-                  {enemy && <EnemyFigure enemy={enemy} />}
-                  {pickup && <PickupFigure type={pickup} />}
-                  {trap && <TrapFigure type={trap} />}
-                  {canEnter && (
-                    <span className={SHOW_ON_HOVER}>
-                      <CellOutcomeBadge
-                        outcome={getCellOutcome({ enemy, trap }, { health, attack, magic })}
-                      />
-                      <Badge
-                        corner="right"
-                        label={`Шанс: ${Math.round(chance * 100)}%`}
-                        className="bg-[#1a1d21] text-[#e8e2d4]"
-                      >
-                        <span aria-hidden="true">{Math.round(chance * 100)}%</span>
-                      </Badge>
-                    </span>
-                  )}
-                  {deaths.removals
-                    .filter((death) => death.cell === index)
-                    .map((death) => (
-                      <CellVanishEffect
-                        key={`enemy-${death.id}`}
-                        tone={VANISH_TONE.negative}
-                        icon="💀"
-                        onFinish={() => deaths.finishRemoval(death.id)}
-                      >
-                        <EnemyFigure enemy={death.item} />
-                      </CellVanishEffect>
-                    ))}
-                  {takenPickups.removals
-                    .filter((taken) => taken.cell === index)
-                    .map((taken) => (
-                      <CellVanishEffect
-                        key={`pickup-${taken.id}`}
-                        tone={VANISH_TONE.positive}
-                        icon={PICKUP_VANISH_ICONS[taken.item]}
-                        onFinish={() => takenPickups.finishRemoval(taken.id)}
-                      >
-                        <PickupFigure type={taken.item} />
-                      </CellVanishEffect>
-                    ))}
-                  {index === heroIndex && (
-                    // Over whatever is in the cell she walks to, above the other cells she walks
-                    // over, and doesn't steal their hover.
-                    <span
-                      ref={heroRef}
-                      className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
-                    >
-                      <span
-                        // A new key restarts the hit animation when she is hit again.
-                        key={hitId ?? 'idle'}
-                        className={heroAnimationClass}
-                        onAnimationEnd={(event) => {
-                          if (event.target !== event.currentTarget) return;
-                          if (isDead) finishDeath();
-                          else finishHit();
-                        }}
-                      >
-                        <HeroFigure size={90} />
-                      </span>
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </button>
-        ))}
+        {ROWS.map(({ row, cellIndices }) =>
+          aim === ITEM_AIM.enemy ? (
+            <div key={row} className="col-span-full grid grid-cols-subgrid">
+              {cellIndices.map(renderCell)}
+            </div>
+          ) : (
+            <button
+              key={row}
+              type="button"
+              className={`group col-span-full grid grid-cols-subgrid disabled:cursor-default ${
+                aim === ITEM_AIM.row ? 'cursor-crosshair' : 'cursor-pointer'
+              }`}
+              disabled={
+                isDead ||
+                destination !== null ||
+                isShooting ||
+                (isAiming
+                  ? !aimTargets.includes(row)
+                  : getAvailableCells(row, visited).length === 0)
+              }
+              aria-label={isAiming ? `Змести ворогів у рядку ${row + 1}` : `Рядок ${row + 1}`}
+              onClick={() => {
+                if (isAiming) applyAimedItem(row);
+                else setDestination(pickEntryCell(row) ?? null);
+              }}
+            >
+              {cellIndices.map(renderCell)}
+            </button>
+          ),
+        )}
       </div>
     </main>
   );

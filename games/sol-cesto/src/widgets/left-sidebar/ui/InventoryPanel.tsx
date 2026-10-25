@@ -8,6 +8,7 @@ import {
   INVENTORY_SLOT,
   type InventoryItem,
   type InventorySlot,
+  registerInventoryIcon,
   useHeroStore,
 } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
@@ -15,8 +16,9 @@ import {
   applyItem,
   cancelItemAim,
   canUseItem,
-  getRowItemTargets,
-  isRowItem,
+  finishShot,
+  getItemAim,
+  hasItemAimTargets,
   pickItemTarget,
   toggleItemAim,
   useItemAimStore,
@@ -40,12 +42,14 @@ interface Throw {
 }
 
 interface InventorySlotViewProps {
+  /** Position of the slot in the inventory. */
+  index: number;
   slot: InventorySlot;
   /** Whether items can be used now: not while one is flying. */
   enabled: boolean;
   /** Whether this slot's item is the one flying: the slot looks empty meanwhile. */
   flying: boolean;
-  /** Whether the player is picking a row on the board for this slot's item. */
+  /** Whether the player is picking a target on the board for this slot's item. */
   aiming: boolean;
   onUse: (event: MouseEvent<HTMLButtonElement>) => void;
 }
@@ -53,22 +57,30 @@ interface InventorySlotViewProps {
 /**
  * One slot: available ones rest on a hand, locked ones are dark.
  * Clicking an item uses it; an item that would do nothing now is dimmed and cannot be clicked.
- * A row item is used only in the dungeon, on a row with enemies: clicking it starts aiming (the slot
- * glows), and clicking it again stops.
+ * An aimed item (a whirlwind, an arrow) is used only in the dungeon while it has something to hit:
+ * clicking it starts aiming (the slot glows), and clicking it again stops.
  */
-function InventorySlotView({ slot, enabled, flying, aiming, onUse }: InventorySlotViewProps) {
+function InventorySlotView({
+  index,
+  slot,
+  enabled,
+  flying,
+  aiming,
+  onUse,
+}: InventorySlotViewProps) {
   const health = useHeroStore((state) => state.health);
   const maxHealth = useHeroStore((state) => state.maxHealth);
   const inDungeon = useGameStore((state) => state.screen === GAME_SCREEN.dungeon);
-  const hasRowTargets = useEnemyStore((state) => getRowItemTargets(state.enemies).length > 0);
+  const enemies = useEnemyStore((state) => state.enemies);
   const base =
     'flex h-full w-full flex-col items-center justify-end rounded-[calc(12*var(--px))] pb-[calc(4*var(--px))] leading-none';
 
   switch (slot.state) {
     case INVENTORY_SLOT.filled: {
+      const aim = getItemAim(slot.item);
       const usable =
         canUseItem(slot.item, { health, maxHealth }) &&
-        (!isRowItem(slot.item) || (inDungeon && hasRowTargets));
+        (aim === null || (inDungeon && hasItemAimTargets(aim, enemies)));
       return (
         <button
           type="button"
@@ -78,11 +90,12 @@ function InventorySlotView({ slot, enabled, flying, aiming, onUse }: InventorySl
               : 'bg-[#2b3036] enabled:hover:bg-[#3a4048]'
           }`}
           aria-label={`Використати: ${INVENTORY_ITEMS[slot.item].name}`}
-          aria-pressed={isRowItem(slot.item) ? aiming : undefined}
+          aria-pressed={aim === null ? undefined : aiming}
           disabled={!usable || !enabled}
           onClick={onUse}
         >
           <span
+            ref={(element) => registerInventoryIcon(index, element)}
             className={`text-[length:calc(56*var(--px))] ${usable ? '' : 'opacity-50'} ${
               flying ? 'invisible' : ''
             }`}
@@ -124,7 +137,11 @@ export function InventoryPanel() {
   const slots = getInventorySlots(inventory, inventorySize);
   // Item on its way to the enemy it hits. It is used once it gets there.
   const [thrown, setThrown] = useState<Throw | null>(null);
-  const aimingSlot = useItemAimStore((state) => state.aimingSlot);
+  const aimingSlot = useItemAimStore((state) => state.aiming?.slot ?? null);
+  // An aimed item fired at an enemy: it flies there from its slot.
+  const shot = useItemAimStore((state) => state.shot);
+  const flight = thrown ?? shot;
+  const shotItem = shot === null ? undefined : inventory[shot.slot];
 
   const throwItem = (slot: number, icon: string, event: MouseEvent<HTMLButtonElement>) => {
     const target = pickItemTarget(slot);
@@ -137,7 +154,7 @@ export function InventoryPanel() {
   };
 
   const clickItem = (slot: number, item: InventoryItem, event: MouseEvent<HTMLButtonElement>) => {
-    if (isRowItem(item)) {
+    if (getItemAim(item) !== null) {
       toggleItemAim(slot);
       return;
     }
@@ -162,9 +179,10 @@ export function InventoryPanel() {
           {...getHintHandlers({ kind: HINT_TARGET.item, slot: index })}
         >
           <InventorySlotView
+            index={index}
             slot={slot}
-            enabled={thrown === null}
-            flying={thrown?.slot === index}
+            enabled={flight === null}
+            flying={flight?.slot === index}
             aiming={aimingSlot === index}
             onUse={(event) =>
               slot.state === INVENTORY_SLOT.filled && clickItem(index, slot.item, event)
@@ -181,6 +199,14 @@ export function InventoryPanel() {
             applyItem(thrown.slot, thrown.target);
             setThrown(null);
           }}
+        />
+      )}
+      {shot && shotItem !== undefined && (
+        <ItemProjectile
+          icon={INVENTORY_ITEMS[shotItem].icon}
+          from={shot.from}
+          target={shot.target}
+          onHit={finishShot}
         />
       )}
     </ul>

@@ -24,4 +24,5 @@ export {
 } from './model/inventory';
 export { INITIAL_HERO_STATS, useHeroStore } from './model/heroStore';
 export { getHeroPortraitRect, heroPortraitRef } from './lib/heroPortrait';
+export { getInventoryIconRect, registerInventoryIcon } from './lib/inventoryIcons';
 export { HeroClassFigure, HeroFigure } from './ui/HeroFigure';
