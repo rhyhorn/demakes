@@ -1,22 +1,13 @@
 import { HeroFigure, heroPortraitRef, useHeroStore } from '@/entities/hero';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 
-import { HEALTH_CHANGE, useHealthChange } from '../lib/useHealthChange';
+import { useValueChange, VALUE_CHANGE } from '../lib/useValueChange';
 import styles from './HeroPanel.module.css';
-
-const PANEL_EFFECT = {
-  [HEALTH_CHANGE.damage]: styles.panelDamage,
-  [HEALTH_CHANGE.heal]: styles.panelHeal,
-};
+import { ValueChangeDelta, ValueChangeFlash } from './ValueChangeEffect';
 
 const HEART_EFFECT = {
-  [HEALTH_CHANGE.damage]: styles.heartDamage,
-  [HEALTH_CHANGE.heal]: styles.heartHeal,
-};
-
-const DELTA_EFFECT = {
-  [HEALTH_CHANGE.damage]: styles.deltaDamage,
-  [HEALTH_CHANGE.heal]: styles.deltaHeal,
+  [VALUE_CHANGE.decrease]: styles.heartDamage,
+  [VALUE_CHANGE.increase]: styles.heartHeal,
 };
 
 export function HeroPanel() {
@@ -24,14 +15,14 @@ export function HeroPanel() {
   const maxHealth = useHeroStore((state) => state.maxHealth);
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
-  const { change, clearChange } = useHealthChange(health);
+  const { change, clearChange } = useValueChange(health);
 
   return (
     <div
       className="relative flex h-full w-full flex-col items-center justify-between p-[calc(16*var(--px))]"
       {...getHintHandlers({ kind: HINT_TARGET.hero })}
     >
-      {change && <div key={change.id} className={PANEL_EFFECT[change.kind]} aria-hidden="true" />}
+      {change && <ValueChangeFlash key={change.id} change={change} />}
       <div className="flex w-full items-center justify-between">
         <div
           className="relative flex size-[calc(150*var(--px))] items-center justify-center"
@@ -51,15 +42,12 @@ export function HeroPanel() {
             {health}/{maxHealth}
           </span>
           {change && (
-            <span
+            <ValueChangeDelta
               key={`delta-${change.id}`}
-              className={`${styles.delta} ${DELTA_EFFECT[change.kind]}`}
-              aria-hidden="true"
-              onAnimationEnd={clearChange}
-            >
-              {change.kind === HEALTH_CHANGE.damage ? '−' : '+'}
-              {change.amount}
-            </span>
+              change={change}
+              className="top-0 right-[calc(-10*var(--px))]"
+              onFinish={clearChange}
+            />
           )}
         </div>
         <span ref={heroPortraitRef} className="inline-flex">

@@ -1,40 +1,7 @@
 /*
- * Health effects. Damage: the heart shakes and flashes, a red "−N" falls out of it and the panel
- * flashes red at the edges. Healing: the heart beats with a green glow, a green "+N" floats up
- * and the panel glows green at the edges.
+ * Health effects on the heart, next to the shared ones of `ValueChangeEffect`. Damage: the heart
+ * shakes and flashes. Healing: the heart beats with a green glow.
  */
-.panelDamage,
-.panelHeal {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.panelDamage {
-  box-shadow: inset 0 0 calc(60 * var(--px)) calc(10 * var(--px)) rgb(220 30 40 / 70%);
-  animation: panel-flash 0.6s ease-out;
-}
-
-.panelHeal {
-  box-shadow: inset 0 0 calc(60 * var(--px)) calc(10 * var(--px)) rgb(80 220 120 / 55%);
-  animation: panel-flash 0.9s ease-out;
-}
-
-@keyframes panel-flash {
-  0% {
-    opacity: 0;
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
 .heartDamage {
   animation: heart-hurt 0.5s ease-in-out;
 }
@@ -91,67 +58,10 @@
   }
 }
 
-.delta {
-  position: absolute;
-  top: 0;
-  right: calc(-10 * var(--px));
-  font-size: calc(56 * var(--px));
-  font-weight: 800;
-  pointer-events: none;
-  text-shadow: 0 calc(3 * var(--px)) 0 #000;
-}
-
-.deltaDamage {
-  color: #ff4a4a;
-  animation: delta-fall 0.9s ease-in forwards;
-}
-
-.deltaHeal {
-  color: #6ef08c;
-  animation: delta-rise 1.1s ease-out forwards;
-}
-
-@keyframes delta-fall {
-  0% {
-    opacity: 0;
-    transform: translateY(0) scale(1.4);
-  }
-
-  15% {
-    opacity: 1;
-    transform: translateY(calc(10 * var(--px))) scale(1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(calc(90 * var(--px))) scale(0.9);
-  }
-}
-
-@keyframes delta-rise {
-  0% {
-    opacity: 0;
-    transform: translateY(calc(20 * var(--px))) scale(0.8);
-  }
-
-  20% {
-    opacity: 1;
-    transform: translateY(0) scale(1.1);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(calc(-80 * var(--px))) scale(1);
-  }
-}
-
-/* Without motion the colors still flash, but nothing moves. */
+/* Without motion only the shared flash plays. */
 @media (prefers-reduced-motion: reduce) {
   .heartDamage,
-  .heartHeal,
-  .deltaDamage,
-  .deltaHeal {
-    animation-name: panel-flash;
-    transform: none;
+  .heartHeal {
+    animation: none;
   }
 }
