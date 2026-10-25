@@ -10,6 +10,8 @@ const game = process.env.GAME;
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Relative asset URLs, so the build works under any subpath (e.g. GitHub Pages).
+  base: './',
   // Each game maps its own aliases (e.g. `@/`) in games/<id>/tsconfig.json.
   resolve: { tsconfigPaths: true },
   ...(game
