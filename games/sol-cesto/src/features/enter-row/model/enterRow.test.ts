@@ -7,7 +7,7 @@ import { useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPE, usePickupStore } from '@/entities/pickup';
 import { MODIFIER, type Modifier, TEST_TOOTH, TOOTH_TYPE, useToothStore } from '@/entities/tooth';
 
-import { enterCell, enterRow, getEnemyDamage, pickEntryCell } from './enterRow';
+import { enterCell, enterRow, finishDeath, getEnemyDamage, pickEntryCell } from './enterRow';
 
 describe('getEnemyDamage', () => {
   const hero = { attack: 2, magic: 1 };
@@ -86,6 +86,26 @@ describe('enterRow', () => {
 
     expect(useHeroStore.getState().health).toBe(0);
     expect(useGameStore.getState().screen).toBe(GAME_SCREEN.gameOver);
+  });
+
+  it('leaves the game on until her death has played out', () => {
+    useHeroStore.setState({ health: 1 });
+    useEnemyStore.setState({ enemies: { 0: createEnemy('beast') } });
+
+    enterCell(0, () => 0);
+
+    expect(useHeroStore.getState().health).toBe(0);
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
+
+    finishDeath();
+
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.gameOver);
+  });
+
+  it('does not end the game for a living hero', () => {
+    finishDeath();
+
+    expect(useGameStore.getState().screen).toBe(GAME_SCREEN.dungeon);
   });
 
   it('keeps the game going while the hero survives the hit', () => {

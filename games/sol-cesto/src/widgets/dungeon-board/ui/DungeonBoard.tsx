@@ -22,6 +22,7 @@ import { getTeethModifiers, useToothStore } from '@/entities/tooth';
 import {
   CellOutcomeBadge,
   enterCell,
+  finishDeath,
   getCellOutcome,
   getCellWeights,
   pickEntryCell,
@@ -70,6 +71,8 @@ export function DungeonBoard() {
   // Cell the hero is walking to. The move itself happens once she gets there.
   const [destination, setDestination] = useState<number | null>(null);
   const heroIndex = destination ?? playerIndex;
+  // Her health has run out: the board plays her death, then the game is over.
+  const isDead = health === 0;
   useHeroMoveAnimation(heroIndex, heroRef, cellRefs, () => {
     if (destination === null) return;
     enterCell(destination);
@@ -78,13 +81,16 @@ export function DungeonBoard() {
 
   return (
     <main className={styles.area}>
+      {isDead && <div className={styles.deathShade} aria-hidden="true" />}
       <div className={styles.board} style={boardStyle} aria-label="Поле підземелля">
         {ROWS.map(({ row, cellIndices }) => (
           <button
             key={row}
             type="button"
             className="group col-span-full grid cursor-pointer grid-cols-subgrid disabled:cursor-default"
-            disabled={destination !== null || getAvailableCells(row, visited).length === 0}
+            disabled={
+              isDead || destination !== null || getAvailableCells(row, visited).length === 0
+            }
             aria-label={`Рядок ${row + 1}`}
             onClick={() => setDestination(pickEntryCell(row) ?? null)}
           >
@@ -161,7 +167,14 @@ export function DungeonBoard() {
                       ref={heroRef}
                       className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
                     >
-                      <HeroFigure size={90} />
+                      <span
+                        className={isDead ? styles.heroDeath : undefined}
+                        onAnimationEnd={(event) => {
+                          if (event.target === event.currentTarget) finishDeath();
+                        }}
+                      >
+                        <HeroFigure size={90} />
+                      </span>
                     </span>
                   )}
                 </div>

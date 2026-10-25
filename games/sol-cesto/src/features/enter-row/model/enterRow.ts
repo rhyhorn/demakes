@@ -41,8 +41,8 @@ export function pickEntryCell(row: number, random: () => number = Math.random): 
 /**
  * Moves the player into the cell. If she hasn't been there yet, an enemy on it hits the hero and
  * disappears, and a pickup there gives her what it holds (health or gold) and disappears too. Then
- * the rest of the enemies take their turn. When the hit takes the hero's health to 0, the game is
- * over.
+ * the rest of the enemies take their turn. When the hit takes the hero's health to 0 she dies, but
+ * the game isn't over yet: the board plays her death first and then calls `finishDeath`.
  */
 export function enterCell(index: number, random: () => number = Math.random) {
   const { visited } = useBoardStore.getState();
@@ -55,8 +55,6 @@ export function enterCell(index: number, random: () => number = Math.random) {
   if (enemy) {
     const hero = useHeroStore.getState();
     hero.takeDamage(getEnemyDamage(enemy, hero));
-    if (useHeroStore.getState().health === 0)
-      useGameStore.getState().showScreen(GAME_SCREEN.gameOver);
   }
   removeEnemy(playerIndex);
 
@@ -68,8 +66,23 @@ export function enterCell(index: number, random: () => number = Math.random) {
   advanceTurn();
 }
 
-/** Moves the player into the row at once: `pickEntryCell`, then `enterCell`. */
+/** Whether the hero has no health left, so her death plays instead of the next move. */
+function isHeroDead(): boolean {
+  return useHeroStore.getState().health === 0;
+}
+
+/** Ends the game with the Game Over screen once the hero's death has played out. */
+export function finishDeath() {
+  if (isHeroDead()) useGameStore.getState().showScreen(GAME_SCREEN.gameOver);
+}
+
+/**
+ * Moves the player into the row at once, with no animations: `pickEntryCell`, `enterCell`, and
+ * `finishDeath` if she died there.
+ */
 export function enterRow(row: number, random: () => number = Math.random) {
   const index = pickEntryCell(row, random);
-  if (index !== undefined) enterCell(index, random);
+  if (index === undefined) return;
+  enterCell(index, random);
+  finishDeath();
 }
