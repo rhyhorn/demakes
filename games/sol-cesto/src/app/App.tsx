@@ -1,6 +1,7 @@
 import { type ComponentType, useEffect, useLayoutEffect, useRef } from 'react';
 
 import { GAME_SCREEN, type GameScreen, useGameStore } from '@/entities/game';
+import { FullscreenGate } from '@/features/fullscreen';
 import { GameOverPage } from '@/pages/game-over';
 import { HomePage } from '@/pages/home';
 import { ShopPage } from '@/pages/shop';
@@ -62,11 +63,13 @@ export function App() {
   }, [screen]);
 
   return (
-    <div className="relative h-full overflow-hidden">
-      <div ref={currentRef} className="absolute inset-0">
-        <Screen />
+    <FullscreenGate>
+      <div className="relative h-full overflow-hidden">
+        <div ref={currentRef} className="absolute inset-0">
+          <Screen />
+        </div>
+        <div ref={leavingRef} className="absolute inset-0" inert />
       </div>
-      <div ref={leavingRef} className="absolute inset-0" inert />
-    </div>
+    </FullscreenGate>
   );
 }
