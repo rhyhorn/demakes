@@ -9,12 +9,19 @@ describe('useHeroStore', () => {
   });
 
   it('starts with full health, base attack and magic and no gold', () => {
-    const { health, maxHealth, attack, magic, gold, inventorySize, inventory } =
+    const { health, maxHealth, attack, magic, gold, goldMultiplier, inventorySize, inventory } =
       useHeroStore.getState();
 
-    expect({ health, maxHealth, attack, magic, gold, inventorySize, inventory }).toEqual(
-      INITIAL_HERO_STATS,
-    );
+    expect({
+      health,
+      maxHealth,
+      attack,
+      magic,
+      gold,
+      goldMultiplier,
+      inventorySize,
+      inventory,
+    }).toEqual(INITIAL_HERO_STATS);
     expect(health).toBe(maxHealth);
     expect(gold).toBe(0);
   });
@@ -81,8 +88,16 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
-  it('adds gold to the piggy bank', () => {
-    useHeroStore.setState({ gold: 2 });
+  it('adds gold to the piggy bank multiplied by the gold multiplier', () => {
+    useHeroStore.setState({ gold: 2, goldMultiplier: 3 });
+
+    useHeroStore.getState().addGold(4);
+
+    expect(useHeroStore.getState().gold).toBe(14);
+  });
+
+  it('adds gold as is with a multiplier of 1', () => {
+    useHeroStore.setState({ gold: 2, goldMultiplier: 1 });
 
     useHeroStore.getState().addGold(4);
 
@@ -157,13 +172,21 @@ describe('useHeroStore', () => {
   it('brings back the starting stats on reset', () => {
     useHeroStore.getState().takeDamage(3);
     useHeroStore.getState().addGold(5);
+    useHeroStore.setState({ goldMultiplier: 1 });
 
     useHeroStore.getState().reset();
-    const { health, maxHealth, attack, magic, gold, inventorySize, inventory } =
+    const { health, maxHealth, attack, magic, gold, goldMultiplier, inventorySize, inventory } =
       useHeroStore.getState();
 
-    expect({ health, maxHealth, attack, magic, gold, inventorySize, inventory }).toEqual(
-      INITIAL_HERO_STATS,
-    );
+    expect({
+      health,
+      maxHealth,
+      attack,
+      magic,
+      gold,
+      goldMultiplier,
+      inventorySize,
+      inventory,
+    }).toEqual(INITIAL_HERO_STATS);
   });
 });

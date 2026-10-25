@@ -133,6 +133,7 @@ describe('enterRow', () => {
   });
 
   it('adds gold from the chest on the entered cell and takes it', () => {
+    useHeroStore.setState({ goldMultiplier: 1 });
     usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest, 5: PICKUP_TYPE.strawberry } });
 
     enterRow(1, () => 0);
@@ -142,6 +143,7 @@ describe('enterRow', () => {
   });
 
   it('gives from 3 to 6 gold for a chest', () => {
+    useHeroStore.setState({ goldMultiplier: 1 });
     usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest } });
 
     // The first roll picks the cell, the second one the amount of gold.
@@ -149,6 +151,15 @@ describe('enterRow', () => {
     enterRow(1, () => rolls.shift() ?? 0);
 
     expect(useHeroStore.getState().gold).toBe(6);
+  });
+
+  it('multiplies the gold from a chest by the gold multiplier', () => {
+    useHeroStore.setState({ goldMultiplier: 3 });
+    usePickupStore.setState({ pickups: { 4: PICKUP_TYPE.chest } });
+
+    enterRow(1, () => 0);
+
+    expect(useHeroStore.getState().gold).toBe(9);
   });
 
   it('gives enemies no turn when the row has no cells left', () => {
