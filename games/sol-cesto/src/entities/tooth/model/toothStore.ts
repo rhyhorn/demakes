@@ -2,8 +2,9 @@ import { create } from 'zustand';
 
 import { pickCells } from '@/shared/lib';
 
-import { TOOTH_SLOT_COUNT, TOOTH_TYPE, type ToothType } from '../config';
-import { MODIFIER, type Modifier } from '../config/modifiers';
+import { TOOTH_SLOT_COUNT, type ToothType } from '../config';
+import type { Modifier } from '../config/modifiers';
+import { STARTING_TEETH } from '../config/teeth';
 
 /** A property of a tooth: while the tooth is in the mouth, it adds `value` percent to the modifier. */
 export interface ToothProperty {
@@ -19,67 +20,6 @@ export interface Tooth {
 
 /** A slot in the mouth: a tooth or `null` while it's empty. */
 export type ToothSlot = Tooth | null;
-
-/** A tooth for testing: +50% to physical enemies and -50% to strawberries. */
-export const TEST_TOOTH: Tooth = {
-  type: TOOTH_TYPE.test,
-  properties: [
-    { modifier: MODIFIER.attackChance, value: 50 },
-    { modifier: MODIFIER.strawberryChance, value: -50 },
-  ],
-};
-
-/** A tooth for testing with a single property: +25% to strawberries. */
-export const SWEET_TOOTH: Tooth = {
-  type: TOOTH_TYPE.sweet,
-  properties: [{ modifier: MODIFIER.strawberryChance, value: 25 }],
-};
-
-/** A tooth for testing: +25% to physical enemies and -25% to magic ones. */
-export const FANG_TOOTH: Tooth = {
-  type: TOOTH_TYPE.fang,
-  properties: [
-    { modifier: MODIFIER.attackChance, value: 25 },
-    { modifier: MODIFIER.magicChance, value: -25 },
-  ],
-};
-
-/** A tooth for testing: +50% to chests and -25% to strawberries. */
-export const GOLDEN_TOOTH: Tooth = {
-  type: TOOTH_TYPE.golden,
-  properties: [
-    { modifier: MODIFIER.chestChance, value: 50 },
-    { modifier: MODIFIER.strawberryChance, value: -25 },
-  ],
-};
-
-/** A tooth for testing with a single property: -50% to magic enemies. */
-export const MOON_TOOTH: Tooth = {
-  type: TOOTH_TYPE.moon,
-  properties: [{ modifier: MODIFIER.magicChance, value: -50 }],
-};
-
-/** A tooth for testing: +42% to strawberries and +25% to magic enemies. */
-export const ROTTEN_TOOTH: Tooth = {
-  type: TOOTH_TYPE.rotten,
-  properties: [
-    { modifier: MODIFIER.strawberryChance, value: 42 },
-    { modifier: MODIFIER.magicChance, value: 25 },
-  ],
-};
-
-/** Every tooth the hero may find during a run, e.g. in the tooth room. */
-export const TOOTH_POOL: readonly Tooth[] = [
-  TEST_TOOTH,
-  SWEET_TOOTH,
-  FANG_TOOTH,
-  GOLDEN_TOOTH,
-  MOON_TOOTH,
-  ROTTEN_TOOTH,
-];
-
-/** Teeth a run starts with. */
-export const STARTING_TEETH: readonly Tooth[] = [TEST_TOOTH, SWEET_TOOTH];
 
 const ALL_SLOTS = Array.from({ length: TOOTH_SLOT_COUNT }, (_, slot) => slot);
 

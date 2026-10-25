@@ -18,6 +18,11 @@ describe('createToothOffers', () => {
     expect(offers).toEqual(TOOTH_POOL.slice(0, TOOTH_OFFER_COUNT));
     expect(new Set(createToothOffers(() => 0.5)).size).toBe(TOOTH_OFFER_COUNT);
   });
+
+  it('picks from a pool of ten different teeth', () => {
+    expect(TOOTH_POOL).toHaveLength(10);
+    expect(new Set(TOOTH_POOL.map(({ type }) => type)).size).toBe(TOOTH_POOL.length);
+  });
 });
 
 describe('tooth room', () => {
@@ -63,5 +68,15 @@ describe('tooth room', () => {
     expect(leaveToothRoom(() => 0.999)).toBe(true);
     expect(useToothChoiceStore.getState().chosen).toBeNull();
     expect(useToothChoiceStore.getState().offers).toEqual(createToothOffers(() => 0.999));
+  });
+
+  it('keeps the whole pool for the next room, so the same tooth may be taken twice', () => {
+    chooseTooth(0, () => 0);
+    leaveToothRoom(() => 0);
+    chooseTooth(0, () => 0);
+
+    expect(useToothChoiceStore.getState().offers[0]).toBe(TOOTH_POOL[0]);
+    // The mouth already starts with this tooth in slot 0.
+    expect(useToothStore.getState().slots.filter((slot) => slot === TOOTH_POOL[0])).toHaveLength(3);
   });
 });

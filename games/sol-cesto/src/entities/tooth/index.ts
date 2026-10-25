@@ -1,4 +1,5 @@
 export { TOOTH_SLOT_COUNT, TOOTH_TYPE, type ToothType, TOOTH_TYPES } from './config';
+export { STARTING_TEETH, SWEET_TOOTH, TEST_TOOTH, TOOTH_POOL } from './config/teeth';
 export { MAX_MODIFIER, MIN_MODIFIER, MODIFIER, type Modifier, MODIFIERS } from './config/modifiers';
 export {
   clampModifier,
@@ -11,10 +12,6 @@ export {
 export { getTeethModifiers } from './model/teethModifiers';
 export {
   createStartingSlots,
-  STARTING_TEETH,
-  SWEET_TOOTH,
-  TEST_TOOTH,
-  TOOTH_POOL,
   type Tooth,
   type ToothProperty,
   type ToothSlot,

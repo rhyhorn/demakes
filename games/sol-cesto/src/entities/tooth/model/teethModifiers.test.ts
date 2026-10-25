@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { TOOTH_TYPE } from '../config';
 import { MODIFIER } from '../config/modifiers';
+import { TEST_TOOTH } from '../config/teeth';
 import { NO_MODIFIERS } from './modifiers';
 import { getTeethModifiers } from './teethModifiers';
-import { TEST_TOOTH } from './toothStore';
 
 describe('getTeethModifiers', () => {
   it('is 0% everywhere when the mouth is empty', () => {

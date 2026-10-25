@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { TOOTH_SLOT_COUNT } from '../config';
-import { createStartingSlots, SWEET_TOOTH, TEST_TOOTH, useToothStore } from './toothStore';
+import { SWEET_TOOTH, TEST_TOOTH } from '../config/teeth';
+import { createStartingSlots, useToothStore } from './toothStore';
 
 const tooth = TEST_TOOTH;
 

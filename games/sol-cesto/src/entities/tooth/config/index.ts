@@ -9,6 +9,10 @@ export const TOOTH_TYPE = {
   golden: 'golden',
   moon: 'moon',
   rotten: 'rotten',
+  iron: 'iron',
+  bone: 'bone',
+  crystal: 'crystal',
+  wisdom: 'wisdom',
 } as const;
 
 export type ToothType = (typeof TOOTH_TYPE)[keyof typeof TOOTH_TYPE];
@@ -21,4 +25,8 @@ export const TOOTH_TYPES: Record<ToothType, { name: string }> = {
   [TOOTH_TYPE.golden]: { name: 'Золотий зуб' },
   [TOOTH_TYPE.moon]: { name: 'Місячний зуб' },
   [TOOTH_TYPE.rotten]: { name: 'Гнилий зуб' },
+  [TOOTH_TYPE.iron]: { name: 'Залізний зуб' },
+  [TOOTH_TYPE.bone]: { name: 'Кістяний зуб' },
+  [TOOTH_TYPE.crystal]: { name: 'Кришталевий зуб' },
+  [TOOTH_TYPE.wisdom]: { name: 'Зуб мудрості' },
 };
