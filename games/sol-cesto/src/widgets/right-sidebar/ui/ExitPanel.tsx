@@ -1,5 +1,6 @@
 import { isExitOpen, useBoardStore } from '@/entities/board';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
+import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { isToothRoomOpen, leaveToothRoom, useToothChoiceStore } from '@/features/choose-tooth';
 import { enterNextRoom, exitLevel } from '@/features/level';
 import { leaveShop } from '@/features/shop';
@@ -45,6 +46,8 @@ function useExit() {
   };
 }
 
+const DOOR_HINT = { kind: HINT_TARGET.door } as const;
+
 export function ExitPanel() {
   const { open: exitOpen, moves, requiredMoves, leave } = useExit();
   // The door opening is a gain (0 → 1), so the panel flashes like health or gold. Closing is not
@@ -52,36 +55,39 @@ export function ExitPanel() {
   const { change } = useValueChange(exitOpen ? 1 : 0);
   const opened = change?.kind === VALUE_CHANGE.increase ? change : null;
 
+  // The hint is on a wrapper: React gives no mouse events to the locked door, a disabled button.
   return (
-    <button
-      type="button"
-      className={`${styles.panel} relative flex h-full w-full items-center justify-center p-[calc(16*var(--px))] [--gain-color:#ffd27a]`}
-      disabled={!exitOpen}
-      aria-label={
-        exitOpen ? 'Вийти: двері відчинено' : `Двері зачинено. Ходи: ${moves} з ${requiredMoves}`
-      }
-      onClick={leave}
-    >
-      {opened && <ValueChangeFlash key={opened.id} change={opened} />}
-      <div
-        className={`relative flex items-center justify-center ${exitOpen ? styles.shaking : ''}`}
-        aria-hidden="true"
+    <div className="h-full w-full" {...getHintHandlers(DOOR_HINT)}>
+      <button
+        type="button"
+        className={`${styles.panel} relative flex h-full w-full items-center justify-center p-[calc(16*var(--px))] [--gain-color:#ffd27a]`}
+        disabled={!exitOpen}
+        aria-label={
+          exitOpen ? 'Вийти: двері відчинено' : `Двері зачинено. Ходи: ${moves} з ${requiredMoves}`
+        }
+        onClick={leave}
       >
-        <span
-          className={`text-[length:calc(200*var(--px))] leading-none ${exitOpen ? '' : 'brightness-50'}`}
+        {opened && <ValueChangeFlash key={opened.id} change={opened} />}
+        <div
+          className={`relative flex items-center justify-center ${exitOpen ? styles.shaking : ''}`}
+          aria-hidden="true"
         >
-          🚪
-        </span>
-        {/* The lock and the move counter go away with the lock: an open door needs neither. */}
-        {!exitOpen && (
-          <span className="absolute flex flex-col items-center gap-[calc(8*var(--px))] leading-none">
-            <span className="text-[length:calc(64*var(--px))]">🔒</span>
-            <span className="text-[length:calc(44*var(--px))] font-bold text-[#e8e2d4] [text-shadow:0_calc(3*var(--px))_0_#000]">
-              {moves}/{requiredMoves}
-            </span>
+          <span
+            className={`text-[length:calc(200*var(--px))] leading-none ${exitOpen ? '' : 'brightness-50'}`}
+          >
+            🚪
           </span>
-        )}
-      </div>
-    </button>
+          {/* The lock and the move counter go away with the lock: an open door needs neither. */}
+          {!exitOpen && (
+            <span className="absolute flex flex-col items-center gap-[calc(8*var(--px))] leading-none">
+              <span className="text-[length:calc(64*var(--px))]">🔒</span>
+              <span className="text-[length:calc(44*var(--px))] font-bold text-[#e8e2d4] [text-shadow:0_calc(3*var(--px))_0_#000]">
+                {moves}/{requiredMoves}
+              </span>
+            </span>
+          )}
+        </div>
+      </button>
+    </div>
   );
 }

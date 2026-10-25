@@ -3,6 +3,8 @@ import { create } from 'zustand';
 /** Kinds of screen elements the hint panel can describe. Add a kind here and in `HintTarget`. */
 export const HINT_TARGET = {
   cell: 'cell',
+  door: 'door',
+  gold: 'gold',
   hero: 'hero',
   tooth: 'tooth',
   item: 'item',
@@ -21,6 +23,8 @@ export type HintTarget =
       /** Index of the board cell. */
       index: number;
     }
+  | { kind: typeof HINT_TARGET.door }
+  | { kind: typeof HINT_TARGET.gold }
   | { kind: typeof HINT_TARGET.hero }
   | {
       kind: typeof HINT_TARGET.tooth;

@@ -1,6 +1,7 @@
-import { useBoardStore } from '@/entities/board';
+import { describeMovesLeft, DOOR_INFO, isExitOpen, useBoardStore } from '@/entities/board';
 import { ENEMY_TYPES, getEnemyTraits, useEnemyStore } from '@/entities/enemy';
-import { HERO_INFO, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
+import { GAME_SCREEN, useGameStore } from '@/entities/game';
+import { GOLD_INFO, HERO_INFO, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
 import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { HINT_TARGET, HintCard, type HintTarget, useHintStore } from '@/entities/hint';
 import {
@@ -12,9 +13,15 @@ import {
   TOOTH_TYPES,
   useToothStore,
 } from '@/entities/tooth';
+import { isToothRoomOpen, useToothChoiceStore } from '@/features/choose-tooth';
+import { isUpgradeRoomOpen, useUpgradeStore } from '@/features/upgrade-attack';
 
 function HeroHint() {
   return <HintCard title={HERO_INFO.name} details={[HERO_INFO.description]} />;
+}
+
+function GoldHint() {
+  return <HintCard title={GOLD_INFO.name} details={[GOLD_INFO.description]} />;
 }
 
 /** A board cell describes what is in it: the hero standing there, an enemy or a pickup. */
@@ -73,6 +80,31 @@ function ModifierHint({ modifier }: { modifier: string }) {
   );
 }
 
+/**
+ * The door tells what it takes to open it, or that it leads on. Open as in `ExitPanel`: on a level
+ * after the required moves, in the upgrade and tooth rooms after the choice, in the shop at once.
+ */
+function DoorHint() {
+  const screen = useGameStore((state) => state.screen);
+  const moves = useBoardStore((state) => state.moves);
+  const requiredMoves = useBoardStore((state) => state.requiredMoves);
+  const upgradeChosen = useUpgradeStore((state) => state.chosen);
+  const toothChosen = useToothChoiceStore((state) => state.chosen);
+
+  const getDetail = () => {
+    if (screen === GAME_SCREEN.upgrade) {
+      return isUpgradeRoomOpen({ chosen: upgradeChosen }) ? DOOR_INFO.open : DOOR_INFO.choiceNeeded;
+    }
+    if (screen === GAME_SCREEN.tooth) {
+      return isToothRoomOpen({ chosen: toothChosen }) ? DOOR_INFO.open : DOOR_INFO.choiceNeeded;
+    }
+    if (screen === GAME_SCREEN.shop || isExitOpen({ moves, requiredMoves })) return DOOR_INFO.open;
+    return describeMovesLeft(requiredMoves - moves);
+  };
+
+  return <HintCard title={DOOR_INFO.name} details={[getDetail()]} />;
+}
+
 /** One view per kind of target. The `never` check makes TypeScript demand a view for a new kind. */
 function HintView({ target }: { target: HintTarget }) {
   switch (target.kind) {
@@ -80,6 +112,10 @@ function HintView({ target }: { target: HintTarget }) {
       return <CellHint index={target.index} />;
     case HINT_TARGET.hero:
       return <HeroHint />;
+    case HINT_TARGET.door:
+      return <DoorHint />;
+    case HINT_TARGET.gold:
+      return <GoldHint />;
     case HINT_TARGET.tooth:
       return <ToothHint slot={target.slot} />;
     case HINT_TARGET.item:

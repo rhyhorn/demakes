@@ -4,6 +4,12 @@ export const HERO_INFO = {
   description: 'Ваша героїня.',
 } as const;
 
+/** How the gold in the piggy bank is described to the player in the hint panel. */
+export const GOLD_INFO = {
+  name: 'Золото',
+  description: 'Його можна залишити в торговця.',
+} as const;
+
 /** The hero's two kinds of attack: physical and magic. */
 export const HERO_ATTACK_KIND = {
   attack: 'attack',

@@ -1,6 +1,7 @@
 export {
   HERO_ATTACK_KIND,
   type HeroAttackKind,
+  GOLD_INFO,
   HERO_INFO,
   INVENTORY_ITEM,
   INVENTORY_ITEMS,

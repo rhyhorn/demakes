@@ -1,4 +1,5 @@
-export { BOARD_SIZE } from './config';
+export { BOARD_SIZE, DOOR_INFO } from './config';
+export { describeMovesLeft } from './lib/door';
 export { getBoardCellRect, registerBoardCell } from './lib/boardCells';
 export {
   CELL_COUNT,
