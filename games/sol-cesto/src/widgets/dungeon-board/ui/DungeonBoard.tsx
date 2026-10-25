@@ -11,7 +11,13 @@ import {
 import { EnemyAttackBadge, EnemyFigure, useEnemyStore } from '@/entities/enemy';
 import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { HeroFigure, useHeroStore } from '@/entities/hero';
-import { PickupBadge, PickupFigure, usePickupStore } from '@/entities/pickup';
+import {
+  PICKUP_TYPE,
+  PickupBadge,
+  PickupFigure,
+  type PickupType,
+  usePickupStore,
+} from '@/entities/pickup';
 import { getTeethModifiers, useToothStore } from '@/entities/tooth';
 import {
   CellOutcomeBadge,
@@ -22,15 +28,21 @@ import {
 } from '@/features/enter-row';
 import { Badge } from '@/shared/ui';
 
-import { useEnemyDeaths } from '../lib/useEnemyDeaths';
+import { useCellRemovals } from '../lib/useCellRemovals';
 import { useHeroMoveAnimation } from '../lib/useHeroMoveAnimation';
+import { CellVanishEffect, VANISH_TONE } from './CellVanishEffect';
 import styles from './DungeonBoard.module.css';
-import { EnemyDeathEffect } from './EnemyDeathEffect';
 
 const ROWS = Array.from({ length: BOARD_SIZE }, (_, row) => ({
   row,
   cellIndices: getRowCells(row),
 }));
+
+/** What floats up from a taken pickup: what it gave the hero. */
+const PICKUP_VANISH_ICONS: Record<PickupType, string> = {
+  [PICKUP_TYPE.strawberry]: '❤️',
+  [PICKUP_TYPE.chest]: '🪙',
+};
 
 const boardStyle = { '--board-size': BOARD_SIZE } as CSSProperties;
 
@@ -50,7 +62,8 @@ export function DungeonBoard() {
   const attack = useHeroStore((state) => state.attack);
   const magic = useHeroStore((state) => state.magic);
   const teeth = useToothStore((state) => state.slots);
-  const { deaths, finishDeath } = useEnemyDeaths(enemies, visited);
+  const deaths = useCellRemovals(enemies, visited);
+  const takenPickups = useCellRemovals(pickups, visited);
   const weightOf = getCellWeights(enemies, pickups, getTeethModifiers(teeth));
   const heroRef = useRef<HTMLSpanElement>(null);
   const cellRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -117,14 +130,29 @@ export function DungeonBoard() {
                       </Badge>
                     </span>
                   )}
-                  {deaths
+                  {deaths.removals
                     .filter((death) => death.cell === index)
                     .map((death) => (
-                      <EnemyDeathEffect
-                        key={death.id}
-                        enemy={death.enemy}
-                        onFinish={() => finishDeath(death.id)}
-                      />
+                      <CellVanishEffect
+                        key={`enemy-${death.id}`}
+                        tone={VANISH_TONE.negative}
+                        icon="💀"
+                        onFinish={() => deaths.finishRemoval(death.id)}
+                      >
+                        <EnemyFigure enemy={death.item} />
+                      </CellVanishEffect>
+                    ))}
+                  {takenPickups.removals
+                    .filter((taken) => taken.cell === index)
+                    .map((taken) => (
+                      <CellVanishEffect
+                        key={`pickup-${taken.id}`}
+                        tone={VANISH_TONE.positive}
+                        icon={PICKUP_VANISH_ICONS[taken.item]}
+                        onFinish={() => takenPickups.finishRemoval(taken.id)}
+                      >
+                        <PickupFigure type={taken.item} />
+                      </CellVanishEffect>
                     ))}
                   {index === heroIndex && (
                     // Over whatever is in the cell she walks to, above the other cells she walks

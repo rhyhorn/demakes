@@ -1,9 +1,23 @@
-.figure {
-  position: absolute;
-  animation: enemy-die 0.6s ease-in forwards;
+/* An enemy dies: a white flash, then it darkens and spins away. */
+.negative {
+  --flash: brightness(3) saturate(0);
+  --fade: brightness(0.4) saturate(0);
+  --ring-color: #f4e3c1;
 }
 
-@keyframes enemy-die {
+/* A pickup is taken: a green flash and glow, it stays bright while it shrinks away. */
+.positive {
+  --flash: brightness(1.6) drop-shadow(0 0 calc(24 * var(--px)) #6ef08c);
+  --fade: drop-shadow(0 0 calc(12 * var(--px)) #6ef08c);
+  --ring-color: #6ef08c;
+}
+
+.figure {
+  position: absolute;
+  animation: vanish 0.6s ease-in forwards;
+}
+
+@keyframes vanish {
   0% {
     filter: none;
     opacity: 1;
@@ -11,17 +25,16 @@
   }
 
   15% {
-    filter: brightness(3) saturate(0);
+    filter: var(--flash);
     transform: scale(1.15) rotate(-6deg);
   }
 
   35% {
-    filter: brightness(1.5) saturate(0.3);
     opacity: 1;
   }
 
   100% {
-    filter: brightness(0.4) saturate(0);
+    filter: var(--fade);
     opacity: 0;
     transform: scale(0.2) rotate(30deg);
   }
@@ -31,7 +44,7 @@
   position: absolute;
   width: calc(120 * var(--px));
   height: calc(120 * var(--px));
-  border: calc(8 * var(--px)) solid #f4e3c1;
+  border: calc(8 * var(--px)) solid var(--ring-color);
   border-radius: 50%;
   opacity: 0;
   animation: ring-burst 0.5s ease-out 0.08s;
@@ -50,17 +63,17 @@
   }
 }
 
-.skull {
+.icon {
   position: absolute;
   /* Above the hero's z-10. */
   z-index: 20;
   font-size: calc(64 * var(--px));
   line-height: 1;
   opacity: 0;
-  animation: skull-rise 0.9s ease-out 0.15s forwards;
+  animation: icon-rise 0.9s ease-out 0.15s forwards;
 }
 
-@keyframes skull-rise {
+@keyframes icon-rise {
   0% {
     opacity: 0;
     transform: translateY(0) scale(0.6);
@@ -77,10 +90,10 @@
   }
 }
 
-/* Without motion the enemy and the skull only fade. */
+/* Without motion the sprite and the icon only fade. */
 @media (prefers-reduced-motion: reduce) {
   .figure,
-  .skull {
+  .icon {
     transform: none;
     animation-name: fade-out;
   }
