@@ -31,6 +31,7 @@ import {
 import { Badge } from '@/shared/ui';
 
 import { useCellRemovals } from '../lib/useCellRemovals';
+import { useHeroHit } from '../lib/useHeroHit';
 import { useHeroMoveAnimation } from '../lib/useHeroMoveAnimation';
 import { CellVanishEffect, VANISH_TONE } from './CellVanishEffect';
 import styles from './DungeonBoard.module.css';
@@ -75,6 +76,11 @@ export function DungeonBoard() {
   const heroIndex = destination ?? playerIndex;
   // Her health has run out: the board plays her death, then the game is over.
   const isDead = health === 0;
+  // A hit that doesn't kill her makes her flash red; a deadly one plays her death instead.
+  const { hitId, finishHit } = useHeroHit(health);
+  let heroAnimationClass: string | undefined;
+  if (isDead) heroAnimationClass = styles.heroDeath;
+  else if (hitId !== null) heroAnimationClass = styles.heroHit;
   useHeroMoveAnimation(heroIndex, heroRef, cellRefs, () => {
     if (destination === null) return;
     enterCell(destination);
@@ -169,9 +175,13 @@ export function DungeonBoard() {
                       className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
                     >
                       <span
-                        className={isDead ? styles.heroDeath : undefined}
+                        // A new key restarts the hit animation when she is hit again.
+                        key={hitId ?? 'idle'}
+                        className={heroAnimationClass}
                         onAnimationEnd={(event) => {
-                          if (event.target === event.currentTarget) finishDeath();
+                          if (event.target !== event.currentTarget) return;
+                          if (isDead) finishDeath();
+                          else finishHit();
                         }}
                       >
                         <HeroFigure size={90} />

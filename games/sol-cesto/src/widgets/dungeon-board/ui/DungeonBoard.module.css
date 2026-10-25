@@ -62,6 +62,32 @@
   }
 }
 
+/* The hero is hit but survives: she flashes red twice and flinches, then is herself again. */
+.heroHit {
+  display: inline-block;
+  animation: hero-hit 0.6s ease-out;
+}
+
+@keyframes hero-hit {
+  0%,
+  35%,
+  70%,
+  100% {
+    filter: none;
+    transform: none;
+  }
+
+  15% {
+    filter: brightness(1.4) sepia(1) saturate(6) hue-rotate(-40deg);
+    transform: translateX(calc(-8 * var(--px))) scale(1.08);
+  }
+
+  50% {
+    filter: brightness(1.2) sepia(1) saturate(4) hue-rotate(-40deg);
+    transform: translateX(calc(5 * var(--px)));
+  }
+}
+
 /* The board darkens around the fallen hero, who stays above the shade. */
 .deathShade {
   position: absolute;
@@ -79,10 +105,23 @@
   }
 }
 
-/* Without motion she only greys out and fades, a little faster. */
+/*
+ * Without motion a hit only flashes her red, and death only greys her out and fades, a little
+ * faster.
+ */
 @media (prefers-reduced-motion: reduce) {
+  .heroHit {
+    animation: hero-hit-flash 0.6s ease-out;
+  }
+
   .heroDeath {
     animation: hero-death-fade 1.5s ease-out forwards;
+  }
+}
+
+@keyframes hero-hit-flash {
+  30% {
+    filter: brightness(1.4) sepia(1) saturate(6) hue-rotate(-40deg);
   }
 }
 
