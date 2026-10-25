@@ -56,6 +56,7 @@ export const MAX_INVENTORY_SIZE = 6;
 export const INVENTORY_ITEM = {
   potion: 'potion',
   spear: 'spear',
+  bomb: 'bomb',
 } as const;
 
 export type InventoryItem = (typeof INVENTORY_ITEM)[keyof typeof INVENTORY_ITEM];
@@ -66,12 +67,19 @@ export const ITEM_EFFECT = {
   heal: 'heal',
   /** Kills a random enemy on the board; with no enemies the item is simply used up. */
   killEnemy: 'kill-enemy',
+  /**
+   * Kills a random enemy in every row that has one. Using it counts as one move towards opening
+   * the exit door, not one per kill.
+   */
+  killEnemyPerRow: 'kill-enemy-per-row',
 } as const;
 
 export type ItemEffectKind = (typeof ITEM_EFFECT)[keyof typeof ITEM_EFFECT];
 
 export type ItemEffect =
-  { kind: typeof ITEM_EFFECT.heal; amount: number } | { kind: typeof ITEM_EFFECT.killEnemy };
+  | { kind: typeof ITEM_EFFECT.heal; amount: number }
+  | { kind: typeof ITEM_EFFECT.killEnemy }
+  | { kind: typeof ITEM_EFFECT.killEnemyPerRow };
 
 export interface InventoryItemConfig {
   name: string;
@@ -89,7 +97,7 @@ export const INVENTORY_ITEMS: Record<InventoryItem, InventoryItemConfig> = {
   [INVENTORY_ITEM.potion]: {
     name: 'Зілля',
     icon: '🧪',
-    description: "Лікує вас на 1 здоров'я",
+    description: 'Лікує вас на 1 здоров\'я',
     effect: { kind: ITEM_EFFECT.heal, amount: 1 },
     price: 3,
   },
@@ -99,5 +107,13 @@ export const INVENTORY_ITEMS: Record<InventoryItem, InventoryItemConfig> = {
     description: 'Убиває випадкового ворога на полі',
     effect: { kind: ITEM_EFFECT.killEnemy },
     price: 5,
+  },
+  [INVENTORY_ITEM.bomb]: {
+    name: 'Бомба',
+    icon: '💣',
+    description:
+      'Убиває по одному ворогу в кожному рядку',
+    effect: { kind: ITEM_EFFECT.killEnemyPerRow },
+    price: 7,
   },
 };

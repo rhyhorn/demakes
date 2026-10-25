@@ -54,7 +54,7 @@ interface BoardState {
   reopenCell: (index: number) => void;
   /**
    * Counts a move towards opening the exit door without walking anywhere. Every way to kill an
-   * enemy counts as a move, like walking into it does.
+   * enemy counts as a move, like walking into it does; a bomb counts once for all its kills.
    */
   countMove: () => void;
   /** Leaves through the unlocked door into the next level. Does nothing while it's locked. */

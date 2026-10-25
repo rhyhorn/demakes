@@ -12,8 +12,9 @@ describe('canUseItem', () => {
     expect(canUseItem(INVENTORY_ITEM.potion, { health: 5, maxHealth: 5 })).toBe(false);
   });
 
-  it('always lets a spear be used', () => {
+  it('always lets a spear and a bomb be used', () => {
     expect(canUseItem(INVENTORY_ITEM.spear, { health: 5, maxHealth: 5 })).toBe(true);
+    expect(canUseItem(INVENTORY_ITEM.bomb, { health: 5, maxHealth: 5 })).toBe(true);
   });
 });
 
@@ -66,6 +67,31 @@ describe('consumeItem', () => {
 
     expect(useEnemyStore.getState().enemies).toEqual({});
     expect(useBoardStore.getState().moves).toBe(0);
+    expect(useHeroStore.getState().inventory).toEqual([]);
+  });
+
+  it('kills one random enemy in every row with a bomb and counts it as a single move', () => {
+    const beast = createEnemy('beast');
+    // Row 0: cells 1 and 3, row 1: none, row 2: cell 9, row 3: cells 12 and 15.
+    useEnemyStore.setState({ enemies: { 1: beast, 3: beast, 9: beast, 12: beast, 15: beast } });
+    useBoardStore.setState({ moves: 2 });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.bomb, INVENTORY_ITEM.potion] });
+
+    expect(consumeItem(0, () => 0.999)).toBe(true);
+
+    expect(useEnemyStore.getState().enemies).toEqual({ 1: beast, 12: beast });
+    expect(useBoardStore.getState().visited).toEqual([3, 9, 15]);
+    expect(useBoardStore.getState().moves).toBe(3);
+    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
+  });
+
+  it('uses up a bomb without enemies, still counting a move', () => {
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.bomb] });
+
+    expect(consumeItem(0)).toBe(true);
+
+    expect(useBoardStore.getState().visited).toEqual([]);
+    expect(useBoardStore.getState().moves).toBe(1);
     expect(useHeroStore.getState().inventory).toEqual([]);
   });
 
