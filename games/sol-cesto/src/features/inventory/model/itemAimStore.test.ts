@@ -60,7 +60,7 @@ describe('itemAimStore', () => {
     expect(applyAimedItem(0)).toBe(true);
 
     expect(useEnemyStore.getState().enemies).toEqual({ 5: beast });
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
     expect(useItemAimStore.getState().aiming).toBeNull();
   });
 
@@ -98,7 +98,7 @@ describe('itemAimStore', () => {
     expect(useEnemyStore.getState().enemies).toEqual({ 3: shark });
     expect(useBoardStore.getState().visited).toEqual([9]);
     expect(useBoardStore.getState().moves).toBe(1);
-    expect(useHeroStore.getState().inventory).toEqual([potion]);
+    expect(useHeroStore.getState().inventory).toEqual([null, potion]);
   });
 
   it('hits at once when the arrow is not on the screen', () => {
@@ -111,7 +111,7 @@ describe('itemAimStore', () => {
 
     expect(useItemAimStore.getState()).toEqual({ aiming: null, shot: null });
     expect(useEnemyStore.getState().enemies).toEqual({});
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
   });
 
   it('fires the arrow only at an enemy', () => {

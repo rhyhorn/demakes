@@ -111,19 +111,20 @@ describe('useHeroStore', () => {
     expect(useHeroStore.getState()).toBe(before);
   });
 
-  it('removes an item and shifts the next ones down', () => {
+  it('removes an item and leaves its slot empty, so the next ones keep their places', () => {
     useHeroStore.setState({ inventory: [INVENTORY_ITEM.potion, INVENTORY_ITEM.spear] });
 
     useHeroStore.getState().removeItem(0);
 
-    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.spear]);
+    expect(useHeroStore.getState().inventory).toEqual([null, INVENTORY_ITEM.spear]);
   });
 
   it('ignores removing from an empty slot', () => {
-    useHeroStore.setState({ inventory: [INVENTORY_ITEM.potion] });
+    useHeroStore.setState({ inventory: [INVENTORY_ITEM.potion, null] });
     const before = useHeroStore.getState();
 
     useHeroStore.getState().removeItem(1);
+    useHeroStore.getState().removeItem(2);
     useHeroStore.getState().removeItem(-1);
 
     expect(useHeroStore.getState()).toBe(before);
@@ -157,6 +158,21 @@ describe('useHeroStore', () => {
       INVENTORY_ITEM.potion,
       INVENTORY_ITEM.spear,
       INVENTORY_ITEM.potion,
+    ]);
+  });
+
+  it('adds an item into the first empty slot', () => {
+    useHeroStore.setState({
+      inventory: [INVENTORY_ITEM.potion, null, INVENTORY_ITEM.spear, null],
+    });
+
+    useHeroStore.getState().addItem(INVENTORY_ITEM.bomb);
+
+    expect(useHeroStore.getState().inventory).toEqual([
+      INVENTORY_ITEM.potion,
+      INVENTORY_ITEM.bomb,
+      INVENTORY_ITEM.spear,
+      null,
     ]);
   });
 

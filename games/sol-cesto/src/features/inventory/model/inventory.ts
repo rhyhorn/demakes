@@ -1,6 +1,12 @@
 import { BOARD_SIZE, getRowCells, useBoardStore } from '@/entities/board';
 import { type EnemyMap, useEnemyStore } from '@/entities/enemy';
-import { INVENTORY_ITEMS, ITEM_EFFECT, type InventoryItem, useHeroStore } from '@/entities/hero';
+import {
+  getInventoryItem,
+  INVENTORY_ITEMS,
+  ITEM_EFFECT,
+  type InventoryItem,
+  useHeroStore,
+} from '@/entities/hero';
 import { pickCells } from '@/shared/lib';
 
 /** Whether using the item would do anything for the hero right now. */
@@ -32,8 +38,8 @@ export const pickItemTarget = (
   index: number,
   random: () => number = Math.random,
 ): number | undefined => {
-  const item = useHeroStore.getState().inventory[index];
-  if (item === undefined || INVENTORY_ITEMS[item].effect?.kind !== ITEM_EFFECT.killEnemy) {
+  const item = getInventoryItem(useHeroStore.getState().inventory, index);
+  if (item === null || INVENTORY_ITEMS[item].effect?.kind !== ITEM_EFFECT.killEnemy) {
     return undefined;
   }
   const { enemies } = useEnemyStore.getState();
@@ -129,8 +135,8 @@ export const hasItemAimTargets = (aim: ItemAim, enemies: EnemyMap) =>
  */
 export const applyItem = (index: number, target?: number, random: () => number = Math.random) => {
   const hero = useHeroStore.getState();
-  const item = hero.inventory[index];
-  if (item === undefined || !canUseItem(item, hero)) return false;
+  const item = getInventoryItem(hero.inventory, index);
+  if (item === null || !canUseItem(item, hero)) return false;
 
   if (getItemAim(item) !== null && target === undefined) return false;
 

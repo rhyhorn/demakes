@@ -38,6 +38,14 @@ describe('shop', () => {
     );
   });
 
+  it('puts a bought item into the first empty slot', () => {
+    useHeroStore.setState({ gold: 10, inventory: [null, spear] });
+
+    buyItem(1);
+
+    expect(useHeroStore.getState().inventory).toEqual([spear, spear]);
+  });
+
   it('sells each offer only once', () => {
     useHeroStore.setState({ gold: 10, inventory: [] });
 

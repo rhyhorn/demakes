@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 
-import { INVENTORY_ITEM, INVENTORY_ITEMS, type InventoryItem, useHeroStore } from '@/entities/hero';
+import {
+  findFreeInventorySlot,
+  type InventoryContents,
+  INVENTORY_ITEM,
+  INVENTORY_ITEMS,
+  type InventoryItem,
+  useHeroStore,
+} from '@/entities/hero';
 
 import { SHOP_OFFER_COUNT } from '../config';
 
@@ -38,7 +45,7 @@ export type ShopOfferStatus = (typeof SHOP_OFFER_STATUS)[keyof typeof SHOP_OFFER
 /** What of the hero decides whether she can buy: her gold and free inventory slots. */
 interface HeroWallet {
   gold: number;
-  inventory: readonly unknown[];
+  inventory: InventoryContents;
   inventorySize: number;
 }
 
@@ -50,7 +57,8 @@ export function getShopOfferStatus(
   const item = offers[offer];
   if (item === undefined || sold.includes(offer)) return SHOP_OFFER_STATUS.sold;
   if (hero.gold < INVENTORY_ITEMS[item].price) return SHOP_OFFER_STATUS.tooExpensive;
-  if (hero.inventory.length >= hero.inventorySize) return SHOP_OFFER_STATUS.noRoom;
+  if (findFreeInventorySlot(hero.inventory, hero.inventorySize) === undefined)
+    return SHOP_OFFER_STATUS.noRoom;
   return SHOP_OFFER_STATUS.available;
 }
 

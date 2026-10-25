@@ -8,6 +8,7 @@ import {
   INVENTORY_ITEM,
   type InventoryItem,
 } from '../config';
+import { findFreeInventorySlot, type InventoryContents } from './inventory';
 
 /** Stats a hero of the class starts a run with: full health, their own attack and magic. */
 const getClassStats = (heroClass: HeroClass) => {
@@ -32,7 +33,7 @@ export const INITIAL_HERO_STATS = {
     INVENTORY_ITEM.spear,
     INVENTORY_ITEM.whirlwind,
     INVENTORY_ITEM.arrow,
-  ] as readonly InventoryItem[],
+  ] as InventoryContents,
 } as const;
 
 interface HeroState {
@@ -51,8 +52,8 @@ interface HeroState {
   goldMultiplier: number;
   /** How many inventory slots are available, from 0 up to `MAX_INVENTORY_SIZE`. */
   inventorySize: number;
-  /** Carried items, at most `inventorySize` of them. */
-  inventory: readonly InventoryItem[];
+  /** Carried items by slot (`null` — empty slot), within the first `inventorySize` slots. */
+  inventory: InventoryContents;
   /** Lowers health by `amount`, but never below 0. Does nothing for 0 or less. */
   takeDamage: (amount: number) => void;
   /** Raises health by `amount`, but never above `maxHealth`. Does nothing for 0 or less. */
@@ -66,9 +67,11 @@ interface HeroState {
   addGold: (amount: number, multiplierBonus?: number) => void;
   /** Takes `amount` gold out of the piggy bank. Does nothing for 0 or less, or if there is not enough. */
   spendGold: (amount: number) => void;
-  /** Puts the item into the first free inventory slot. Does nothing when the inventory is full. */
+  /**
+   * Puts the item into the first empty inventory slot. Does nothing when the inventory is full.
+   */
   addItem: (item: InventoryItem) => void;
-  /** Takes the item out of inventory slot `index`; later items shift down. Ignores empty slots. */
+  /** Takes the item out of inventory slot `index`; the slot stays empty. Ignores empty slots. */
   removeItem: (index: number) => void;
   /** Makes the hero of the class: their stats as `HERO_CLASSES` says, health full. */
   chooseHero: (heroClass: HeroClass) => void;
@@ -95,16 +98,21 @@ export const useHeroStore = create<HeroState>()((set) => ({
   spendGold: (amount) =>
     set((state) => (amount > 0 && amount <= state.gold ? { gold: state.gold - amount } : state)),
   addItem: (item) =>
-    set((state) =>
-      state.inventory.length < state.inventorySize
-        ? { inventory: [...state.inventory, item] }
-        : state,
-    ),
+    set((state) => {
+      const free = findFreeInventorySlot(state.inventory, state.inventorySize);
+      if (free === undefined) return state;
+      const length = Math.max(state.inventory.length, free + 1);
+      return {
+        inventory: Array.from({ length }, (_, slot) =>
+          slot === free ? item : (state.inventory[slot] ?? null),
+        ),
+      };
+    }),
   removeItem: (index) =>
     set((state) =>
-      index >= 0 && index < state.inventory.length
-        ? { inventory: state.inventory.filter((_, slot) => slot !== index) }
-        : state,
+      (state.inventory[index] ?? null) === null
+        ? state
+        : { inventory: state.inventory.map((item, slot) => (slot === index ? null : item)) },
     ),
   chooseHero: (heroClass) => set(getClassStats(heroClass)),
   reset: () => set(INITIAL_HERO_STATS),

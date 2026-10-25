@@ -1,7 +1,13 @@
 import { describeMovesLeft, DOOR_INFO, isExitOpen, useBoardStore } from '@/entities/board';
 import { ENEMY_TYPES, getEnemyTraits, useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
-import { GOLD_INFO, HERO_CLASSES, INVENTORY_ITEMS, useHeroStore } from '@/entities/hero';
+import {
+  getInventoryItem,
+  GOLD_INFO,
+  HERO_CLASSES,
+  INVENTORY_ITEMS,
+  useHeroStore,
+} from '@/entities/hero';
 import { PICKUP_TYPES, usePickupStore } from '@/entities/pickup';
 import { HINT_TARGET, HintCard, type HintTarget, useHintStore } from '@/entities/hint';
 import {
@@ -65,9 +71,9 @@ function ToothHint({ slot }: { slot: number }) {
 
 /** An inventory item tells what it does, as in the shop. */
 function ItemHint({ slot }: { slot: number }) {
-  const item = useHeroStore((state) => state.inventory[slot]);
+  const item = useHeroStore((state) => getInventoryItem(state.inventory, slot));
 
-  if (item === undefined) return null;
+  if (item === null) return null;
   const { name, description } = INVENTORY_ITEMS[item];
   return <HintCard title={name} details={[description]} />;
 }

@@ -43,7 +43,7 @@ describe('consumeItem', () => {
     expect(consumeItem(1)).toBe(true);
 
     expect(useHeroStore.getState().health).toBe(4);
-    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.spear]);
+    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.spear, null]);
   });
 
   it('keeps the potion when the hero is at full health', () => {
@@ -66,7 +66,7 @@ describe('consumeItem', () => {
     expect(useBoardStore.getState().visited).toEqual([5]);
     expect(useBoardStore.getState().playerIndex).toBeNull();
     expect(useBoardStore.getState().moves).toBe(1);
-    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
+    expect(useHeroStore.getState().inventory).toEqual([null, INVENTORY_ITEM.potion]);
   });
 
   it('uses up a spear when there are no enemies', () => {
@@ -76,7 +76,7 @@ describe('consumeItem', () => {
 
     expect(useEnemyStore.getState().enemies).toEqual({});
     expect(useBoardStore.getState().moves).toBe(0);
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
   });
 
   it('kills one random enemy in every row with a bomb and counts it as a single move', () => {
@@ -91,7 +91,7 @@ describe('consumeItem', () => {
     expect(useEnemyStore.getState().enemies).toEqual({ 1: beast, 12: beast });
     expect(useBoardStore.getState().visited).toEqual([3, 9, 15]);
     expect(useBoardStore.getState().moves).toBe(3);
-    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
+    expect(useHeroStore.getState().inventory).toEqual([null, INVENTORY_ITEM.potion]);
   });
 
   it('uses up a bomb without enemies, still counting a move', () => {
@@ -101,7 +101,7 @@ describe('consumeItem', () => {
 
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().moves).toBe(1);
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
   });
 
   it('ignores an empty slot', () => {
@@ -163,7 +163,7 @@ describe('applyItem', () => {
     expect(useEnemyStore.getState().enemies).toEqual({ 5: beast });
     expect(useBoardStore.getState().visited).toEqual([2]);
     expect(useBoardStore.getState().moves).toBe(1);
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
   });
 
   it('kills every enemy in the row a whirlwind is aimed at and counts it as a single move', () => {
@@ -178,7 +178,7 @@ describe('applyItem', () => {
     expect(useEnemyStore.getState().enemies).toEqual({ 2: beast });
     expect(useBoardStore.getState().visited).toEqual([4, 6, 7]);
     expect(useBoardStore.getState().moves).toBe(3);
-    expect(useHeroStore.getState().inventory).toEqual([INVENTORY_ITEM.potion]);
+    expect(useHeroStore.getState().inventory).toEqual([null, INVENTORY_ITEM.potion]);
   });
 
   it('kills the enemy an arrow is aimed at, whatever its attack', () => {
@@ -191,7 +191,7 @@ describe('applyItem', () => {
     expect(useEnemyStore.getState().enemies).toEqual({ 6: shark });
     expect(useBoardStore.getState().visited).toEqual([11]);
     expect(useBoardStore.getState().moves).toBe(1);
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
   });
 
   it('keeps an arrow without a target', () => {
@@ -219,6 +219,6 @@ describe('applyItem', () => {
 
     expect(useBoardStore.getState().visited).toEqual([]);
     expect(useBoardStore.getState().moves).toBe(0);
-    expect(useHeroStore.getState().inventory).toEqual([]);
+    expect(useHeroStore.getState().inventory).toEqual([null]);
   });
 });

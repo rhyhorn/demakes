@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { useEnemyStore } from '@/entities/enemy';
-import { getInventoryIconRect, useHeroStore } from '@/entities/hero';
+import { getInventoryIconRect, getInventoryItem, useHeroStore } from '@/entities/hero';
 
 import { applyItem, getItemAim, ITEM_AIM, type ItemAim } from './inventory';
 
@@ -33,8 +33,8 @@ export const useItemAimStore = create<ItemAimState>()(() => ({ aiming: null, sho
  * nothing for an item that is used at once.
  */
 export const toggleItemAim = (slot: number) => {
-  const item = useHeroStore.getState().inventory[slot];
-  const aim = item === undefined ? null : getItemAim(item);
+  const item = getInventoryItem(useHeroStore.getState().inventory, slot);
+  const aim = item === null ? null : getItemAim(item);
   if (aim === null) return;
   useItemAimStore.setState((state) => ({
     aiming: state.aiming?.slot === slot ? null : { slot, aim },

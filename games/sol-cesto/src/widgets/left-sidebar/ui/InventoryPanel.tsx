@@ -3,6 +3,8 @@ import { type MouseEvent, useState } from 'react';
 import { useEnemyStore } from '@/entities/enemy';
 import { GAME_SCREEN, useGameStore } from '@/entities/game';
 import {
+  countInventoryItems,
+  getInventoryItem,
   getInventorySlots,
   INVENTORY_ITEMS,
   INVENTORY_SLOT,
@@ -141,7 +143,7 @@ export function InventoryPanel() {
   // An aimed item fired at an enemy: it flies there from its slot.
   const shot = useItemAimStore((state) => state.shot);
   const flight = thrown ?? shot;
-  const shotItem = shot === null ? undefined : inventory[shot.slot];
+  const shotItem = shot === null ? null : getInventoryItem(inventory, shot.slot);
 
   const throwItem = (slot: number, icon: string, event: MouseEvent<HTMLButtonElement>) => {
     const target = pickItemTarget(slot);
@@ -158,7 +160,7 @@ export function InventoryPanel() {
       toggleItemAim(slot);
       return;
     }
-    // Using another item shifts the slots after it, so the aimed one would be lost.
+    // Using another item stops aiming the one that was aimed.
     cancelItemAim();
     throwItem(slot, INVENTORY_ITEMS[item].icon, event);
   };
@@ -166,7 +168,7 @@ export function InventoryPanel() {
   return (
     <ul
       className="grid h-full w-full grid-cols-2 grid-rows-3 gap-[calc(10*var(--px))] p-[calc(14*var(--px))]"
-      aria-label={`Інвентар: зайнято ${inventory.length} з ${inventorySize}`}
+      aria-label={`Інвентар: зайнято ${countInventoryItems(inventory)} з ${inventorySize}`}
     >
       {slots.map((slot, index) => (
         // Slots never move, so their position is a stable key.
@@ -201,7 +203,7 @@ export function InventoryPanel() {
           }}
         />
       )}
-      {shot && shotItem !== undefined && (
+      {shot && shotItem !== null && (
         <ItemProjectile
           icon={INVENTORY_ITEMS[shotItem].icon}
           from={shot.from}

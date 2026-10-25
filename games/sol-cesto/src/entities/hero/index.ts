@@ -17,7 +17,11 @@ export {
   MAX_INVENTORY_SIZE,
 } from './config';
 export {
+  countInventoryItems,
+  findFreeInventorySlot,
+  getInventoryItem,
   getInventorySlots,
+  type InventoryContents,
   INVENTORY_SLOT,
   type InventorySlot,
   type InventorySlotState,
