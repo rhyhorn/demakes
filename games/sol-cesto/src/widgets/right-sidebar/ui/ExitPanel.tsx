@@ -4,7 +4,10 @@ import { isToothRoomOpen, leaveToothRoom, useToothChoiceStore } from '@/features
 import { enterNextRoom, exitLevel } from '@/features/level';
 import { leaveShop } from '@/features/shop';
 import { isUpgradeRoomOpen, leaveUpgradeRoom, useUpgradeStore } from '@/features/upgrade-attack';
+
+import { useValueChange, VALUE_CHANGE } from '../lib/useValueChange';
 import styles from './ExitPanel.module.css';
+import { ValueChangeFlash } from './ValueChangeEffect';
 
 /** A room that opens after a single choice: the counter shows `0/1` until it is made. */
 function getChoiceExit(open: boolean, leaveRoom: () => boolean) {
@@ -44,43 +47,41 @@ function useExit() {
 
 export function ExitPanel() {
   const { open: exitOpen, moves, requiredMoves, leave } = useExit();
+  // The door opening is a gain (0 → 1), so the panel flashes like health or gold. Closing is not
+  // shown: it only happens on the way to the next room.
+  const { change } = useValueChange(exitOpen ? 1 : 0);
+  const opened = change?.kind === VALUE_CHANGE.increase ? change : null;
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-[calc(16*var(--px))] p-[calc(16*var(--px))]">
+    <button
+      type="button"
+      className={`${styles.panel} relative flex h-full w-full items-center justify-center p-[calc(16*var(--px))] [--gain-color:#ffd27a]`}
+      disabled={!exitOpen}
+      aria-label={
+        exitOpen ? 'Вийти: двері відчинено' : `Двері зачинено. Ходи: ${moves} з ${requiredMoves}`
+      }
+      onClick={leave}
+    >
+      {opened && <ValueChangeFlash key={opened.id} change={opened} />}
       <div
-        className={`relative flex h-[calc(170*var(--px))] items-center justify-center ${exitOpen ? styles.shaking : ''}`}
-        role="img"
-        aria-label={exitOpen ? 'Двері відчинено' : 'Двері зачинено'}
+        className={`relative flex items-center justify-center ${exitOpen ? styles.shaking : ''}`}
+        aria-hidden="true"
       >
         <span
-          className={`text-[length:calc(150*var(--px))] leading-none ${exitOpen ? '' : 'brightness-50'}`}
-          aria-hidden="true"
+          className={`text-[length:calc(200*var(--px))] leading-none ${exitOpen ? '' : 'brightness-50'}`}
         >
           🚪
         </span>
+        {/* The lock and the move counter go away with the lock: an open door needs neither. */}
         {!exitOpen && (
-          <span
-            className="absolute text-[length:calc(64*var(--px))] leading-none"
-            aria-hidden="true"
-          >
-            🔒
+          <span className="absolute flex flex-col items-center gap-[calc(8*var(--px))] leading-none">
+            <span className="text-[length:calc(64*var(--px))]">🔒</span>
+            <span className="text-[length:calc(44*var(--px))] font-bold text-[#e8e2d4] [text-shadow:0_calc(3*var(--px))_0_#000]">
+              {moves}/{requiredMoves}
+            </span>
           </span>
         )}
       </div>
-      <span
-        className="text-[length:calc(48*var(--px))] leading-none font-bold text-[#e8e2d4]"
-        aria-label={`Ходи: ${moves} з ${requiredMoves}`}
-      >
-        {moves}/{requiredMoves}
-      </span>
-      <button
-        type="button"
-        className="cursor-pointer rounded-[calc(8*var(--px))] border-[length:calc(3*var(--px))] border-[#f4e3c1] bg-[#c8323c] px-[calc(40*var(--px))] py-[calc(12*var(--px))] text-[length:calc(32*var(--px))] font-bold text-[#f4e3c1] disabled:cursor-default disabled:border-[#3a3a36] disabled:bg-[#2b2b28] disabled:text-[#5c5f63]"
-        disabled={!exitOpen}
-        onClick={leave}
-      >
-        Вийти
-      </button>
-    </div>
+    </button>
   );
 }

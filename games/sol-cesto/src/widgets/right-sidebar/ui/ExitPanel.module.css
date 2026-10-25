@@ -1,3 +1,22 @@
+/* The whole panel is the exit button: an open door lights it up under the cursor. */
+.panel {
+  cursor: pointer;
+  transition: background-color 0.15s ease-out;
+}
+
+.panel:hover:enabled {
+  background-color: rgb(255 210 122 / 8%);
+}
+
+.panel:focus-visible {
+  outline: calc(4 * var(--px)) solid #ffd27a;
+  outline-offset: calc(-4 * var(--px));
+}
+
+.panel:disabled {
+  cursor: default;
+}
+
 /*
  * An open door shakes left and right right away and then every 5 s, so the player keeps
  * remembering they can leave. The shake takes the first 9% of the cycle (0.45 s), the rest is a

@@ -1,5 +1,5 @@
 /*
- * Effects shared by the panels whose number changes (health, gold). A loss flashes the panel edges
+ * Effects shared by the panels whose number changes (health, gold; the door flashes on opening). A loss flashes the panel edges
  * red and drops a red "−N"; a gain glows the edges in `--gain-color` and floats a "+N" of that
  * color up. A panel sets `--gain-color` to its own good color.
  */
