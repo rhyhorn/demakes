@@ -1,3 +1,4 @@
+import { getHintHandlers, HINT_TARGET } from '@/entities/hint';
 import { TOOTH_TYPES, type ToothSlot, useToothStore } from '@/entities/tooth';
 
 /** The top jaw holds the first half of the slots, the bottom one the rest. */
@@ -6,8 +7,18 @@ const JAWS = [
   { name: 'Нижня щелепа', shape: 'rounded-t-[calc(22*var(--px))] rounded-b-[calc(6*var(--px))]' },
 ] as const;
 
-/** A slot: an ivory tooth when it holds one, a dark socket when it's empty. */
-function ToothSlotView({ slot, shape }: { slot: ToothSlot; shape: string }) {
+interface ToothSlotViewProps {
+  /** Position of the slot in the mouth. */
+  index: number;
+  slot: ToothSlot;
+  shape: string;
+}
+
+/**
+ * A slot: an ivory tooth when it holds one, a dark socket when it's empty. A tooth shows its
+ * properties in the hint panel under the cursor.
+ */
+function ToothSlotView({ index, slot, shape }: ToothSlotViewProps) {
   const base = `h-full flex-1 border-[length:calc(2*var(--px))] ${shape}`;
 
   if (slot === null) {
@@ -23,6 +34,7 @@ function ToothSlotView({ slot, shape }: { slot: ToothSlot; shape: string }) {
     <li
       className={`${base} border-[#c9bb98] bg-[#f4ecd6] shadow-[inset_0_calc(-6*var(--px))_calc(8*var(--px))_rgba(150,130,90,0.45)]`}
       aria-label={TOOTH_TYPES[slot.type].name}
+      {...getHintHandlers({ kind: HINT_TARGET.tooth, slot: index })}
     />
   );
 }
@@ -46,7 +58,7 @@ export function TeethPanel() {
             {slots.slice(start, start + perJaw).map((slot, index) => (
               // Slots never move, so their position is a stable key.
               // eslint-disable-next-line react/no-array-index-key
-              <ToothSlotView key={start + index} slot={slot} shape={shape} />
+              <ToothSlotView key={start + index} index={start + index} slot={slot} shape={shape} />
             ))}
           </ul>
         );

@@ -1,22 +1,24 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { TOOTH_SLOT_COUNT } from '../config';
-import { createStartingSlots, TEST_TOOTH, useToothStore } from './toothStore';
+import { createStartingSlots, SWEET_TOOTH, TEST_TOOTH, useToothStore } from './toothStore';
 
 const tooth = TEST_TOOTH;
 
 describe('createStartingSlots', () => {
-  it('puts the test tooth into a random slot and leaves the rest empty', () => {
+  it('puts every starting tooth into its own random slot and leaves the rest empty', () => {
+    // Slot 6 of 12 goes first, then slot 5 of the 11 left.
     const slots = createStartingSlots(() => 0.5);
 
     expect(slots).toHaveLength(TOOTH_SLOT_COUNT);
     expect(slots[6]).toBe(TEST_TOOTH);
-    expect(slots.filter((slot) => slot !== null)).toHaveLength(1);
+    expect(slots[5]).toBe(SWEET_TOOTH);
+    expect(slots.filter((slot) => slot !== null)).toHaveLength(2);
   });
 
-  it('can use the first and the last slot', () => {
-    expect(createStartingSlots(() => 0)[0]).toBe(TEST_TOOTH);
-    expect(createStartingSlots(() => 0.999)[TOOTH_SLOT_COUNT - 1]).toBe(TEST_TOOTH);
+  it('can use the first and the last slots', () => {
+    expect(createStartingSlots(() => 0).slice(0, 2)).toEqual([TEST_TOOTH, SWEET_TOOTH]);
+    expect(createStartingSlots(() => 0.999).slice(-2)).toEqual([SWEET_TOOTH, TEST_TOOTH]);
   });
 });
 

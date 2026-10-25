@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { pickCells } from '@/shared/lib';
+
 import { TOOTH_SLOT_COUNT, TOOTH_TYPE, type ToothType } from '../config';
 import { MODIFIER, type Modifier } from '../config/modifiers';
 
@@ -27,12 +29,24 @@ export const TEST_TOOTH: Tooth = {
   ],
 };
 
-/** Slots at the start of a run: the test tooth in a random slot, the rest empty. */
+/** A tooth for testing with a single property: +25% to strawberries. */
+export const SWEET_TOOTH: Tooth = {
+  type: TOOTH_TYPE.sweet,
+  properties: [{ modifier: MODIFIER.strawberryChance, value: 25 }],
+};
+
+/** Teeth a run starts with. */
+export const STARTING_TEETH: readonly Tooth[] = [TEST_TOOTH, SWEET_TOOTH];
+
+const ALL_SLOTS = Array.from({ length: TOOTH_SLOT_COUNT }, (_, slot) => slot);
+
+/** Slots at the start of a run: every starting tooth in its own random slot, the rest empty. */
 export function createStartingSlots(random: () => number = Math.random): readonly ToothSlot[] {
-  const testSlot = Math.floor(random() * TOOTH_SLOT_COUNT);
-  return Array.from({ length: TOOTH_SLOT_COUNT }, (_, slot) =>
-    slot === testSlot ? TEST_TOOTH : null,
-  );
+  const slots: ToothSlot[] = Array.from({ length: TOOTH_SLOT_COUNT }, () => null);
+  pickCells(ALL_SLOTS, STARTING_TEETH.length, random).forEach((slot, index) => {
+    slots[slot] = STARTING_TEETH[index];
+  });
+  return slots;
 }
 
 /** The slots with `slot` holding `content`. */
@@ -48,7 +62,7 @@ interface ToothState {
   placeTooth: (slot: number, tooth: Tooth) => void;
   /** Empties the slot. */
   removeTooth: (slot: number) => void;
-  /** Brings back the slots a run starts with: the test tooth lands in a new random slot. */
+  /** Brings back the slots a run starts with: the starting teeth land in new random slots. */
   reset: (random?: () => number) => void;
 }
 

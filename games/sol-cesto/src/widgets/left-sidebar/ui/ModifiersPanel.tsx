@@ -2,6 +2,7 @@ import {
   getTeethModifiers,
   MODIFIER,
   type Modifier,
+  formatModifier,
   MODIFIERS,
   useToothStore,
 } from '@/entities/tooth';
@@ -11,9 +12,6 @@ const PAGES: readonly (readonly Modifier[])[] = [
   [MODIFIER.attackChance, MODIFIER.strawberryChance],
   [MODIFIER.magicChance, MODIFIER.chestChance],
 ];
-
-/** A percentage with its sign, as in the book: +50%, -50%, +0%. */
-const formatModifier = (value: number) => `${value < 0 ? '' : '+'}${value}%`;
 
 function ModifierRow({ modifier, value }: { modifier: Modifier; value: number }) {
   const { name, icon, color } = MODIFIERS[modifier];

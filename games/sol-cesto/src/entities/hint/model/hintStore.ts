@@ -4,6 +4,7 @@ import { create } from 'zustand';
 export const HINT_TARGET = {
   cell: 'cell',
   hero: 'hero',
+  tooth: 'tooth',
 } as const;
 
 export type HintTargetKind = (typeof HINT_TARGET)[keyof typeof HINT_TARGET];
@@ -18,7 +19,12 @@ export type HintTarget =
       /** Index of the board cell. */
       index: number;
     }
-  | { kind: typeof HINT_TARGET.hero };
+  | { kind: typeof HINT_TARGET.hero }
+  | {
+      kind: typeof HINT_TARGET.tooth;
+      /** Slot in the mouth. */
+      slot: number;
+    };
 
 /** Targets are plain objects of primitives, so equal fields mean the same element. */
 export function isSameHintTarget(a: HintTarget, b: HintTarget) {
